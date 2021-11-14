@@ -6,6 +6,7 @@ import android.view.View
 import androidx.activity.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.internetapi.api.Resource
+import com.example.internetapi.databinding.ActivityAccountBinding
 import com.example.internetapi.databinding.ActivityMainBinding
 import com.example.internetapi.models.Account
 import com.example.internetapi.models.Status
@@ -18,12 +19,12 @@ import dagger.hilt.android.AndroidEntryPoint
 class AccountActivity : AppCompatActivity() {
 
     private val mainViewModel: MainViewModel by viewModels()
-    private lateinit var binding: ActivityMainBinding
+    private lateinit var binding: ActivityAccountBinding
     private lateinit var adapter: AccountAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
+        binding = ActivityAccountBinding.inflate(layoutInflater)
         setContentView(binding.root)
         adapter = AccountAdapter()
         binding.rvAccounts.layoutManager = LinearLayoutManager(this)

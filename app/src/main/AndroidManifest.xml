@@ -13,7 +13,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.InternetApi"
         android:usesCleartextTraffic="true">
-        <activity android:name=".ui.AccountActivity"></activity>
+        <activity android:name=".ui.BudgetActivity" />
+        <activity android:name=".ui.AccountActivity" />
         <activity android:name=".ui.InvoiceDetailsActivity" />
         <activity android:name=".ui.AccountDetailsActivity" />
         <activity android:name=".ui.MainActivity">
