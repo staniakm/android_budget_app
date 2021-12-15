@@ -1,1 +1,2 @@
-# android_budget_app
+Simple androi app created for fun. 
+It consumes api provided by [rest api](https://github.com/staniakm/homeBudgetKotlinApi)
