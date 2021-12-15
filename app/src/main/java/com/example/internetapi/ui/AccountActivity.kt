@@ -6,6 +6,7 @@ import android.view.View
 import androidx.activity.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.internetapi.api.Resource
+import com.example.internetapi.config.MoneyFormatter
 import com.example.internetapi.databinding.ActivityAccountBinding
 import com.example.internetapi.databinding.ActivityMainBinding
 import com.example.internetapi.models.Account
@@ -63,7 +64,7 @@ class AccountActivity : AppCompatActivity() {
                 res.let { list ->
                     adapter.submitList(list)
                     val (totalIncome, totalExpanse) = summary(list)
-                    binding.summary.text ="$totalIncome\n$totalExpanse"
+                    binding.summary.text = "$totalIncome\n$totalExpanse"
                 }
             } else {
                 Snackbar.make(binding.rootView, "Status = false", Snackbar.LENGTH_SHORT).show()
@@ -74,10 +75,16 @@ class AccountActivity : AppCompatActivity() {
     private fun summary(list: List<Account>): Pair<String, String> {
         val totalIncome =
             "Przychód: " + list.map { i -> i.income }
-                .sumByDouble { i -> i.toDouble() }.toString()
+                .sumByDouble { i -> i.toDouble() }
+                .let {
+                    MoneyFormatter.df.format(it)
+                }
         val totalExpanse =
-            "Wydatki: " + list.map { i -> i.expense }.sumByDouble { i -> i.toDouble() }
-                .toString()
+            "Wydatki: " + list.map { i -> i.expense }
+                .sumByDouble { it.toDouble() }
+                .let {
+                    MoneyFormatter.df.format(it)
+                }
         return Pair(totalIncome, totalExpanse)
     }
 }
