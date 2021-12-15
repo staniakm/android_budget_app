@@ -13,11 +13,9 @@ import com.example.internetapi.databinding.InvoiceAdapterBinding
 import com.example.internetapi.models.AccountIncome
 import com.example.internetapi.ui.InvoiceDetailsActivity
 import java.text.DecimalFormat
-
+import com.example.internetapi.config.MoneyFormatter.df
 
 class AccountIncomesAdapter : RecyclerView.Adapter<AccountIncomesViewHolder>() {
-
-    var df: DecimalFormat = DecimalFormat("##0.00")
 
     private val diffCallback = object : DiffUtil.ItemCallback<AccountIncome>() {
         override fun areItemsTheSame(oldItem: AccountIncome, newItem: AccountIncome): Boolean {

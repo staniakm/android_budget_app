@@ -1,11 +1,13 @@
 package com.example.internetapi.ui
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.internetapi.api.Resource
+import com.example.internetapi.config.DateFormatter.yyyymm
 import com.example.internetapi.databinding.ActivityBudgetBinding
 import com.example.internetapi.global.MonthSelector
 import com.example.internetapi.models.Budget
@@ -16,7 +18,6 @@ import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import java.text.DecimalFormat
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
 @AndroidEntryPoint
 class BudgetActivity : AppCompatActivity() {
@@ -28,11 +29,7 @@ class BudgetActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityBudgetBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-        adapter = MonthBudgetAdapter()
-        binding.rvBudgets.layoutManager = LinearLayoutManager(this)
-        binding.rvBudgets.adapter = adapter
+        bindAdapter()
 
         binding.previous.setOnClickListener {
             MonthSelector.previous()
@@ -57,11 +54,11 @@ class BudgetActivity : AppCompatActivity() {
         }
 
         binding.date.text = LocalDate.now().plusMonths(MonthSelector.month.toLong())
-            .format(DateTimeFormatter.ofPattern("YYYY-MM"))
+            .format(yyyymm)
         binding.previous.text = LocalDate.now().plusMonths(MonthSelector.month.toLong() - 1)
-            .format(DateTimeFormatter.ofPattern("YYYY-MM"))
+            .format(yyyymm)
         binding.next.text = LocalDate.now().plusMonths(MonthSelector.month.toLong() + 1)
-            .format(DateTimeFormatter.ofPattern("YYYY-MM"))
+            .format(yyyymm)
 
         viewModel.getBudgets().observe(this, {
             when (it.status) {
@@ -78,6 +75,15 @@ class BudgetActivity : AppCompatActivity() {
 
     }
 
+    private fun bindAdapter() {
+        binding = ActivityBudgetBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        adapter = MonthBudgetAdapter()
+        binding.rvBudgets.layoutManager = LinearLayoutManager(this)
+        binding.rvBudgets.adapter = adapter
+    }
+
+    @SuppressLint("SetTextI18n")
     private fun processSuccess(it: Resource<Budget>) {
         it.data.let { res ->
             if (res != null) {

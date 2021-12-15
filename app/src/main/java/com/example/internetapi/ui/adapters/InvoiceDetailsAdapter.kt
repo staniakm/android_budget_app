@@ -1,23 +1,16 @@
 package com.example.internetapi.ui.adapters
 
 import android.content.Context
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.example.internetapi.databinding.InvoiceAdapterBinding
+import com.example.internetapi.config.MoneyFormatter.df
 import com.example.internetapi.databinding.InvoiceDetailsAdapterBinding
-import com.example.internetapi.models.AccountInvoice
 import com.example.internetapi.models.InvoiceDetails
-import java.math.RoundingMode
-import java.text.DecimalFormat
-
 
 class InvoiceDetailsAdapter : RecyclerView.Adapter<InvoiceDetailsViewHolder>() {
-
-    var df: DecimalFormat = DecimalFormat("##0.00")
 
     private val diffCallback = object : DiffUtil.ItemCallback<InvoiceDetails>() {
         override fun areItemsTheSame(oldItem: InvoiceDetails, newItem: InvoiceDetails): Boolean {
@@ -49,8 +42,8 @@ class InvoiceDetailsAdapter : RecyclerView.Adapter<InvoiceDetailsViewHolder>() {
             price.text = "Cena:\n${df.format(item.price)}"
             discount.text = "Rabat:\n${df.format(item.discount)}"
             totalPrice.text = "Suma: ${df.format(item.totalPrice)}"
-            }
         }
+    }
 
     override fun getItemCount(): Int {
         return differ.currentList.size

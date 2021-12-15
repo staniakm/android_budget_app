@@ -33,7 +33,6 @@ class InvoiceDetailsActivity : AppCompatActivity() {
 
         intent.extras?.let { extra ->
             val invoiceId = extra.getLong("invoiceId")
-            Log.println(Log.INFO, "AccountDetails", "${invoiceId}")
             invoiceViewModel.invoiceDetails(invoiceId).observe(this, {
                 when (it.status) {
                     Status.SUCCESS -> loadOnSuccess(it)

@@ -10,11 +10,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.internetapi.databinding.BudgetAdapterBinding
 import com.example.internetapi.models.MonthBudget
 import java.text.DecimalFormat
-
+import com.example.internetapi.config.MoneyFormatter.df
 
 class MonthBudgetAdapter : RecyclerView.Adapter<MonthBudgetViewHolder>() {
-
-    var df: DecimalFormat = DecimalFormat("##0.00")
 
     private val diffCallback = object : DiffUtil.ItemCallback<MonthBudget>() {
         override fun areItemsTheSame(oldItem: MonthBudget, newItem: MonthBudget): Boolean {

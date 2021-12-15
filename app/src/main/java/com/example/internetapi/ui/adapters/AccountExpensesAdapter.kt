@@ -8,15 +8,14 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.example.internetapi.config.MoneyFormatter
+import com.example.internetapi.config.MoneyFormatter.df
 import com.example.internetapi.databinding.InvoiceAdapterBinding
 import com.example.internetapi.models.AccountInvoice
 import com.example.internetapi.ui.InvoiceDetailsActivity
-import java.text.DecimalFormat
 
 
 class AccountExpensesAdapter : RecyclerView.Adapter<AccountExpensesViewHolder>() {
-
-    var df: DecimalFormat = DecimalFormat("##0.00")
 
     private val diffCallback = object : DiffUtil.ItemCallback<AccountInvoice>() {
         override fun areItemsTheSame(oldItem: AccountInvoice, newItem: AccountInvoice): Boolean {
