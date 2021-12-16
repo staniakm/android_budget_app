@@ -13,6 +13,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.InternetApi"
         android:usesCleartextTraffic="true">
+        <activity
+            android:name=".ui.BudgetUpdateActivity"
+            android:exported="false" />
         <activity android:name=".ui.BudgetActivity" />
         <activity android:name=".ui.AccountActivity" />
         <activity android:name=".ui.InvoiceDetailsActivity" />
