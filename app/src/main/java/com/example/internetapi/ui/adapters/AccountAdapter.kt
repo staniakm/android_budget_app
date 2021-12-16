@@ -10,9 +10,11 @@ import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.internetapi.config.MoneyFormatter.df
+import com.example.internetapi.databinding.ActivityAccountUpdateBinding
 import com.example.internetapi.databinding.LayoutAdapterBinding
 import com.example.internetapi.models.Account
 import com.example.internetapi.ui.AccountDetailsActivity
+import com.example.internetapi.ui.AccountUpdateActivity
 import com.example.internetapi.ui.BudgetUpdateActivity
 
 class AccountAdapter : RecyclerView.Adapter<AccountViewHolder>() {
@@ -43,8 +45,11 @@ class AccountAdapter : RecyclerView.Adapter<AccountViewHolder>() {
         val item = differ.currentList[position]
         holder.binding.editBtn.setOnClickListener {
             Log.i("Account Adapter", "onBindViewHolder: ")
-            val indent = Intent(holder.parent, BudgetUpdateActivity::class.java).apply {
+            val indent = Intent(holder.parent, AccountUpdateActivity::class.java).apply {
                 this.putExtra("accountId", item.id.toLong())
+                this.putExtra("accountName", item.name)
+                this.putExtra("accountAmount", item.moneyAmount.toString())
+                this.putExtra("account", item)
             }
             startActivity(holder.parent, indent, null)
         }

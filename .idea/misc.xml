@@ -4,9 +4,13 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="..\:/Programowanie/Android/InternetApi/app/src/main/res/layout/activity_account.xml" value="0.42916666666666664" />
+        <entry key="..\:/Programowanie/Android/InternetApi/app/src/main/res/layout/activity_account_update.xml" value="0.24739583333333334" />
         <entry key="..\:/Programowanie/Android/InternetApi/app/src/main/res/layout/activity_budget.xml" value="0.42916666666666664" />
         <entry key="..\:/Programowanie/Android/InternetApi/app/src/main/res/layout/activity_budget_update.xml" value="0.24739583333333334" />
+        <entry key="..\:/Programowanie/Android/InternetApi/app/src/main/res/layout/activity_invoice_details.xml" value="0.24739583333333334" />
         <entry key="..\:/Programowanie/Android/InternetApi/app/src/main/res/layout/activity_main.xml" value="0.42916666666666664" />
+        <entry key="..\:/Programowanie/Android/InternetApi/app/src/main/res/layout/budget_adapter.xml" value="0.24739583333333334" />
+        <entry key="..\:/Programowanie/Android/InternetApi/app/src/main/res/layout/income_adapter.xml" value="0.24739583333333334" />
         <entry key="..\:/Programowanie/Android/InternetApi/app/src/main/res/layout/layout_adapter.xml" value="0.28894927536231885" />
       </map>
     </option>
