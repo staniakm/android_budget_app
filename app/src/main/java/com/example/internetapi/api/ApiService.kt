@@ -22,6 +22,12 @@ interface ApiService {
         @Query("month") month: Int
     ): Response<List<AccountIncome>>
 
+    @PUT("account/{accountId}")
+    suspend fun updateAccount(
+        @Path("accountId") accountId: Int,
+        @Body updateAccount: UpdateAccount
+    ): Response<UpdateAccount>
+
 
     @GET("invoice/{invoiceId}")
     suspend fun getInvoiceDetails(@Path("invoiceId") invoiceId: Long): Response<List<InvoiceDetails>>
@@ -57,6 +63,13 @@ class ApiHelperImpl @Inject constructor(private val apiService: ApiService) : Ap
         return apiService.updateBudget(MonthSelector.month, updateBudgetRequest)
     }
 
+    override suspend fun updateAccount(
+        accountId: Int,
+        updateAccount: UpdateAccount
+    ): Response<UpdateAccount> {
+        return apiService.updateAccount(accountId, updateAccount)
+    }
+
 
 }
 
@@ -67,4 +80,8 @@ interface ApiHelper {
     suspend fun getInvoiceDetails(invoiceId: Long): Response<List<InvoiceDetails>>
     suspend fun getBudgets(): Response<Budget>
     suspend fun updateBudget(updateBudgetRequest: UpdateBudgetRequest): Response<Unit>
+    suspend fun updateAccount(
+        accountId: Int,
+        updateAccount: UpdateAccount
+    ): Response<UpdateAccount>
 }

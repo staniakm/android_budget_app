@@ -8,18 +8,17 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.internetapi.api.Resource
 import com.example.internetapi.config.MoneyFormatter
 import com.example.internetapi.databinding.ActivityAccountBinding
-import com.example.internetapi.databinding.ActivityMainBinding
 import com.example.internetapi.models.Account
 import com.example.internetapi.models.Status
 import com.example.internetapi.ui.adapters.AccountAdapter
-import com.example.internetapi.ui.viewModel.MainViewModel
+import com.example.internetapi.ui.viewModel.AccountViewModel
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class AccountActivity : AppCompatActivity() {
 
-    private val mainViewModel: MainViewModel by viewModels()
+    private val accountViewModel: AccountViewModel by viewModels()
     private lateinit var binding: ActivityAccountBinding
     private lateinit var adapter: AccountAdapter
 
@@ -31,7 +30,7 @@ class AccountActivity : AppCompatActivity() {
         binding.rvAccounts.layoutManager = LinearLayoutManager(this)
         binding.rvAccounts.adapter = adapter
 
-        mainViewModel.getAccounts().observe(this, {
+        accountViewModel.getAccounts().observe(this, {
             when (it.status) {
                 Status.SUCCESS -> loadOnSucess(it)
                 Status.LOADING -> loadOnLoading()
