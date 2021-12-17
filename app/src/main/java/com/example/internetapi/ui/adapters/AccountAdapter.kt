@@ -5,19 +5,20 @@ import android.content.Intent
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat.startActivity
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.internetapi.config.MoneyFormatter.df
-import com.example.internetapi.databinding.ActivityAccountUpdateBinding
 import com.example.internetapi.databinding.LayoutAdapterBinding
 import com.example.internetapi.models.Account
+import com.example.internetapi.ui.AccountActivity
 import com.example.internetapi.ui.AccountDetailsActivity
 import com.example.internetapi.ui.AccountUpdateActivity
-import com.example.internetapi.ui.BudgetUpdateActivity
+import java.math.BigDecimal
 
-class AccountAdapter : RecyclerView.Adapter<AccountViewHolder>() {
+class AccountAdapter(private val accountActivity: AppCompatActivity) : RecyclerView.Adapter<AccountViewHolder>() {
 
     private val diffCallback = object : DiffUtil.ItemCallback<Account>() {
         override fun areItemsTheSame(oldItem: Account, newItem: Account): Boolean {
@@ -33,6 +34,16 @@ class AccountAdapter : RecyclerView.Adapter<AccountViewHolder>() {
 
     fun submitList(list: List<Account>) = differ.submitList(list)
 
+    fun updateListItem(accountId: Int, newName: String, newValue: BigDecimal) {
+        differ.currentList.map {
+            if (it.id == accountId)
+                it.copy(name = newName, moneyAmount = newValue)
+            else it
+        }.let {
+            differ.submitList(it)
+        }
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AccountViewHolder {
 
         val binding =
@@ -46,12 +57,10 @@ class AccountAdapter : RecyclerView.Adapter<AccountViewHolder>() {
         holder.binding.editBtn.setOnClickListener {
             Log.i("Account Adapter", "onBindViewHolder: ")
             val indent = Intent(holder.parent, AccountUpdateActivity::class.java).apply {
-                this.putExtra("accountId", item.id.toLong())
-                this.putExtra("accountName", item.name)
-                this.putExtra("accountAmount", item.moneyAmount.toString())
                 this.putExtra("account", item)
             }
-            startActivity(holder.parent, indent, null)
+            //FIXME switch to new api
+            accountActivity.startActivityForResult(indent, 123)
         }
         holder.binding.apply {
             accName.text = item.name

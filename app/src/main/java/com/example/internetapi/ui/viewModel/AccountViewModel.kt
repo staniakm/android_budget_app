@@ -6,10 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.internetapi.api.Resource
-import com.example.internetapi.models.Account
-import com.example.internetapi.models.AccountIncome
-import com.example.internetapi.models.AccountInvoice
-import com.example.internetapi.models.UpdateAccount
+import com.example.internetapi.models.*
 import com.example.internetapi.repository.AccountRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -69,11 +66,11 @@ class AccountViewModel @Inject constructor(private val accountRepository: Accoun
 
     fun updateAccount(
         accountId: Int,
-        updateAccount: UpdateAccount
-    ): MutableLiveData<Resource<UpdateAccount>> {
-        val data = MutableLiveData<Resource<UpdateAccount>>()
+        updateAccountRequest: UpdateAccountRequest
+    ): MutableLiveData<Resource<UpdateAccountResponse>> {
+        val data = MutableLiveData<Resource<UpdateAccountResponse>>()
         viewModelScope.launch {
-            accountRepository.updateAccount(accountId, updateAccount)
+            accountRepository.updateAccount(accountId, updateAccountRequest)
                 .let {
                     if (it.isSuccessful) {
                         Log.i("TAG", "updateAccount: SUCCESS")

@@ -1,19 +1,23 @@
 package com.example.internetapi.ui
 
-import androidx.appcompat.app.AppCompatActivity
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.internetapi.api.Resource
 import com.example.internetapi.config.MoneyFormatter
 import com.example.internetapi.databinding.ActivityAccountBinding
 import com.example.internetapi.models.Account
 import com.example.internetapi.models.Status
+import com.example.internetapi.models.UpdateAccountResponse
 import com.example.internetapi.ui.adapters.AccountAdapter
 import com.example.internetapi.ui.viewModel.AccountViewModel
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+
 
 @AndroidEntryPoint
 class AccountActivity : AppCompatActivity() {
@@ -26,7 +30,7 @@ class AccountActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityAccountBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        adapter = AccountAdapter()
+        adapter = AccountAdapter(this)
         binding.rvAccounts.layoutManager = LinearLayoutManager(this)
         binding.rvAccounts.adapter = adapter
 
@@ -38,6 +42,24 @@ class AccountActivity : AppCompatActivity() {
             }
         })
     }
+
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 123) {
+            if (resultCode == RESULT_OK) {
+                val result = data?.getSerializableExtra("result")?.let {
+                    val acc = it as UpdateAccountResponse
+                    adapter.updateListItem(acc.id.toInt(), acc.name, acc.amount)
+                }
+                Log.i("TAG", "onActivityResult: SUCCESS $result")
+            }
+            if (resultCode == RESULT_CANCELED) {
+                Log.i("TAG", "onActivityResult: NO RESULT RETURNED")
+            }
+        }
+    }
+
 
     private fun loadOnFailure() {
         with(binding) {

@@ -8,11 +8,16 @@ import androidx.activity.viewModels
 import com.example.internetapi.databinding.ActivityAccountUpdateBinding
 import com.example.internetapi.models.Account
 import com.example.internetapi.models.Status
-import com.example.internetapi.models.UpdateAccount
+import com.example.internetapi.models.UpdateAccountRequest
 import com.example.internetapi.ui.viewModel.AccountViewModel
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import java.math.BigDecimal
+
+import android.content.Intent
+import com.example.internetapi.models.UpdateAccountResponse
+
+
 @AndroidEntryPoint
 class AccountUpdateActivity : AppCompatActivity() {
     private val accountViewModel: AccountViewModel by viewModels()
@@ -31,29 +36,47 @@ class AccountUpdateActivity : AppCompatActivity() {
                 binding.accName.setText(acc.name)
                 binding.accMoney.setText(acc.moneyAmount.toString())
                 binding.saveBtn.setOnClickListener {
-                    Log.i("TAG", "Request to update data: ${binding.accName.text} - ${binding.accMoney.text}")
-                    accountViewModel.updateAccount(accountId = acc.id,
-                        UpdateAccount(acc.id.toLong(), binding.accName.text.toString(), BigDecimal(binding.accMoney.text.toString())))
+                    Log.i(
+                        "TAG",
+                        "Request to update data: ${binding.accName.text} - ${binding.accMoney.text}"
+                    )
+                    accountViewModel.updateAccount(
+                        accountId = acc.id,
+                        UpdateAccountRequest(
+                            acc.id.toLong(),
+                            binding.accName.text.toString(),
+                            BigDecimal(binding.accMoney.text.toString())
+                        )
+                    )
                         .observe(this, {
                             when (it.status) {
-                                Status.SUCCESS -> Snackbar.make(
-                                    binding.root,
-                                    "account updated",
-                                    Snackbar.LENGTH_SHORT
-                                ).show()
+                                Status.SUCCESS -> updateAdapter(it.data)
                                 Status.ERROR -> Snackbar.make(
                                     binding.root,
                                     "failed update account data",
                                     Snackbar.LENGTH_LONG
                                 )
                                     .show()
-                                Status.LOADING -> Log.println(Log.DEBUG, "AccountDetails", "Loading.....")
+                                Status.LOADING -> Log.println(
+                                    Log.DEBUG,
+                                    "AccountDetails",
+                                    "Loading....."
+                                )
                             }
                         })
-                finish()
                 }
 
             }
         }
+    }
+
+    private fun updateAdapter(accId: UpdateAccountResponse?) {
+        val returnIntent = Intent()
+        accId?.let {
+            returnIntent.putExtra("result", it)
+            setResult(-1, returnIntent)
+        } ?: setResult(RESULT_CANCELED)
+
+        finish()
     }
 }

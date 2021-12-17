@@ -25,8 +25,8 @@ interface ApiService {
     @PUT("account/{accountId}")
     suspend fun updateAccount(
         @Path("accountId") accountId: Int,
-        @Body updateAccount: UpdateAccount
-    ): Response<UpdateAccount>
+        @Body updateAccountRequest: UpdateAccountRequest
+    ): Response<UpdateAccountResponse>
 
 
     @GET("invoice/{invoiceId}")
@@ -65,9 +65,9 @@ class ApiHelperImpl @Inject constructor(private val apiService: ApiService) : Ap
 
     override suspend fun updateAccount(
         accountId: Int,
-        updateAccount: UpdateAccount
-    ): Response<UpdateAccount> {
-        return apiService.updateAccount(accountId, updateAccount)
+        updateAccountRequest: UpdateAccountRequest
+    ): Response<UpdateAccountResponse> {
+        return apiService.updateAccount(accountId, updateAccountRequest)
     }
 
 
@@ -82,6 +82,6 @@ interface ApiHelper {
     suspend fun updateBudget(updateBudgetRequest: UpdateBudgetRequest): Response<Unit>
     suspend fun updateAccount(
         accountId: Int,
-        updateAccount: UpdateAccount
-    ): Response<UpdateAccount>
+        updateAccountRequest: UpdateAccountRequest
+    ): Response<UpdateAccountResponse>
 }
