@@ -3,9 +3,7 @@ package com.example.internetapi.api
 import com.example.internetapi.global.MonthSelector
 import com.example.internetapi.models.*
 import retrofit2.Response
-import retrofit2.http.GET
-import retrofit2.http.Path
-import retrofit2.http.Query
+import retrofit2.http.*
 import javax.inject.Inject
 
 interface ApiService {
@@ -24,12 +22,24 @@ interface ApiService {
         @Query("month") month: Int
     ): Response<List<AccountIncome>>
 
+    @PUT("account/{accountId}")
+    suspend fun updateAccount(
+        @Path("accountId") accountId: Int,
+        @Body updateAccountRequest: UpdateAccountRequest
+    ): Response<UpdateAccountResponse>
+
 
     @GET("invoice/{invoiceId}")
     suspend fun getInvoiceDetails(@Path("invoiceId") invoiceId: Long): Response<List<InvoiceDetails>>
 
     @GET("budget")
     suspend fun getBudget(@Query("month") month: Int): Response<Budget>
+
+    @PUT("budget")
+    suspend fun updateBudget(
+        @Query("month") month: Int,
+        @Body updateBudgetRequest: UpdateBudgetRequest
+    ): Response<Unit>
 }
 
 class ApiHelperImpl @Inject constructor(private val apiService: ApiService) : ApiHelper {
@@ -49,6 +59,18 @@ class ApiHelperImpl @Inject constructor(private val apiService: ApiService) : Ap
         return apiService.getBudget(MonthSelector.month)
     }
 
+    override suspend fun updateBudget(updateBudgetRequest: UpdateBudgetRequest): Response<Unit> {
+        return apiService.updateBudget(MonthSelector.month, updateBudgetRequest)
+    }
+
+    override suspend fun updateAccount(
+        accountId: Int,
+        updateAccountRequest: UpdateAccountRequest
+    ): Response<UpdateAccountResponse> {
+        return apiService.updateAccount(accountId, updateAccountRequest)
+    }
+
+
 }
 
 interface ApiHelper {
@@ -57,4 +79,9 @@ interface ApiHelper {
     suspend fun getAccountIncome(accountId: Long): Response<List<AccountIncome>>
     suspend fun getInvoiceDetails(invoiceId: Long): Response<List<InvoiceDetails>>
     suspend fun getBudgets(): Response<Budget>
+    suspend fun updateBudget(updateBudgetRequest: UpdateBudgetRequest): Response<Unit>
+    suspend fun updateAccount(
+        accountId: Int,
+        updateAccountRequest: UpdateAccountRequest
+    ): Response<UpdateAccountResponse>
 }

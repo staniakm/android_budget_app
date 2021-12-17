@@ -2,12 +2,8 @@ package com.example.internetapi.ui
 
 import android.content.Intent
 import android.os.Bundle
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.internetapi.databinding.ActivityMainBinding
-import com.example.internetapi.ui.adapters.AccountAdapter
-import com.example.internetapi.ui.viewModel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

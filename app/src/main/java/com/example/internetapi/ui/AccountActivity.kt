@@ -1,24 +1,28 @@
 package com.example.internetapi.ui
 
-import androidx.appcompat.app.AppCompatActivity
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.internetapi.api.Resource
+import com.example.internetapi.config.MoneyFormatter
 import com.example.internetapi.databinding.ActivityAccountBinding
-import com.example.internetapi.databinding.ActivityMainBinding
 import com.example.internetapi.models.Account
 import com.example.internetapi.models.Status
+import com.example.internetapi.models.UpdateAccountResponse
 import com.example.internetapi.ui.adapters.AccountAdapter
-import com.example.internetapi.ui.viewModel.MainViewModel
+import com.example.internetapi.ui.viewModel.AccountViewModel
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+
 
 @AndroidEntryPoint
 class AccountActivity : AppCompatActivity() {
 
-    private val mainViewModel: MainViewModel by viewModels()
+    private val accountViewModel: AccountViewModel by viewModels()
     private lateinit var binding: ActivityAccountBinding
     private lateinit var adapter: AccountAdapter
 
@@ -26,11 +30,11 @@ class AccountActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityAccountBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        adapter = AccountAdapter()
+        adapter = AccountAdapter(this)
         binding.rvAccounts.layoutManager = LinearLayoutManager(this)
         binding.rvAccounts.adapter = adapter
 
-        mainViewModel.getAccounts().observe(this, {
+        accountViewModel.getAccounts().observe(this, {
             when (it.status) {
                 Status.SUCCESS -> loadOnSucess(it)
                 Status.LOADING -> loadOnLoading()
@@ -38,6 +42,24 @@ class AccountActivity : AppCompatActivity() {
             }
         })
     }
+
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 123) {
+            if (resultCode == RESULT_OK) {
+                val result = data?.getSerializableExtra("result")?.let {
+                    val acc = it as UpdateAccountResponse
+                    adapter.updateListItem(acc.id.toInt(), acc.name, acc.amount)
+                }
+                Log.i("TAG", "onActivityResult: SUCCESS $result")
+            }
+            if (resultCode == RESULT_CANCELED) {
+                Log.i("TAG", "onActivityResult: NO RESULT RETURNED")
+            }
+        }
+    }
+
 
     private fun loadOnFailure() {
         with(binding) {
@@ -63,7 +85,7 @@ class AccountActivity : AppCompatActivity() {
                 res.let { list ->
                     adapter.submitList(list)
                     val (totalIncome, totalExpanse) = summary(list)
-                    binding.summary.text ="$totalIncome\n$totalExpanse"
+                    binding.summary.text = "$totalIncome\n$totalExpanse"
                 }
             } else {
                 Snackbar.make(binding.rootView, "Status = false", Snackbar.LENGTH_SHORT).show()
@@ -74,10 +96,16 @@ class AccountActivity : AppCompatActivity() {
     private fun summary(list: List<Account>): Pair<String, String> {
         val totalIncome =
             "Przychód: " + list.map { i -> i.income }
-                .sumByDouble { i -> i.toDouble() }.toString()
+                .sumByDouble { i -> i.toDouble() }
+                .let {
+                    MoneyFormatter.df.format(it)
+                }
         val totalExpanse =
-            "Wydatki: " + list.map { i -> i.expense }.sumByDouble { i -> i.toDouble() }
-                .toString()
+            "Wydatki: " + list.map { i -> i.expense }
+                .sumByDouble { it.toDouble() }
+                .let {
+                    MoneyFormatter.df.format(it)
+                }
         return Pair(totalIncome, totalExpanse)
     }
 }

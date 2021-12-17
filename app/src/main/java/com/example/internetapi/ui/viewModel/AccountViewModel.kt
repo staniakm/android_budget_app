@@ -1,27 +1,26 @@
 package com.example.internetapi.ui.viewModel
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.internetapi.api.Resource
-import com.example.internetapi.models.Account
-import com.example.internetapi.models.AccountIncome
-import com.example.internetapi.models.AccountInvoice
+import com.example.internetapi.models.*
 import com.example.internetapi.repository.AccountRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class MainViewModel @Inject constructor(private val mainRepository: AccountRepository) :
+class AccountViewModel @Inject constructor(private val accountRepository: AccountRepository) :
     ViewModel() {
 
     fun accountInvoices(accountId: Long): LiveData<Resource<List<AccountInvoice>>> {
         val data = MutableLiveData<Resource<List<AccountInvoice>>>()
         viewModelScope.launch {
             data.postValue(Resource.loading(null))
-            mainRepository.getAccountInvoices(accountId)
+            accountRepository.getAccountInvoices(accountId)
                 .let {
                     if (it.isSuccessful) {
                         data.postValue(Resource.success(it.body()))
@@ -37,7 +36,7 @@ class MainViewModel @Inject constructor(private val mainRepository: AccountRepos
         val data = MutableLiveData<Resource<List<Account>>>()
         viewModelScope.launch {
             data.postValue(Resource.loading(null))
-            mainRepository.getAccounts()
+            accountRepository.getAccounts()
                 .let {
                     if (it.isSuccessful) {
                         data.postValue(Resource.success(it.body()))
@@ -53,11 +52,31 @@ class MainViewModel @Inject constructor(private val mainRepository: AccountRepos
         val data = MutableLiveData<Resource<List<AccountIncome>>>()
         viewModelScope.launch {
             data.postValue(Resource.loading(null))
-            mainRepository.getAccountIncome(accountId)
+            accountRepository.getAccountIncome(accountId)
                 .let {
                     if (it.isSuccessful) {
                         data.postValue(Resource.success(it.body()))
                     } else {
+                        data.postValue(Resource.error(it.errorBody().toString(), null))
+                    }
+                }
+        }
+        return data
+    }
+
+    fun updateAccount(
+        accountId: Int,
+        updateAccountRequest: UpdateAccountRequest
+    ): MutableLiveData<Resource<UpdateAccountResponse>> {
+        val data = MutableLiveData<Resource<UpdateAccountResponse>>()
+        viewModelScope.launch {
+            accountRepository.updateAccount(accountId, updateAccountRequest)
+                .let {
+                    if (it.isSuccessful) {
+                        Log.i("TAG", "updateAccount: SUCCESS")
+                        data.postValue(Resource.success(it.body()))
+                    } else {
+                        Log.e("TAG", "updateAccount: FAILURE")
                         data.postValue(Resource.error(it.errorBody().toString(), null))
                     }
                 }

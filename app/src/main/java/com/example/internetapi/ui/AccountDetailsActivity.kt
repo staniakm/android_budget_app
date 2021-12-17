@@ -13,13 +13,13 @@ import com.example.internetapi.models.AccountInvoice
 import com.example.internetapi.models.Status
 import com.example.internetapi.ui.adapters.AccountExpensesAdapter
 import com.example.internetapi.ui.adapters.AccountIncomesAdapter
-import com.example.internetapi.ui.viewModel.MainViewModel
+import com.example.internetapi.ui.viewModel.AccountViewModel
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class AccountDetailsActivity : AppCompatActivity() {
-    private val mainViewModel: MainViewModel by viewModels()
+    private val accountViewModel: AccountViewModel by viewModels()
     private lateinit var binding: ActivityAccountDetailsBinding
     private lateinit var adapter: AccountExpensesAdapter
     private lateinit var incomeAdapter: AccountIncomesAdapter
@@ -38,7 +38,7 @@ class AccountDetailsActivity : AppCompatActivity() {
 
         intent.extras?.let { extra ->
             extra.getLong("accountId")?.let { accountId ->
-                mainViewModel.getAccountIncome(accountId).observe(this, {
+                accountViewModel.getAccountIncome(accountId).observe(this, {
                     when (it.status) {
                         Status.SUCCESS -> loadOnSuccessIncome(it)
                         Status.ERROR -> Snackbar.make(
@@ -50,7 +50,7 @@ class AccountDetailsActivity : AppCompatActivity() {
                         Status.LOADING -> Log.println(Log.DEBUG, "AccountDetails", "Loading.....")
                     }
                 })
-                mainViewModel.accountInvoices(accountId).observe(this, {
+                accountViewModel.accountInvoices(accountId).observe(this, {
                     when (it.status) {
                         Status.SUCCESS -> loadOnSuccess(it)
                         Status.ERROR -> Snackbar.make(

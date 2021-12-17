@@ -1,5 +1,6 @@
 package com.example.internetapi.models
 
+import java.io.Serializable
 import java.math.BigDecimal
 
 data class Account(
@@ -8,7 +9,7 @@ data class Account(
     val moneyAmount: BigDecimal,
     val expense: BigDecimal,
     val income: BigDecimal
-)
+) : Serializable
 
 data class AccountInvoice(
     val listId: Int,

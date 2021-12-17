@@ -12,14 +12,55 @@
         android:orientation="vertical"
         android:padding="10dp">
 
-        <TextView
-            android:id="@+id/accName"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/accMain"
             android:layout_width="match_parent"
             android:layout_height="36dp"
-            android:textColor="#000"
-            android:textSize="20sp"
-            android:textStyle="bold" />
+            android:layout_marginTop="10dp">
+
+            <TextView
+                android:id="@+id/accName"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:textColor="#000"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/editBtn"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintWidth_percent="0.7" />
+
+            <Button
+                android:id="@+id/editBtn"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_marginStart="16dp"
+                android:text="@string/edit_account_btn_text"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/accName"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
         <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/accMoneyStatus"
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:layout_marginTop="10dp">
+
+            <TextView
+                android:id="@+id/accCurrentBalance"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:textSize="16sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/accIncExp"
             android:layout_width="match_parent"
             android:layout_height="36dp"
             android:layout_marginTop="10dp">
@@ -45,6 +86,8 @@
                 app:layout_constraintStart_toEndOf="@+id/accIncome"
                 app:layout_constraintTop_toTopOf="parent" />
         </androidx.constraintlayout.widget.ConstraintLayout>
+
+
 
     </LinearLayout>
 
