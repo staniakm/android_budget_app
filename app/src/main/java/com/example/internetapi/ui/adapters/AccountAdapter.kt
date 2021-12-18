@@ -1,11 +1,11 @@
 package com.example.internetapi.ui.adapters
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat.startActivity
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
@@ -13,12 +13,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.internetapi.config.MoneyFormatter.df
 import com.example.internetapi.databinding.LayoutAdapterBinding
 import com.example.internetapi.models.Account
-import com.example.internetapi.ui.AccountActivity
+import com.example.internetapi.models.UpdateAccountResponse
 import com.example.internetapi.ui.AccountDetailsActivity
 import com.example.internetapi.ui.AccountUpdateActivity
-import java.math.BigDecimal
 
-class AccountAdapter(private val accountActivity: AppCompatActivity) : RecyclerView.Adapter<AccountViewHolder>() {
+class AccountAdapter : RecyclerView.Adapter<AccountViewHolder>() {
 
     private val diffCallback = object : DiffUtil.ItemCallback<Account>() {
         override fun areItemsTheSame(oldItem: Account, newItem: Account): Boolean {
@@ -34,10 +33,10 @@ class AccountAdapter(private val accountActivity: AppCompatActivity) : RecyclerV
 
     fun submitList(list: List<Account>) = differ.submitList(list)
 
-    fun updateListItem(accountId: Int, newName: String, newValue: BigDecimal) {
+    fun updateListItem(account: UpdateAccountResponse) {
         differ.currentList.map {
-            if (it.id == accountId)
-                it.copy(name = newName, moneyAmount = newValue)
+            if (it.id == account.id.toInt())
+                it.copy(name = account.name, moneyAmount = account.amount)
             else it
         }.let {
             differ.submitList(it)
@@ -60,7 +59,7 @@ class AccountAdapter(private val accountActivity: AppCompatActivity) : RecyclerV
                 this.putExtra("account", item)
             }
             //FIXME switch to new api
-            accountActivity.startActivityForResult(indent, 123)
+            (holder.parent as Activity).startActivityForResult(indent, 123)
         }
         holder.binding.apply {
             accName.text = item.name
