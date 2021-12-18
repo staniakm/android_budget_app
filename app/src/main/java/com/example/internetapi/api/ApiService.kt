@@ -36,10 +36,7 @@ interface ApiService {
     suspend fun getBudget(@Query("month") month: Int): Response<Budget>
 
     @PUT("budget")
-    suspend fun updateBudget(
-        @Query("month") month: Int,
-        @Body updateBudgetRequest: UpdateBudgetRequest
-    ): Response<Unit>
+    suspend fun updateBudget(@Body updateBudgetRequest: UpdateBudgetRequest): Response<UpdateBudgetResponse>
 }
 
 class ApiHelperImpl @Inject constructor(private val apiService: ApiService) : ApiHelper {
@@ -59,8 +56,8 @@ class ApiHelperImpl @Inject constructor(private val apiService: ApiService) : Ap
         return apiService.getBudget(MonthSelector.month)
     }
 
-    override suspend fun updateBudget(updateBudgetRequest: UpdateBudgetRequest): Response<Unit> {
-        return apiService.updateBudget(MonthSelector.month, updateBudgetRequest)
+    override suspend fun updateBudget(updateBudgetRequest: UpdateBudgetRequest): Response<UpdateBudgetResponse> {
+        return apiService.updateBudget(updateBudgetRequest)
     }
 
     override suspend fun updateAccount(
@@ -79,7 +76,7 @@ interface ApiHelper {
     suspend fun getAccountIncome(accountId: Long): Response<List<AccountIncome>>
     suspend fun getInvoiceDetails(invoiceId: Long): Response<List<InvoiceDetails>>
     suspend fun getBudgets(): Response<Budget>
-    suspend fun updateBudget(updateBudgetRequest: UpdateBudgetRequest): Response<Unit>
+    suspend fun updateBudget(updateBudgetRequest: UpdateBudgetRequest): Response<UpdateBudgetResponse>
     suspend fun updateAccount(
         accountId: Int,
         updateAccountRequest: UpdateAccountRequest

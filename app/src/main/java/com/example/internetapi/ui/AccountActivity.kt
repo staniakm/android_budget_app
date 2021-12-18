@@ -8,6 +8,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.internetapi.api.Resource
+import com.example.internetapi.config.ActivityResultCodes.UPDATE_ACCOUNT
 import com.example.internetapi.config.MoneyFormatter
 import com.example.internetapi.databinding.ActivityAccountBinding
 import com.example.internetapi.models.Account
@@ -46,7 +47,7 @@ class AccountActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == 123) {
+        if (requestCode == UPDATE_ACCOUNT) {
             when (requestCode) {
                 RESULT_OK -> data?.getSerializableExtra("result")?.let {
                     adapter.updateListItem(it as UpdateAccountResponse)

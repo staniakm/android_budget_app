@@ -36,10 +36,6 @@ class AccountUpdateActivity : AppCompatActivity() {
                 binding.accName.setText(acc.name)
                 binding.accMoney.setText(acc.moneyAmount.toString())
                 binding.saveBtn.setOnClickListener {
-                    Log.i(
-                        "TAG",
-                        "Request to update data: ${binding.accName.text} - ${binding.accMoney.text}"
-                    )
                     accountViewModel.updateAccount(
                         accountId = acc.id,
                         UpdateAccountRequest(

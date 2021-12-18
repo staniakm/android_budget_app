@@ -6,7 +6,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.internetapi.api.Resource
 import com.example.internetapi.models.Budget
+import com.example.internetapi.models.UpdateAccountResponse
 import com.example.internetapi.models.UpdateBudgetRequest
+import com.example.internetapi.models.UpdateBudgetResponse
 import com.example.internetapi.repository.BudgetRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -34,13 +36,18 @@ class BudgetViewModel @Inject constructor(private val repository: BudgetReposito
         return data
     }
 
-    fun updateBudget(updateBudgetRequest: UpdateBudgetRequest) {
+    fun updateBudget(updateBudgetRequest: UpdateBudgetRequest): MutableLiveData<Resource<UpdateBudgetResponse>> {
+        val data = MutableLiveData<Resource<UpdateBudgetResponse>>()
         viewModelScope.launch {
             repository.updateBudget(updateBudgetRequest).let {
                 if (it.isSuccessful) {
-                    Log.d(TAG, "updateBudget: success")
+                    data.postValue(Resource.success(it.body()))
+                } else {
+                    Log.e(TAG, "updateBudget: FAILED")
+                    data.postValue(Resource.error(it.errorBody().toString(), null))
                 }
             }
         }
+        return data
     }
 }

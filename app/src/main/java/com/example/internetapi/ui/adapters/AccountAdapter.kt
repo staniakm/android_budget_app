@@ -10,6 +10,7 @@ import androidx.core.content.ContextCompat.startActivity
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.example.internetapi.config.ActivityResultCodes.UPDATE_ACCOUNT
 import com.example.internetapi.config.MoneyFormatter.df
 import com.example.internetapi.databinding.LayoutAdapterBinding
 import com.example.internetapi.models.Account
@@ -59,7 +60,7 @@ class AccountAdapter : RecyclerView.Adapter<AccountViewHolder>() {
                 this.putExtra("account", item)
             }
             //FIXME switch to new api
-            (holder.parent as Activity).startActivityForResult(indent, 123)
+            (holder.parent as Activity).startActivityForResult(indent, UPDATE_ACCOUNT)
         }
         holder.binding.apply {
             accName.text = item.name
