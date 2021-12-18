@@ -1,16 +1,20 @@
 package com.example.internetapi.ui.adapters
 
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.example.internetapi.config.ActivityResultCodes.UPDATE_BUDGET
+import com.example.internetapi.config.MoneyFormatter.df
 import com.example.internetapi.databinding.BudgetAdapterBinding
 import com.example.internetapi.models.MonthBudget
-import java.text.DecimalFormat
-import com.example.internetapi.config.MoneyFormatter.df
+import com.example.internetapi.models.UpdateBudgetResponse
+import com.example.internetapi.ui.UpdateBudgetActivity
 
 class MonthBudgetAdapter : RecyclerView.Adapter<MonthBudgetViewHolder>() {
 
@@ -47,17 +51,36 @@ class MonthBudgetAdapter : RecyclerView.Adapter<MonthBudgetViewHolder>() {
             if (item.spent > item.planned) {
                 this.spend.setTextColor(Color.RED)
                 progressBar.progressDrawable.setColorFilter(
-                    Color.RED, android.graphics.PorterDuff.Mode.SRC_IN);
+                    Color.RED, android.graphics.PorterDuff.Mode.SRC_IN
+                );
             } else {
                 this.spend.setTextColor(Color.GREEN)
                 progressBar.progressDrawable.setColorFilter(
-                    Color.BLUE, android.graphics.PorterDuff.Mode.SRC_IN);
+                    Color.BLUE, android.graphics.PorterDuff.Mode.SRC_IN
+                );
+            }
+            layout.setOnClickListener {
+                val indent = Intent(holder.parent, UpdateBudgetActivity::class.java).apply {
+                    this.putExtra("budget", item)
+                }
+                (holder.parent as Activity).startActivityForResult(indent, UPDATE_BUDGET)
             }
         }
     }
 
     override fun getItemCount(): Int {
         return differ.currentList.size
+    }
+
+    fun updateBudget(budget: UpdateBudgetResponse) {
+        differ.currentList.map {
+            if (it.budgetId == budget.budgetId) it.copy(
+                planned = budget.planned,
+                percentage = budget.percentage
+            ) else it
+        }.let {
+            differ.submitList(it)
+        }
     }
 }
 

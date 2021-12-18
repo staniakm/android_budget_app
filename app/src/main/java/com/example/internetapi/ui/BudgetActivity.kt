@@ -1,17 +1,20 @@
 package com.example.internetapi.ui
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.internetapi.api.Resource
+import com.example.internetapi.config.ActivityResultCodes
 import com.example.internetapi.config.DateFormatter.yyyymm
 import com.example.internetapi.databinding.ActivityBudgetBinding
 import com.example.internetapi.global.MonthSelector
 import com.example.internetapi.models.Budget
 import com.example.internetapi.models.Status
+import com.example.internetapi.models.UpdateBudgetResponse
 import com.example.internetapi.ui.adapters.MonthBudgetAdapter
 import com.example.internetapi.ui.viewModel.BudgetViewModel
 import com.google.android.material.snackbar.Snackbar
@@ -73,6 +76,20 @@ class BudgetActivity : AppCompatActivity() {
             }
         })
 
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == ActivityResultCodes.UPDATE_BUDGET) {
+            when (resultCode) {
+                RESULT_OK -> data?.getSerializableExtra("result")?.let {
+                    val budget = it as UpdateBudgetResponse
+                    adapter.updateBudget(budget)
+                    binding.totalPlaned.text = "Zaplanowane: ${df.format(budget.monthPlanned)}"
+                }
+                RESULT_CANCELED -> Log.i("TAG", "onActivityResult: NO RESULT RETURNED")
+            }
+        }
     }
 
     private fun bindAdapter() {

@@ -8,6 +8,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.internetapi.api.Resource
+import com.example.internetapi.config.ActivityResultCodes.UPDATE_ACCOUNT
 import com.example.internetapi.config.MoneyFormatter
 import com.example.internetapi.databinding.ActivityAccountBinding
 import com.example.internetapi.models.Account
@@ -30,7 +31,7 @@ class AccountActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityAccountBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        adapter = AccountAdapter(this)
+        adapter = AccountAdapter()
         binding.rvAccounts.layoutManager = LinearLayoutManager(this)
         binding.rvAccounts.adapter = adapter
 
@@ -46,16 +47,12 @@ class AccountActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == 123) {
-            if (resultCode == RESULT_OK) {
-                val result = data?.getSerializableExtra("result")?.let {
-                    val acc = it as UpdateAccountResponse
-                    adapter.updateListItem(acc.id.toInt(), acc.name, acc.amount)
+        if (requestCode == UPDATE_ACCOUNT) {
+            when (requestCode) {
+                RESULT_OK -> data?.getSerializableExtra("result")?.let {
+                    adapter.updateListItem(it as UpdateAccountResponse)
                 }
-                Log.i("TAG", "onActivityResult: SUCCESS $result")
-            }
-            if (resultCode == RESULT_CANCELED) {
-                Log.i("TAG", "onActivityResult: NO RESULT RETURNED")
+                RESULT_CANCELED -> Log.i("TAG", "onActivityResult: NO RESULT RETURNED")
             }
         }
     }
