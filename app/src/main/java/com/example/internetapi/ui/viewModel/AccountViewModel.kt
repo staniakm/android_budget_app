@@ -16,7 +16,7 @@ import javax.inject.Inject
 class AccountViewModel @Inject constructor(private val accountRepository: AccountRepository) :
     ViewModel() {
 
-    fun accountInvoices(accountId: Long): LiveData<Resource<List<AccountInvoice>>> {
+    fun accountInvoices(accountId: Int): LiveData<Resource<List<AccountInvoice>>> {
         val data = MutableLiveData<Resource<List<AccountInvoice>>>()
         viewModelScope.launch {
             data.postValue(Resource.loading(null))
@@ -48,7 +48,7 @@ class AccountViewModel @Inject constructor(private val accountRepository: Accoun
         return data
     }
 
-    fun getAccountIncome(accountId: Long): LiveData<Resource<List<AccountIncome>>> {
+    fun getAccountIncome(accountId: Int): LiveData<Resource<List<AccountIncome>>> {
         val data = MutableLiveData<Resource<List<AccountIncome>>>()
         viewModelScope.launch {
             data.postValue(Resource.loading(null))

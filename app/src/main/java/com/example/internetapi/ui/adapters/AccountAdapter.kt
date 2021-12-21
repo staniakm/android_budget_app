@@ -69,7 +69,7 @@ class AccountAdapter : RecyclerView.Adapter<AccountViewHolder>() {
             accCurrentBalance.text = "Stan konta: ${df.format(item.moneyAmount)}"
             layout.setOnClickListener {
                 val indent = Intent(holder.parent, AccountDetailsActivity::class.java).apply {
-                    this.putExtra("accountId", item.id.toLong())
+                    this.putExtra("accountId", item.id)
                 }
                 startActivity(holder.parent, indent, null)
             }

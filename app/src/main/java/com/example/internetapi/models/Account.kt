@@ -9,7 +9,16 @@ data class Account(
     val moneyAmount: BigDecimal,
     val expense: BigDecimal,
     val income: BigDecimal
-) : Serializable
+) : Serializable {
+
+    fun toSimpleAccount() = SimpleAccount(id, name)
+}
+
+data class SimpleAccount(val id: Int, val name: String) {
+    override fun toString(): String {
+        return name
+    }
+}
 
 data class AccountInvoice(
     val listId: Int,

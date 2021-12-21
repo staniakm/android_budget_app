@@ -37,7 +37,7 @@ class AccountDetailsActivity : AppCompatActivity() {
 
 
         intent.extras?.let { extra ->
-            extra.getLong("accountId")?.let { accountId ->
+            extra.getInt("accountId")?.let { accountId ->
                 accountViewModel.getAccountIncome(accountId).observe(this, {
                     when (it.status) {
                         Status.SUCCESS -> loadOnSuccessIncome(it)
@@ -52,7 +52,7 @@ class AccountDetailsActivity : AppCompatActivity() {
                 })
                 accountViewModel.accountInvoices(accountId).observe(this, {
                     when (it.status) {
-                        Status.SUCCESS -> loadOnSuccess(it)
+                        Status.SUCCESS -> loadOnSuccess(it, accountId)
                         Status.ERROR -> Snackbar.make(
                             binding.rootView,
                             "failed fetched data",
@@ -65,6 +65,12 @@ class AccountDetailsActivity : AppCompatActivity() {
 
             }
         }
+    }
+
+    fun updateInvoiceAccount(invoiceId: Int, accountId: Int) {
+        Log.i(
+            "TAG", "updateInvoiceAccount: $invoiceId and $accountId"
+        )
     }
 
     private fun loadOnSuccessIncome(it: Resource<List<AccountIncome>>) {
@@ -81,13 +87,13 @@ class AccountDetailsActivity : AppCompatActivity() {
         }
     }
 
-    private fun loadOnSuccess(it: Resource<List<AccountInvoice>>) {
+    private fun loadOnSuccess(it: Resource<List<AccountInvoice>>, accountId: Int) {
         binding.progress.visibility = View.GONE
         binding.rvInvoices.visibility = View.VISIBLE
         it.data.let { res ->
             if (res != null) {
                 res.let { list ->
-                    adapter.submitList(list)
+                    adapter.submitList(list, accountId)
                 }
             } else {
                 Snackbar.make(binding.root, "Status = false", Snackbar.LENGTH_SHORT).show()

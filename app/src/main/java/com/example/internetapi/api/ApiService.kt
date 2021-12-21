@@ -12,13 +12,13 @@ interface ApiService {
 
     @GET("account/{accountId}")
     suspend fun getAccountInvoices(
-        @Path("accountId") account: Long,
+        @Path("accountId") account: Int,
         @Query("month") month: Int
     ): Response<List<AccountInvoice>>
 
     @GET("account/{accountId}/income")
     suspend fun getAccountIncome(
-        @Path("accountId") account: Long,
+        @Path("accountId") account: Int,
         @Query("month") month: Int
     ): Response<List<AccountIncome>>
 
@@ -43,10 +43,10 @@ class ApiHelperImpl @Inject constructor(private val apiService: ApiService) : Ap
     override suspend fun getAccounts(): Response<List<Account>> =
         apiService.getAccounts(MonthSelector.month)
 
-    override suspend fun getAccountInvoices(accountId: Long): Response<List<AccountInvoice>> =
+    override suspend fun getAccountInvoices(accountId: Int): Response<List<AccountInvoice>> =
         apiService.getAccountInvoices(accountId, MonthSelector.month)
 
-    override suspend fun getAccountIncome(accountId: Long): Response<List<AccountIncome>> =
+    override suspend fun getAccountIncome(accountId: Int): Response<List<AccountIncome>> =
         apiService.getAccountIncome(accountId, MonthSelector.month)
 
     override suspend fun getInvoiceDetails(invoiceId: Long): Response<List<InvoiceDetails>> =
@@ -72,8 +72,8 @@ class ApiHelperImpl @Inject constructor(private val apiService: ApiService) : Ap
 
 interface ApiHelper {
     suspend fun getAccounts(): Response<List<Account>>
-    suspend fun getAccountInvoices(accountId: Long): Response<List<AccountInvoice>>
-    suspend fun getAccountIncome(accountId: Long): Response<List<AccountIncome>>
+    suspend fun getAccountInvoices(accountId: Int): Response<List<AccountInvoice>>
+    suspend fun getAccountIncome(accountId: Int): Response<List<AccountIncome>>
     suspend fun getInvoiceDetails(invoiceId: Long): Response<List<InvoiceDetails>>
     suspend fun getBudgets(): Response<Budget>
     suspend fun updateBudget(updateBudgetRequest: UpdateBudgetRequest): Response<UpdateBudgetResponse>
