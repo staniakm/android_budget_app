@@ -1,17 +1,23 @@
 package com.example.internetapi.ui.adapters
 
+import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import android.widget.Spinner
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.example.internetapi.config.MoneyFormatter
+import com.example.internetapi.config.AccountHolder
 import com.example.internetapi.config.MoneyFormatter.df
 import com.example.internetapi.databinding.InvoiceAdapterBinding
 import com.example.internetapi.models.AccountInvoice
+import com.example.internetapi.models.SimpleAccount
+import com.example.internetapi.ui.AccountDetailsActivity
 import com.example.internetapi.ui.InvoiceDetailsActivity
 
 
@@ -28,8 +34,12 @@ class AccountExpensesAdapter : RecyclerView.Adapter<AccountExpensesViewHolder>()
     }
 
     private val differ = AsyncListDiffer(this, diffCallback)
+    private var account: Int = -1
 
-    fun submitList(list: List<AccountInvoice>) = differ.submitList(list)
+    fun submitList(list: List<AccountInvoice>, accountId: Int) {
+        account = accountId
+        differ.submitList(list)
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AccountExpensesViewHolder {
 
@@ -45,7 +55,13 @@ class AccountExpensesAdapter : RecyclerView.Adapter<AccountExpensesViewHolder>()
             shopName.text = item.name
             cost.text = df.format(item.price)
             date.text = item.date
+            btnChangeAccount.setOnClickListener {
+                createSpinner(holder, item)
+            }
+
+
             layout.setOnClickListener {
+
                 val indent = Intent(holder.parent, InvoiceDetailsActivity::class.java).apply {
                     this.putExtra("invoiceId", item.listId.toLong())
                 }
@@ -55,8 +71,47 @@ class AccountExpensesAdapter : RecyclerView.Adapter<AccountExpensesViewHolder>()
 
     }
 
+    private fun createSpinner(
+        holder: AccountExpensesViewHolder,
+        item: AccountInvoice
+    ) {
+        val accounts = AccountHolder.account
+        val spinner = Spinner(holder.parent)
+        spinner.adapter = ArrayAdapter(
+            holder.parent,
+            android.R.layout.simple_spinner_dropdown_item,
+            accounts
+        )
+        spinner.setSelection(accounts.indexOfFirst { it.id == account })
+        val alert: AlertDialog.Builder = AlertDialog.Builder(holder.parent)
+        alert.setTitle("Change account for selected invoice")
+            .setMessage("${item.listId}")
+            .setView(spinner)
+            .setPositiveButton("OK") { _, i ->
+                Log.i(
+                    "TAG",
+                    "onBindViewHolder: OK ${(spinner.selectedItem as SimpleAccount).id}"
+                )
+                (holder.parent as AccountDetailsActivity).updateInvoiceAccount(
+                    item.listId,
+                    account,
+                    (spinner.selectedItem as SimpleAccount).id
+                )
+            }
+            .setNegativeButton("Cancel") { _, _ ->
+                Log.i("TAG", "onBindViewHolder: CANCEL")
+            }
+        alert.show()
+    }
+
     override fun getItemCount(): Int {
         return differ.currentList.size
+    }
+
+    fun removeInvoice(invoiceId: Long) {
+        differ.currentList.filter { it.listId != invoiceId }.let {
+            submitList(it, account)
+        }
     }
 }
 

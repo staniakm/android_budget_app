@@ -11,15 +11,18 @@ import com.example.internetapi.databinding.ActivityAccountDetailsBinding
 import com.example.internetapi.models.AccountIncome
 import com.example.internetapi.models.AccountInvoice
 import com.example.internetapi.models.Status
+import com.example.internetapi.models.UpdateInvoiceAccountRequest
 import com.example.internetapi.ui.adapters.AccountExpensesAdapter
 import com.example.internetapi.ui.adapters.AccountIncomesAdapter
 import com.example.internetapi.ui.viewModel.AccountViewModel
+import com.example.internetapi.ui.viewModel.InvoiceViewModel
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class AccountDetailsActivity : AppCompatActivity() {
     private val accountViewModel: AccountViewModel by viewModels()
+    private val invoiceViewModel: InvoiceViewModel by viewModels()
     private lateinit var binding: ActivityAccountDetailsBinding
     private lateinit var adapter: AccountExpensesAdapter
     private lateinit var incomeAdapter: AccountIncomesAdapter
@@ -37,7 +40,7 @@ class AccountDetailsActivity : AppCompatActivity() {
 
 
         intent.extras?.let { extra ->
-            extra.getLong("accountId")?.let { accountId ->
+            extra.getInt("accountId")?.let { accountId ->
                 accountViewModel.getAccountIncome(accountId).observe(this, {
                     when (it.status) {
                         Status.SUCCESS -> loadOnSuccessIncome(it)
@@ -52,7 +55,7 @@ class AccountDetailsActivity : AppCompatActivity() {
                 })
                 accountViewModel.accountInvoices(accountId).observe(this, {
                     when (it.status) {
-                        Status.SUCCESS -> loadOnSuccess(it)
+                        Status.SUCCESS -> loadOnSuccess(it, accountId)
                         Status.ERROR -> Snackbar.make(
                             binding.rootView,
                             "failed fetched data",
@@ -64,6 +67,13 @@ class AccountDetailsActivity : AppCompatActivity() {
                 })
 
             }
+        }
+    }
+
+    fun updateInvoiceAccount(invoiceId: Long, oldAccount: Int, accountId: Int) {
+        invoiceViewModel.updateInvoiceAccount(UpdateInvoiceAccountRequest(invoiceId, oldAccount, accountId))
+        if (oldAccount!=accountId){
+            adapter.removeInvoice(invoiceId)
         }
     }
 
@@ -81,13 +91,13 @@ class AccountDetailsActivity : AppCompatActivity() {
         }
     }
 
-    private fun loadOnSuccess(it: Resource<List<AccountInvoice>>) {
+    private fun loadOnSuccess(it: Resource<List<AccountInvoice>>, accountId: Int) {
         binding.progress.visibility = View.GONE
         binding.rvInvoices.visibility = View.VISIBLE
         it.data.let { res ->
             if (res != null) {
                 res.let { list ->
-                    adapter.submitList(list)
+                    adapter.submitList(list, accountId)
                 }
             } else {
                 Snackbar.make(binding.root, "Status = false", Snackbar.LENGTH_SHORT).show()

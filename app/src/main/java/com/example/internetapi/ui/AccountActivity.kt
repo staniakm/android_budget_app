@@ -8,6 +8,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.internetapi.api.Resource
+import com.example.internetapi.config.AccountHolder
 import com.example.internetapi.config.ActivityResultCodes.UPDATE_ACCOUNT
 import com.example.internetapi.config.MoneyFormatter
 import com.example.internetapi.databinding.ActivityAccountBinding
@@ -83,6 +84,7 @@ class AccountActivity : AppCompatActivity() {
                     adapter.submitList(list)
                     val (totalIncome, totalExpanse) = summary(list)
                     binding.summary.text = "$totalIncome\n$totalExpanse"
+                    AccountHolder.account = list.map { it.toSimpleAccount() }.toMutableList()
                 }
             } else {
                 Snackbar.make(binding.rootView, "Status = false", Snackbar.LENGTH_SHORT).show()
