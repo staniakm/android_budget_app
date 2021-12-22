@@ -11,15 +11,18 @@ import com.example.internetapi.databinding.ActivityAccountDetailsBinding
 import com.example.internetapi.models.AccountIncome
 import com.example.internetapi.models.AccountInvoice
 import com.example.internetapi.models.Status
+import com.example.internetapi.models.UpdateInvoiceAccountRequest
 import com.example.internetapi.ui.adapters.AccountExpensesAdapter
 import com.example.internetapi.ui.adapters.AccountIncomesAdapter
 import com.example.internetapi.ui.viewModel.AccountViewModel
+import com.example.internetapi.ui.viewModel.InvoiceViewModel
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class AccountDetailsActivity : AppCompatActivity() {
     private val accountViewModel: AccountViewModel by viewModels()
+    private val invoiceViewModel: InvoiceViewModel by viewModels()
     private lateinit var binding: ActivityAccountDetailsBinding
     private lateinit var adapter: AccountExpensesAdapter
     private lateinit var incomeAdapter: AccountIncomesAdapter
@@ -67,10 +70,11 @@ class AccountDetailsActivity : AppCompatActivity() {
         }
     }
 
-    fun updateInvoiceAccount(invoiceId: Int, accountId: Int) {
-        Log.i(
-            "TAG", "updateInvoiceAccount: $invoiceId and $accountId"
-        )
+    fun updateInvoiceAccount(invoiceId: Long, oldAccount: Int, accountId: Int) {
+        invoiceViewModel.updateInvoiceAccount(UpdateInvoiceAccountRequest(invoiceId, oldAccount, accountId))
+        if (oldAccount!=accountId){
+            adapter.removeInvoice(invoiceId)
+        }
     }
 
     private fun loadOnSuccessIncome(it: Resource<List<AccountIncome>>) {

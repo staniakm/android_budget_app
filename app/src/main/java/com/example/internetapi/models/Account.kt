@@ -21,7 +21,7 @@ data class SimpleAccount(val id: Int, val name: String) {
 }
 
 data class AccountInvoice(
-    val listId: Int,
+    val listId: Long,
     val name: String,
     val date: String,
     val price: BigDecimal,

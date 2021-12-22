@@ -9,7 +9,7 @@ class AccountRepository @Inject constructor(
 ) {
     suspend fun getAccounts() = apiHelper.getAccounts()
     suspend fun getAccountInvoices(accountId: Int) = apiHelper.getAccountInvoices(accountId)
-    suspend fun getInvoiceDetails(invoiceId: Long) = apiHelper.getInvoiceDetails(invoiceId)
+
     suspend fun getAccountIncome(accountId: Int) = apiHelper.getAccountIncome(accountId)
     suspend fun updateAccount(accountId: Int, updateAccountRequest: UpdateAccountRequest) = apiHelper.updateAccount(accountId, updateAccountRequest)
 }

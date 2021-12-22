@@ -37,6 +37,12 @@ interface ApiService {
 
     @PUT("budget")
     suspend fun updateBudget(@Body updateBudgetRequest: UpdateBudgetRequest): Response<UpdateBudgetResponse>
+
+    @PUT("invoice/{invoiceId}")
+    suspend fun updateInvoiceAccount(
+        @Path("invoiceId") invoiceId: Long,
+        @Body updateInvoiceAccountRequest: UpdateInvoiceAccountRequest
+    ): Response<AccountInvoice>
 }
 
 class ApiHelperImpl @Inject constructor(private val apiService: ApiService) : ApiHelper {
@@ -67,6 +73,13 @@ class ApiHelperImpl @Inject constructor(private val apiService: ApiService) : Ap
         return apiService.updateAccount(accountId, updateAccountRequest)
     }
 
+    override suspend fun updateInvoiceAccount(updateInvoiceAccountRequest: UpdateInvoiceAccountRequest): Response<AccountInvoice> {
+        return apiService.updateInvoiceAccount(
+            updateInvoiceAccountRequest.invoiceId,
+            updateInvoiceAccountRequest
+        )
+    }
+
 
 }
 
@@ -81,4 +94,6 @@ interface ApiHelper {
         accountId: Int,
         updateAccountRequest: UpdateAccountRequest
     ): Response<UpdateAccountResponse>
+
+    suspend fun updateInvoiceAccount(updateInvoiceAccountRequest: UpdateInvoiceAccountRequest): Response<AccountInvoice>
 }
