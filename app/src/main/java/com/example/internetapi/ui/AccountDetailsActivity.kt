@@ -40,7 +40,7 @@ class AccountDetailsActivity : AppCompatActivity() {
 
 
         intent.extras?.let { extra ->
-            extra.getInt("accountId")?.let { accountId ->
+            extra.getInt("accountId").let { accountId ->
                 accountViewModel.getAccountIncome(accountId).observe(this, {
                     when (it.status) {
                         Status.SUCCESS -> loadOnSuccessIncome(it)
