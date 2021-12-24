@@ -1,106 +1,46 @@
 package com.example.internetapi.ui
 
+import android.content.Intent
 import android.os.Bundle
-import android.util.Log
-import android.view.View
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.internetapi.api.Resource
+import androidx.core.content.ContextCompat
 import com.example.internetapi.databinding.ActivityAccountDetailsBinding
-import com.example.internetapi.models.AccountIncome
-import com.example.internetapi.models.AccountInvoice
-import com.example.internetapi.models.Status
-import com.example.internetapi.models.UpdateInvoiceAccountRequest
-import com.example.internetapi.ui.adapters.AccountExpensesAdapter
-import com.example.internetapi.ui.adapters.AccountIncomesAdapter
-import com.example.internetapi.ui.viewModel.AccountViewModel
-import com.example.internetapi.ui.viewModel.InvoiceViewModel
-import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class AccountDetailsActivity : AppCompatActivity() {
-    private val accountViewModel: AccountViewModel by viewModels()
-    private val invoiceViewModel: InvoiceViewModel by viewModels()
     private lateinit var binding: ActivityAccountDetailsBinding
-    private lateinit var adapter: AccountExpensesAdapter
-    private lateinit var incomeAdapter: AccountIncomesAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAccountDetailsBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        adapter = AccountExpensesAdapter()
-        incomeAdapter = AccountIncomesAdapter()
-        binding.rvInvoices.layoutManager = LinearLayoutManager(this)
-        binding.rvInvoices.adapter = adapter
-        binding.rvIncomes.layoutManager = LinearLayoutManager(this)
-        binding.rvIncomes.adapter = incomeAdapter
-
 
         intent.extras?.let { extra ->
-            extra.getInt("accountId").let { accountId ->
-                accountViewModel.getAccountIncome(accountId).observe(this, {
-                    when (it.status) {
-                        Status.SUCCESS -> loadOnSuccessIncome(it)
-                        Status.ERROR -> Snackbar.make(
-                            binding.rootView,
-                            "failed fetched data",
-                            Snackbar.LENGTH_SHORT
-                        )
-                            .show()
-                        Status.LOADING -> Log.println(Log.DEBUG, "AccountDetails", "Loading.....")
-                    }
-                })
-                accountViewModel.accountInvoices(accountId).observe(this, {
-                    when (it.status) {
-                        Status.SUCCESS -> loadOnSuccess(it, accountId)
-                        Status.ERROR -> Snackbar.make(
-                            binding.rootView,
-                            "failed fetched data",
-                            Snackbar.LENGTH_SHORT
-                        )
-                            .show()
-                        Status.LOADING -> Log.println(Log.DEBUG, "AccountDetails", "Loading.....")
-                    }
-                })
+            val name = extra.getString("name", "")
+            val income = extra.getString("income", "0.0").toString()
+            val outcome = extra.getString("outcome", "0.0").toString()
+            binding.name.text = name
+            binding.incomeSum.text = income
+            binding.outcomeSum.text = outcome
 
-            }
-        }
-    }
-
-    fun updateInvoiceAccount(invoiceId: Long, oldAccount: Int, accountId: Int) {
-        invoiceViewModel.updateInvoiceAccount(UpdateInvoiceAccountRequest(invoiceId, oldAccount, accountId))
-        if (oldAccount!=accountId){
-            adapter.removeInvoice(invoiceId)
-        }
-    }
-
-    private fun loadOnSuccessIncome(it: Resource<List<AccountIncome>>) {
-        binding.progress.visibility = View.GONE
-        binding.rvInvoices.visibility = View.VISIBLE
-        it.data.let { res ->
-            if (res != null) {
-                res.let { list ->
-                    incomeAdapter.submitList(list)
+            binding.incomeLay.setOnClickListener {
+                Intent(this, AccountIncomeDetails::class.java).apply {
+                    this.putExtra("name", name)
+                    this.putExtra("accountId", extra.getInt("accountId"))
+                    this.putExtra("income", income)
+                }.let {
+                    ContextCompat.startActivity(this, it, null)
                 }
-            } else {
-                Snackbar.make(binding.root, "Status = false", Snackbar.LENGTH_SHORT).show()
             }
-        }
-    }
-
-    private fun loadOnSuccess(it: Resource<List<AccountInvoice>>, accountId: Int) {
-        binding.progress.visibility = View.GONE
-        binding.rvInvoices.visibility = View.VISIBLE
-        it.data.let { res ->
-            if (res != null) {
-                res.let { list ->
-                    adapter.submitList(list, accountId)
+            binding.outcomeLay.setOnClickListener {
+                Intent(this, AccountOutcomeDetails::class.java).apply {
+                    this.putExtra("name", name)
+                    this.putExtra("accountId", extra.getInt("accountId"))
+                    this.putExtra("outcome", outcome)
+                }.let {
+                    ContextCompat.startActivity(this, it, null)
                 }
-            } else {
-                Snackbar.make(binding.root, "Status = false", Snackbar.LENGTH_SHORT).show()
             }
         }
     }

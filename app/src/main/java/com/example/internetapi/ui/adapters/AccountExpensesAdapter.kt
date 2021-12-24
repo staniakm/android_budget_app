@@ -17,7 +17,7 @@ import com.example.internetapi.config.MoneyFormatter.df
 import com.example.internetapi.databinding.InvoiceAdapterBinding
 import com.example.internetapi.models.AccountInvoice
 import com.example.internetapi.models.SimpleAccount
-import com.example.internetapi.ui.AccountDetailsActivity
+import com.example.internetapi.ui.AccountOutcomeDetails
 import com.example.internetapi.ui.InvoiceDetailsActivity
 
 
@@ -55,11 +55,10 @@ class AccountExpensesAdapter : RecyclerView.Adapter<AccountExpensesViewHolder>()
             shopName.text = item.name
             cost.text = df.format(item.price)
             date.text = item.date
-            btnChangeAccount.setOnClickListener {
+            layout.setOnLongClickListener {
                 createSpinner(holder, item)
+                true
             }
-
-
             layout.setOnClickListener {
 
                 val indent = Intent(holder.parent, InvoiceDetailsActivity::class.java).apply {
@@ -92,7 +91,7 @@ class AccountExpensesAdapter : RecyclerView.Adapter<AccountExpensesViewHolder>()
                     "TAG",
                     "onBindViewHolder: OK ${(spinner.selectedItem as SimpleAccount).id}"
                 )
-                (holder.parent as AccountDetailsActivity).updateInvoiceAccount(
+                (holder.parent as AccountOutcomeDetails).updateInvoiceAccount(
                     item.listId,
                     account,
                     (spinner.selectedItem as SimpleAccount).id

@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.internetapi.config.ActivityResultCodes.UPDATE_ACCOUNT
 import com.example.internetapi.config.MoneyFormatter.df
-import com.example.internetapi.databinding.LayoutAdapterBinding
+import com.example.internetapi.databinding.AccountAdapterBinding
 import com.example.internetapi.models.Account
 import com.example.internetapi.models.UpdateAccountResponse
 import com.example.internetapi.ui.AccountDetailsActivity
@@ -47,7 +47,7 @@ class AccountAdapter : RecyclerView.Adapter<AccountViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AccountViewHolder {
 
         val binding =
-            LayoutAdapterBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+            AccountAdapterBinding.inflate(LayoutInflater.from(parent.context), parent, false)
 
         return AccountViewHolder(binding, parent.context)
     }
@@ -69,7 +69,10 @@ class AccountAdapter : RecyclerView.Adapter<AccountViewHolder>() {
             accCurrentBalance.text = "Stan konta: ${df.format(item.moneyAmount)}"
             layout.setOnClickListener {
                 val indent = Intent(holder.parent, AccountDetailsActivity::class.java).apply {
+                    this.putExtra("name", item.name)
                     this.putExtra("accountId", item.id)
+                    this.putExtra("income", df.format(item.income))
+                    this.putExtra("outcome", df.format(item.expense))
                 }
                 startActivity(holder.parent, indent, null)
             }
@@ -81,5 +84,5 @@ class AccountAdapter : RecyclerView.Adapter<AccountViewHolder>() {
     }
 }
 
-class AccountViewHolder(val binding: LayoutAdapterBinding, val parent: Context) :
+class AccountViewHolder(val binding: AccountAdapterBinding, val parent: Context) :
     RecyclerView.ViewHolder(binding.root) {}
