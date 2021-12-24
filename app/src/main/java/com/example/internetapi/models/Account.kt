@@ -42,7 +42,10 @@ data class AccountIncome(
 data class AccountIncomeRequest(
     val accountId: Int,
     val value: BigDecimal,
-    val date: String
+    val date: String,
+    val incomeDescription: String
 )
+
+data class IncomeType(val id: Int, val name: String)
 
 fun LocalDate.format() = DateTimeFormatter.ofPattern("dd-MM-yyyy").format(this)

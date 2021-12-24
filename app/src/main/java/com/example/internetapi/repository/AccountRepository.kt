@@ -14,4 +14,5 @@ class AccountRepository @Inject constructor(
     suspend fun getAccountIncome(accountId: Int) = apiHelper.getAccountIncome(accountId)
     suspend fun updateAccount(accountId: Int, updateAccountRequest: UpdateAccountRequest) = apiHelper.updateAccount(accountId, updateAccountRequest)
     suspend fun addAccountIncome(request: AccountIncomeRequest) = apiHelper.addAccountIncome(request)
+    suspend fun getIncomeTypes() = apiHelper.getIncomeTypes()
 }

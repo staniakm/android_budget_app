@@ -96,4 +96,20 @@ class AccountViewModel @Inject constructor(private val accountRepository: Accoun
                 }
         }
     }
+
+    fun getIncomeTypes(): LiveData<Resource<List<IncomeType>>> {
+        val data = MutableLiveData<Resource<List<IncomeType>>>()
+        viewModelScope.launch {
+            data.postValue(Resource.loading(null))
+            accountRepository.getIncomeTypes()
+                .let {
+                    if (it.isSuccessful) {
+                        data.postValue(Resource.success(it.body()))
+                    } else {
+                        data.postValue(Resource.error(it.errorBody().toString(), null))
+                    }
+                }
+        }
+        return data
+    }
 }
