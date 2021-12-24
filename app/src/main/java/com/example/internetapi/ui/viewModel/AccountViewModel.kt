@@ -83,4 +83,17 @@ class AccountViewModel @Inject constructor(private val accountRepository: Accoun
         }
         return data
     }
+
+    fun addIncome(request: AccountIncomeRequest) {
+        viewModelScope.launch {
+            accountRepository.addAccountIncome(request)
+                .let {
+                    if(it.isSuccessful){
+                        Log.e("TAG", "updateAccount: SUCCESS")
+                    }else {
+                        Log.e("TAG", "updateAccount: FAILURE")
+                    }
+                }
+        }
+    }
 }

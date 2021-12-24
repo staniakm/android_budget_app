@@ -62,7 +62,7 @@ class AccountActivity : AppCompatActivity() {
     private fun loadOnFailure() {
         with(binding) {
             progress.visibility = View.GONE
-            rvAccounts.visibility = View.VISIBLE
+            rvAccounts.visibility = View.GONE
         }
         Snackbar.make(binding.rootView, "Something went wrong", Snackbar.LENGTH_SHORT)
             .show()
@@ -84,7 +84,7 @@ class AccountActivity : AppCompatActivity() {
                     adapter.submitList(list)
                     val (totalIncome, totalExpanse) = summary(list)
                     binding.summary.text = "$totalIncome\n$totalExpanse"
-                    AccountHolder.account = list.map { it.toSimpleAccount() }.toMutableList()
+                    AccountHolder.accounts = list.map { it.toSimpleAccount() }.toMutableList()
                 }
             } else {
                 Snackbar.make(binding.rootView, "Status = false", Snackbar.LENGTH_SHORT).show()

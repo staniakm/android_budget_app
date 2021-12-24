@@ -2,6 +2,9 @@ package com.example.internetapi.models
 
 import java.io.Serializable
 import java.math.BigDecimal
+import java.text.DateFormat
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 data class Account(
     val id: Int,
@@ -35,3 +38,11 @@ data class AccountIncome(
     val date: String,
     val description: String
 )
+
+data class AccountIncomeRequest(
+    val accountId: Int,
+    val value: BigDecimal,
+    val date: String
+)
+
+fun LocalDate.format() = DateTimeFormatter.ofPattern("dd-MM-yyyy").format(this)

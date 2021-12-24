@@ -40,9 +40,8 @@ class AccountIncomeDetails : AppCompatActivity() {
                         Status.ERROR -> Snackbar.make(
                             binding.rootView,
                             "failed fetched data",
-                            Snackbar.LENGTH_SHORT
-                        )
-                            .show()
+                            Snackbar.LENGTH_LONG
+                        ).show()
                         Status.LOADING -> Log.println(Log.DEBUG, "AccountDetails", "Loading.....")
                     }
                 })

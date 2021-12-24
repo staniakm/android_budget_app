@@ -74,7 +74,7 @@ class AccountExpensesAdapter : RecyclerView.Adapter<AccountExpensesViewHolder>()
         holder: AccountExpensesViewHolder,
         item: AccountInvoice
     ) {
-        val accounts = AccountHolder.account
+        val accounts = AccountHolder.accounts
         val spinner = Spinner(holder.parent)
         spinner.adapter = ArrayAdapter(
             holder.parent,
