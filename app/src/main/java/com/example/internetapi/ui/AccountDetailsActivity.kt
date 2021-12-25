@@ -11,8 +11,10 @@ import android.widget.DatePicker
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import com.example.internetapi.config.DateFormatter.yyyymm
 import com.example.internetapi.databinding.ActivityAccountDetailsBinding
 import com.example.internetapi.databinding.IncomeViewBinding
+import com.example.internetapi.global.MonthSelector
 import com.example.internetapi.models.AccountIncomeRequest
 import com.example.internetapi.models.IncomeType
 import com.example.internetapi.models.Status
@@ -40,7 +42,7 @@ class AccountDetailsActivity : AppCompatActivity() {
             val income = extra.getString("income", "0.0").toString()
             val outcome = extra.getString("outcome", "0.0").toString()
             val accountId = extra.getInt("accountId")
-            binding.name.text = name
+            binding.name.text = "$name - ${LocalDate.now().plusMonths(MonthSelector.month.toLong()).format(yyyymm)}"
             binding.incomeSum.text = income
             binding.outcomeSum.text = outcome
 

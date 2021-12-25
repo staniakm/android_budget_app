@@ -5,58 +5,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ui.BudgetActivity">
-
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <include  layout="@layout/month_manipulator"
         android:id="@+id/monthManipulator"
         android:layout_width="match_parent"
         android:layout_height="36dp"
-        app:layout_constraintBottom_toTopOf="@+id/totalEarned"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <Button
-            android:id="@+id/previous"
-            android:layout_height="wrap_content"
-            android:layout_width="0dp"
-            android:layout_marginStart="8dp"
-            android:text="Poprzedni"
-            android:textSize="10dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/date"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintWidth_percent="0.25" />
-
-        <TextView
-            android:id="@+id/date"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:text="Data"
-            android:textAlignment="center"
-            android:textSize="18sp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/next"
-            app:layout_constraintStart_toEndOf="@+id/previous"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintWidth_percent="0.40" />
-
-        <Button
-            android:id="@+id/next"
-            android:layout_height="wrap_content"
-            android:layout_width="0dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp"
-            android:text="Następny"
-            android:textSize="10dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/date"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintWidth_percent="0.25" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
+        app:layout_constraintTop_toTopOf="parent"/>
 
     <TextView
         android:id="@+id/totalEarned"

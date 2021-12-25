@@ -10,8 +10,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.internetapi.api.Resource
 import com.example.internetapi.config.AccountHolder
 import com.example.internetapi.config.ActivityResultCodes.UPDATE_ACCOUNT
-import com.example.internetapi.config.MoneyFormatter
+import com.example.internetapi.config.DateFormatter
 import com.example.internetapi.databinding.ActivityAccountBinding
+import com.example.internetapi.global.MonthSelector
 import com.example.internetapi.models.Account
 import com.example.internetapi.models.Status
 import com.example.internetapi.models.UpdateAccountResponse
@@ -19,6 +20,7 @@ import com.example.internetapi.ui.adapters.AccountAdapter
 import com.example.internetapi.ui.viewModel.AccountViewModel
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import java.time.LocalDate
 
 
 @AndroidEntryPoint
@@ -30,12 +32,29 @@ class AccountActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.i("TAG", "onCreate: ")
         binding = ActivityAccountBinding.inflate(layoutInflater)
         setContentView(binding.root)
         adapter = AccountAdapter()
         binding.rvAccounts.layoutManager = LinearLayoutManager(this)
         binding.rvAccounts.adapter = adapter
 
+        loadData()
+
+        binding.monthManipulator.previous.setOnClickListener {
+            MonthSelector.previous()
+            loadData()
+        }
+
+        binding.monthManipulator.next.setOnClickListener {
+            if (MonthSelector.month < 0) {
+                MonthSelector.next()
+                loadData()
+            }
+        }
+    }
+
+    private fun loadData() {
         accountViewModel.getAccounts().observe(this, {
             when (it.status) {
                 Status.SUCCESS -> loadOnSucess(it)
@@ -78,33 +97,17 @@ class AccountActivity : AppCompatActivity() {
     private fun loadOnSucess(it: Resource<List<Account>>) {
         binding.progress.visibility = View.GONE
         binding.rvAccounts.visibility = View.VISIBLE
+        binding.monthManipulator.date.text = LocalDate.now().plusMonths(MonthSelector.month.toLong())
+            .format(DateFormatter.yyyymm)
         it.data.let { res ->
             if (res != null) {
                 res.let { list ->
                     adapter.submitList(list)
-                    val (totalIncome, totalExpanse) = summary(list)
-                    binding.summary.text = "$totalIncome\n$totalExpanse"
                     AccountHolder.accounts = list.map { it.toSimpleAccount() }.toMutableList()
                 }
             } else {
                 Snackbar.make(binding.rootView, "Status = false", Snackbar.LENGTH_SHORT).show()
             }
         }
-    }
-
-    private fun summary(list: List<Account>): Pair<String, String> {
-        val totalIncome =
-            "Przychód: " + list.map { i -> i.income }
-                .sumByDouble { i -> i.toDouble() }
-                .let {
-                    MoneyFormatter.df.format(it)
-                }
-        val totalExpanse =
-            "Wydatki: " + list.map { i -> i.expense }
-                .sumByDouble { it.toDouble() }
-                .let {
-                    MoneyFormatter.df.format(it)
-                }
-        return Pair(totalIncome, totalExpanse)
     }
 }

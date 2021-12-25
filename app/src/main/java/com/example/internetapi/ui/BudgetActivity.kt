@@ -34,13 +34,13 @@ class BudgetActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         bindAdapter()
 
-        binding.previous.setOnClickListener {
+        binding.monthManipulator.previous.setOnClickListener {
             MonthSelector.previous()
             finish()
             startActivity(intent)
         }
 
-        binding.next.setOnClickListener {
+        binding.monthManipulator.next.setOnClickListener {
             if (MonthSelector.month < 0) {
                 MonthSelector.next()
                 finish()
@@ -48,7 +48,7 @@ class BudgetActivity : AppCompatActivity() {
             }
         }
 
-        binding.date.setOnClickListener {
+        binding.monthManipulator.date.setOnClickListener {
             if (MonthSelector.month != 0) {
                 MonthSelector.current()
                 finish()
@@ -56,11 +56,11 @@ class BudgetActivity : AppCompatActivity() {
             }
         }
 
-        binding.date.text = LocalDate.now().plusMonths(MonthSelector.month.toLong())
+        binding.monthManipulator.date.text = LocalDate.now().plusMonths(MonthSelector.month.toLong())
             .format(yyyymm)
-        binding.previous.text = LocalDate.now().plusMonths(MonthSelector.month.toLong() - 1)
+        binding.monthManipulator.previous.text = LocalDate.now().plusMonths(MonthSelector.month.toLong() - 1)
             .format(yyyymm)
-        binding.next.text = LocalDate.now().plusMonths(MonthSelector.month.toLong() + 1)
+        binding.monthManipulator.next.text = LocalDate.now().plusMonths(MonthSelector.month.toLong() + 1)
             .format(yyyymm)
 
         viewModel.getBudgets().observe(this, {
