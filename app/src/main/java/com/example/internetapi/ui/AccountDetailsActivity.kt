@@ -126,7 +126,7 @@ class AccountDetailsActivity : AppCompatActivity() {
     }
 
     private fun toDate(date: DatePicker): LocalDate {
-        return LocalDate.of(date.year, date.month, date.dayOfMonth)
+        return LocalDate.of(date.year, date.month+1, date.dayOfMonth)
     }
 
     private fun addIncome(accountId: Int, value: BigDecimal, date: LocalDate, description: String) {
