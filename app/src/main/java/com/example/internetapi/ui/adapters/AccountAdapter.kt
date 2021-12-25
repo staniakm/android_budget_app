@@ -34,9 +34,10 @@ class AccountAdapter(private val listener: OnItemClickedListener) :
             if (it.id == account.id.toInt())
                 it.copy(name = account.name, moneyAmount = account.amount)
             else it
-        }.let {
-            differ.submitList(it)
-        }
+        }.sortedBy { it.name }
+            .let {
+                differ.submitList(it)
+            }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AccountViewHolder {

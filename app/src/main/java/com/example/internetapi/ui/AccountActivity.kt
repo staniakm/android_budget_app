@@ -72,7 +72,7 @@ class AccountActivity : AppCompatActivity(), OnItemClickedListener {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == UPDATE_ACCOUNT) {
-            when (requestCode) {
+            when (resultCode) {
                 RESULT_OK -> data?.getSerializableExtra("result")?.let {
                     adapter.updateListItem(it as UpdateAccountResponse)
                 }
@@ -131,7 +131,7 @@ class AccountActivity : AppCompatActivity(), OnItemClickedListener {
                 this.putExtra("account", item)
             }.let {
                 //FIXME switch to new api
-                startActivityForResult(it, UPDATE_ACCOUNT)
+               this.startActivityForResult(it, UPDATE_ACCOUNT)
             }
         }
     }
