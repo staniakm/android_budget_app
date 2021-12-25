@@ -1,24 +1,19 @@
 package com.example.internetapi.ui.adapters
 
-import android.app.Activity
 import android.content.Context
-import android.content.Intent
-import android.util.Log
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat.startActivity
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.example.internetapi.config.ActivityResultCodes.UPDATE_ACCOUNT
 import com.example.internetapi.config.MoneyFormatter.df
 import com.example.internetapi.databinding.AccountAdapterBinding
 import com.example.internetapi.models.Account
 import com.example.internetapi.models.UpdateAccountResponse
-import com.example.internetapi.ui.AccountDetailsActivity
-import com.example.internetapi.ui.AccountUpdateActivity
 
-class AccountAdapter : RecyclerView.Adapter<AccountViewHolder>() {
+class AccountAdapter(private val listener: OnItemClickedListener) :
+    RecyclerView.Adapter<AccountViewHolder>() {
 
     private val diffCallback = object : DiffUtil.ItemCallback<Account>() {
         override fun areItemsTheSame(oldItem: Account, newItem: Account): Boolean {
@@ -49,40 +44,50 @@ class AccountAdapter : RecyclerView.Adapter<AccountViewHolder>() {
         val binding =
             AccountAdapterBinding.inflate(LayoutInflater.from(parent.context), parent, false)
 
-        return AccountViewHolder(binding, parent.context)
+        return AccountViewHolder(binding, parent.context, listener)
     }
 
     override fun onBindViewHolder(holder: AccountViewHolder, position: Int) {
         val item = differ.currentList[position]
-        holder.binding.editBtn.setOnClickListener {
-            Log.i("Account Adapter", "onBindViewHolder: ")
-            val indent = Intent(holder.parent, AccountUpdateActivity::class.java).apply {
-                this.putExtra("account", item)
-            }
-            //FIXME switch to new api
-            (holder.parent as Activity).startActivityForResult(indent, UPDATE_ACCOUNT)
-        }
         holder.binding.apply {
             accName.text = item.name
             accIncome.text = "Przychód: ${df.format(item.income)}"
             accExpense.text = "Wydatki: ${df.format(item.expense)}"
             accCurrentBalance.text = "Stan konta: ${df.format(item.moneyAmount)}"
-            layout.setOnClickListener {
-                val indent = Intent(holder.parent, AccountDetailsActivity::class.java).apply {
-                    this.putExtra("name", item.name)
-                    this.putExtra("accountId", item.id)
-                    this.putExtra("income", df.format(item.income))
-                    this.putExtra("outcome", df.format(item.expense))
-                }
-                startActivity(holder.parent, indent, null)
-            }
         }
     }
 
     override fun getItemCount(): Int {
         return differ.currentList.size
     }
+
+    fun getItem(position: Int): Account = differ.currentList[position]
 }
 
-class AccountViewHolder(val binding: AccountAdapterBinding, val parent: Context) :
-    RecyclerView.ViewHolder(binding.root) {}
+class AccountViewHolder(
+    val binding: AccountAdapterBinding,
+    val parent: Context,
+    private val listener: OnItemClickedListener
+) :
+    RecyclerView.ViewHolder(binding.root), View.OnClickListener {
+    private val layout = binding.layout
+    private val editButton = binding.editBtn
+
+    init {
+        layout.setOnClickListener(this)
+        editButton.setOnClickListener(this)
+    }
+
+    override fun onClick(v: View?) {
+        when (v?.id) {
+            layout.id -> adapterPosition.let {
+                if (it != RecyclerView.NO_POSITION) {
+                    listener.onClick(it, "layout")
+                }
+            }
+            editButton.id -> adapterPosition.let {
+                listener.onClick(it, "edit")
+            }
+        }
+    }
+}

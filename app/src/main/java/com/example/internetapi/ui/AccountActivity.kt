@@ -1,22 +1,26 @@
 package com.example.internetapi.ui
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.internetapi.api.Resource
 import com.example.internetapi.config.AccountHolder
 import com.example.internetapi.config.ActivityResultCodes.UPDATE_ACCOUNT
 import com.example.internetapi.config.DateFormatter
+import com.example.internetapi.config.MoneyFormatter
 import com.example.internetapi.databinding.ActivityAccountBinding
 import com.example.internetapi.global.MonthSelector
 import com.example.internetapi.models.Account
 import com.example.internetapi.models.Status
 import com.example.internetapi.models.UpdateAccountResponse
 import com.example.internetapi.ui.adapters.AccountAdapter
+import com.example.internetapi.ui.adapters.OnItemClickedListener
 import com.example.internetapi.ui.viewModel.AccountViewModel
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
@@ -24,7 +28,7 @@ import java.time.LocalDate
 
 
 @AndroidEntryPoint
-class AccountActivity : AppCompatActivity() {
+class AccountActivity : AppCompatActivity(), OnItemClickedListener {
 
     private val accountViewModel: AccountViewModel by viewModels()
     private lateinit var binding: ActivityAccountBinding
@@ -35,7 +39,7 @@ class AccountActivity : AppCompatActivity() {
         Log.i("TAG", "onCreate: ")
         binding = ActivityAccountBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        adapter = AccountAdapter()
+        adapter = AccountAdapter(this)
         binding.rvAccounts.layoutManager = LinearLayoutManager(this)
         binding.rvAccounts.adapter = adapter
 
@@ -57,7 +61,7 @@ class AccountActivity : AppCompatActivity() {
     private fun loadData() {
         accountViewModel.getAccounts().observe(this, {
             when (it.status) {
-                Status.SUCCESS -> loadOnSucess(it)
+                Status.SUCCESS -> loadOnSuccess(it)
                 Status.LOADING -> loadOnLoading()
                 Status.ERROR -> loadOnFailure()
             }
@@ -94,11 +98,12 @@ class AccountActivity : AppCompatActivity() {
         }
     }
 
-    private fun loadOnSucess(it: Resource<List<Account>>) {
+    private fun loadOnSuccess(it: Resource<List<Account>>) {
         binding.progress.visibility = View.GONE
         binding.rvAccounts.visibility = View.VISIBLE
-        binding.monthManipulator.date.text = LocalDate.now().plusMonths(MonthSelector.month.toLong())
-            .format(DateFormatter.yyyymm)
+        binding.monthManipulator.date.text =
+            LocalDate.now().plusMonths(MonthSelector.month.toLong())
+                .format(DateFormatter.yyyymm)
         it.data.let { res ->
             if (res != null) {
                 res.let { list ->
@@ -107,6 +112,26 @@ class AccountActivity : AppCompatActivity() {
                 }
             } else {
                 Snackbar.make(binding.rootView, "Status = false", Snackbar.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    override fun onClick(position: Int, element: String) {
+        val item = adapter.getItem(position)
+        when (element) {
+            "layout" -> Intent(this, AccountDetailsActivity::class.java).apply {
+                this.putExtra("name", item.name)
+                this.putExtra("accountId", item.id)
+                this.putExtra("income", MoneyFormatter.df.format(item.income))
+                this.putExtra("outcome", MoneyFormatter.df.format(item.expense))
+            }.let {
+                ContextCompat.startActivity(this, it, null)
+            }
+            "edit" -> Intent(this, AccountUpdateActivity::class.java).apply {
+                this.putExtra("account", item)
+            }.let {
+                //FIXME switch to new api
+                startActivityForResult(it, UPDATE_ACCOUNT)
             }
         }
     }

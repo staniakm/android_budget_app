@@ -1,6 +1,5 @@
 package com.example.internetapi.ui
 
-import android.R
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
@@ -42,7 +41,8 @@ class AccountDetailsActivity : AppCompatActivity() {
             val income = extra.getString("income", "0.0").toString()
             val outcome = extra.getString("outcome", "0.0").toString()
             val accountId = extra.getInt("accountId")
-            binding.name.text = "$name - ${LocalDate.now().plusMonths(MonthSelector.month.toLong()).format(yyyymm)}"
+            binding.name.text =
+                "$name - ${LocalDate.now().plusMonths(MonthSelector.month.toLong()).format(yyyymm)}"
             binding.incomeSum.text = income
             binding.outcomeSum.text = outcome
 
@@ -64,7 +64,6 @@ class AccountDetailsActivity : AppCompatActivity() {
                     ContextCompat.startActivity(this, it, null)
                 }
             }
-
             binding.addIncome.setOnClickListener {
                 createIncomeAddDialog(name, accountId)
             }
@@ -98,7 +97,7 @@ class AccountDetailsActivity : AppCompatActivity() {
         if (descriptions != null) {
             incomeBinding.description.adapter = ArrayAdapter(
                 this,
-                R.layout.simple_spinner_dropdown_item,
+                android.R.layout.simple_spinner_dropdown_item,
                 descriptions.map { it.name }.toMutableList()
             )
             val alert: AlertDialog.Builder = AlertDialog.Builder(this)
@@ -128,7 +127,7 @@ class AccountDetailsActivity : AppCompatActivity() {
     }
 
     private fun toDate(date: DatePicker): LocalDate {
-        return LocalDate.of(date.year, date.month+1, date.dayOfMonth)
+        return LocalDate.of(date.year, date.month + 1, date.dayOfMonth)
     }
 
     private fun addIncome(accountId: Int, value: BigDecimal, date: LocalDate, description: String) {
