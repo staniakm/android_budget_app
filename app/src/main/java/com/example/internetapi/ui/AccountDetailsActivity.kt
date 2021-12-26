@@ -10,12 +10,15 @@ import android.widget.DatePicker
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import com.example.internetapi.config.AccountHolder
 import com.example.internetapi.config.DateFormatter.yyyymm
 import com.example.internetapi.databinding.ActivityAccountDetailsBinding
 import com.example.internetapi.databinding.IncomeViewBinding
+import com.example.internetapi.databinding.TransferViewBinding
 import com.example.internetapi.global.MonthSelector
 import com.example.internetapi.models.AccountIncomeRequest
 import com.example.internetapi.models.IncomeType
+import com.example.internetapi.models.SimpleAccount
 import com.example.internetapi.models.Status
 import com.example.internetapi.ui.viewModel.AccountViewModel
 import com.google.android.material.snackbar.Snackbar
@@ -29,11 +32,13 @@ class AccountDetailsActivity : AppCompatActivity() {
     private val accountViewModel: AccountViewModel by viewModels()
     private lateinit var binding: ActivityAccountDetailsBinding
     private lateinit var incomeBinding: IncomeViewBinding
+    private lateinit var transferBinding: TransferViewBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAccountDetailsBinding.inflate(layoutInflater)
         incomeBinding = IncomeViewBinding.inflate(layoutInflater)
+        transferBinding = TransferViewBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         intent.extras?.let { extra ->
@@ -67,7 +72,51 @@ class AccountDetailsActivity : AppCompatActivity() {
             binding.addIncome.setOnClickListener {
                 createIncomeAddDialog(name, accountId)
             }
+
+            binding.moveMoney.setOnClickListener {
+                createMoveMoneyDialog(name, accountId)
+            }
         }
+    }
+
+    private fun createMoveMoneyDialog(name: String, accountId: Int) {
+        transferBinding.root.parent?.let {
+            (it as ViewGroup).removeView(transferBinding.root)
+        }
+        transferBinding.targetAccount.adapter = ArrayAdapter(
+            this,
+            android.R.layout.simple_spinner_dropdown_item,
+            AccountHolder.accounts
+        )
+        val alert: AlertDialog.Builder = AlertDialog.Builder(this)
+        alert.setTitle("Transfer money")
+            .setMessage(name)
+            .setView(transferBinding.root)
+            .setPositiveButton("OK") { _, _ ->
+                val income = transferBinding.value.text.toString()
+                val targetAccount =  (transferBinding.targetAccount.selectedItem as SimpleAccount).id
+                when (val value = income.toBigDecimalOrNull()) {
+                    null -> Log.w(
+                        "AccountDetails",
+                        "Income value is not parsable to BigDecimal"
+                    )
+                    else -> this.transferMoney(
+                        accountId,
+                        value,
+                        targetAccount
+                    )
+                }
+            }
+            .setNegativeButton("Cancel") { _, _ ->
+                Log.i("TAG", "onBindViewHolder: CANCEL")
+            }
+        alert.show()
+
+
+    }
+
+    private fun transferMoney(accountId: Int, value: BigDecimal, targetAccount: Int) {
+        Log.i("TAG", "transferMoney: from $accountId to $targetAccount amount $value")
     }
 
 
