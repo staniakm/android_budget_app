@@ -102,7 +102,7 @@ class AccountActivity : AppCompatActivity(), OnItemClickedListener {
         binding.progress.visibility = View.GONE
         binding.rvAccounts.visibility = View.VISIBLE
         binding.monthManipulator.date.text =
-            LocalDate.now().plusMonths(MonthSelector.month.toLong())
+            LocalDate.now().withDayOfMonth(1).plusMonths(MonthSelector.month.toLong())
                 .format(DateFormatter.yyyymm)
         it.data.let { res ->
             if (res != null) {
@@ -131,7 +131,7 @@ class AccountActivity : AppCompatActivity(), OnItemClickedListener {
                 this.putExtra("account", item)
             }.let {
                 //FIXME switch to new api
-               this.startActivityForResult(it, UPDATE_ACCOUNT)
+                this.startActivityForResult(it, UPDATE_ACCOUNT)
             }
         }
     }
