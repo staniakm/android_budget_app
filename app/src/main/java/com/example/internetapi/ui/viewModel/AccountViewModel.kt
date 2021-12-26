@@ -112,4 +112,17 @@ class AccountViewModel @Inject constructor(private val accountRepository: Accoun
         }
         return data
     }
+
+    fun transferMoney(request: TransferMoneyRequest) {
+        viewModelScope.launch {
+            accountRepository.transferMoney(request)
+                .let {
+                    if (it.isSuccessful) {
+                        Log.i("TAG", "transferMoney: SUCCESS")
+                    } else {
+                        Log.e("TAG", "transferMoney: ERROR")
+                    }
+                }
+        }
+    }
 }

@@ -81,6 +81,10 @@ class AccountActivity : AppCompatActivity(), OnItemClickedListener {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        loadData()
+    }
 
     private fun loadOnFailure() {
         with(binding) {

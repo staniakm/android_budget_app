@@ -2,6 +2,7 @@ package com.example.internetapi.repository
 
 import com.example.internetapi.api.ApiHelper
 import com.example.internetapi.models.AccountIncomeRequest
+import com.example.internetapi.models.TransferMoneyRequest
 import com.example.internetapi.models.UpdateAccountRequest
 import javax.inject.Inject
 
@@ -15,4 +16,5 @@ class AccountRepository @Inject constructor(
     suspend fun updateAccount(accountId: Int, updateAccountRequest: UpdateAccountRequest) = apiHelper.updateAccount(accountId, updateAccountRequest)
     suspend fun addAccountIncome(request: AccountIncomeRequest) = apiHelper.addAccountIncome(request)
     suspend fun getIncomeTypes() = apiHelper.getIncomeTypes()
+    suspend fun transferMoney(request: TransferMoneyRequest) = apiHelper.transferMoney(request)
 }

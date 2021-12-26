@@ -16,10 +16,7 @@ import com.example.internetapi.databinding.ActivityAccountDetailsBinding
 import com.example.internetapi.databinding.IncomeViewBinding
 import com.example.internetapi.databinding.TransferViewBinding
 import com.example.internetapi.global.MonthSelector
-import com.example.internetapi.models.AccountIncomeRequest
-import com.example.internetapi.models.IncomeType
-import com.example.internetapi.models.SimpleAccount
-import com.example.internetapi.models.Status
+import com.example.internetapi.models.*
 import com.example.internetapi.ui.viewModel.AccountViewModel
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
@@ -94,7 +91,7 @@ class AccountDetailsActivity : AppCompatActivity() {
             .setView(transferBinding.root)
             .setPositiveButton("OK") { _, _ ->
                 val income = transferBinding.value.text.toString()
-                val targetAccount =  (transferBinding.targetAccount.selectedItem as SimpleAccount).id
+                val targetAccount = (transferBinding.targetAccount.selectedItem as SimpleAccount).id
                 when (val value = income.toBigDecimalOrNull()) {
                     null -> Log.w(
                         "AccountDetails",
@@ -116,7 +113,15 @@ class AccountDetailsActivity : AppCompatActivity() {
     }
 
     private fun transferMoney(accountId: Int, value: BigDecimal, targetAccount: Int) {
-        Log.i("TAG", "transferMoney: from $accountId to $targetAccount amount $value")
+        if (value > BigDecimal.ZERO && accountId != targetAccount) {
+            TransferMoneyRequest(
+                accountId,
+                value,
+                targetAccount
+            ).let {
+                accountViewModel.transferMoney(it)
+            }
+        }
     }
 
 

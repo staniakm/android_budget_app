@@ -35,6 +35,12 @@ interface ApiService {
         @Body request: AccountIncomeRequest
     ): Response<List<AccountIncome>>
 
+    @PUT("account/{accountId}/transfer")
+    suspend fun transferMoney(
+        @Path("accountId") accountId: Int,
+        @Body request: TransferMoneyRequest
+    ): Response<UpdateAccountResponse>
+
     @GET("invoice/{invoiceId}")
     suspend fun getInvoiceDetails(@Path("invoiceId") invoiceId: Long): Response<List<InvoiceDetails>>
 
@@ -97,7 +103,9 @@ class ApiHelperImpl @Inject constructor(private val apiService: ApiService) : Ap
         return apiService.getIncomeTypes()
     }
 
-
+    override suspend fun transferMoney(request: TransferMoneyRequest): Response<UpdateAccountResponse> {
+        return apiService.transferMoney(request.accountId, request)
+    }
 }
 
 interface ApiHelper {
@@ -115,4 +123,5 @@ interface ApiHelper {
     suspend fun updateInvoiceAccount(updateInvoiceAccountRequest: UpdateInvoiceAccountRequest): Response<AccountInvoice>
     suspend fun addAccountIncome(request: AccountIncomeRequest): Response<List<AccountIncome>>
     suspend fun getIncomeTypes(): Response<List<IncomeType>>
+    suspend fun transferMoney(request: TransferMoneyRequest): Response<UpdateAccountResponse>
 }
