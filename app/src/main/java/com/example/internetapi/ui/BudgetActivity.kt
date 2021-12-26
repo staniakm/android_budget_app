@@ -36,33 +36,35 @@ class BudgetActivity : AppCompatActivity() {
 
         binding.monthManipulator.previous.setOnClickListener {
             MonthSelector.previous()
-            finish()
-            startActivity(intent)
+            loadData()
         }
 
         binding.monthManipulator.next.setOnClickListener {
             if (MonthSelector.month < 0) {
                 MonthSelector.next()
-                finish()
-                startActivity(intent)
+                loadData()
             }
         }
 
         binding.monthManipulator.date.setOnClickListener {
             if (MonthSelector.month != 0) {
                 MonthSelector.current()
-                finish()
-                startActivity(intent)
+                loadData()
             }
         }
 
-        binding.monthManipulator.date.text = LocalDate.now().plusMonths(MonthSelector.month.toLong())
-            .format(yyyymm)
-        binding.monthManipulator.previous.text = LocalDate.now().plusMonths(MonthSelector.month.toLong() - 1)
-            .format(yyyymm)
-        binding.monthManipulator.next.text = LocalDate.now().plusMonths(MonthSelector.month.toLong() + 1)
-            .format(yyyymm)
+        loadData()
 
+    }
+
+    private fun loadData() {
+        val date = LocalDate.now().withDayOfMonth(1)
+        binding.monthManipulator.date.text = date.plusMonths(MonthSelector.month.toLong())
+            .format(yyyymm)
+        binding.monthManipulator.previous.text = date.plusMonths(MonthSelector.month.toLong() - 1)
+            .format(yyyymm)
+        binding.monthManipulator.next.text = date.plusMonths(MonthSelector.month.toLong() + 1)
+            .format(yyyymm)
         viewModel.getBudgets().observe(this, {
             when (it.status) {
                 Status.SUCCESS -> processSuccess(it)
@@ -75,7 +77,6 @@ class BudgetActivity : AppCompatActivity() {
                 Status.LOADING -> Log.println(Log.DEBUG, "InvoiceDetails", "Loading.....")
             }
         })
-
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
