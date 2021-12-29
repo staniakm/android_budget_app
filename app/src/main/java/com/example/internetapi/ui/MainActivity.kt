@@ -31,6 +31,10 @@ class MainActivity : AppCompatActivity() {
         binding.settings.setOnClickListener {
             startActivity(Intent(this, SettingsActivity::class.java))
         }
+
+        binding.charts.setOnClickListener {
+            startActivity(Intent(this, ChartActivity::class.java))
+        }
     }
 
     override fun onResume() {
@@ -41,6 +45,7 @@ class MainActivity : AppCompatActivity() {
                 if (it.isNotBlank()) View.VISIBLE else View.INVISIBLE
             binding.budgets.visibility =
                 if (it.isNotBlank()) View.VISIBLE else View.INVISIBLE
+            binding.charts.visibility = if (it.isNotBlank()) View.VISIBLE else View.INVISIBLE
             Constant.BASE_URL = it
         }
     }
