@@ -14,6 +14,14 @@
         android:theme="@style/Theme.InternetApi"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".ui.MediaDetailsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.MediaActivity"
+            android:exported="false"
+            android:label="@string/title_activity_media"
+            android:theme="@style/Theme.InternetApi.NoActionBar" />
+        <activity
             android:name=".ui.ChartActivity"
             android:exported="false" />
         <activity

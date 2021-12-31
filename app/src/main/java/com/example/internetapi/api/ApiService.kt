@@ -58,6 +58,9 @@ interface ApiService {
 
     @GET("account/income/type")
     suspend fun getIncomeTypes(): Response<List<IncomeType>>
+
+    @GET("media/type/all")
+    suspend fun getMediaTypes(): Response<List<MediaType>>
 }
 
 class ApiHelperImpl @Inject constructor(private val apiService: ApiService) : ApiHelper {
@@ -106,6 +109,10 @@ class ApiHelperImpl @Inject constructor(private val apiService: ApiService) : Ap
     override suspend fun transferMoney(request: TransferMoneyRequest): Response<UpdateAccountResponse> {
         return apiService.transferMoney(request.accountId, request)
     }
+
+    override suspend fun getMediaTypes(): Response<List<MediaType>> {
+        return apiService.getMediaTypes()
+    }
 }
 
 interface ApiHelper {
@@ -124,4 +131,6 @@ interface ApiHelper {
     suspend fun addAccountIncome(request: AccountIncomeRequest): Response<List<AccountIncome>>
     suspend fun getIncomeTypes(): Response<List<IncomeType>>
     suspend fun transferMoney(request: TransferMoneyRequest): Response<UpdateAccountResponse>
+
+    suspend fun getMediaTypes(): Response<List<MediaType>>
 }

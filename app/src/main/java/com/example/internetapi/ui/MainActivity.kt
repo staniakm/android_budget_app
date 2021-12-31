@@ -35,6 +35,10 @@ class MainActivity : AppCompatActivity() {
         binding.charts.setOnClickListener {
             startActivity(Intent(this, ChartActivity::class.java))
         }
+
+        binding.media.setOnClickListener {
+            startActivity(Intent(this, MediaActivity::class.java))
+        }
     }
 
     override fun onResume() {
