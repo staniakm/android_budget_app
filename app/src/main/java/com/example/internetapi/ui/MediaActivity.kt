@@ -1,29 +1,27 @@
 package com.example.internetapi.ui
 
-import android.R
 import android.app.AlertDialog
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.View
-import android.widget.ArrayAdapter
 import android.widget.EditText
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.internetapi.api.Resource
 import com.example.internetapi.databinding.ActivityMediaBinding
-import com.example.internetapi.models.IncomeType
 import com.example.internetapi.models.MediaType
 import com.example.internetapi.models.MediaTypeRequest
 import com.example.internetapi.models.Status
-import com.example.internetapi.ui.adapters.InvoiceDetailsAdapter
 import com.example.internetapi.ui.adapters.MediaAdapter
+import com.example.internetapi.ui.adapters.OnItemClickedListener
 import com.example.internetapi.ui.viewModel.MediaViewModel
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class MediaActivity : AppCompatActivity() {
+class MediaActivity : AppCompatActivity(), OnItemClickedListener {
     private val viewModel: MediaViewModel by viewModels()
     private lateinit var binding: ActivityMediaBinding
     private lateinit var adapter: MediaAdapter
@@ -34,11 +32,11 @@ class MediaActivity : AppCompatActivity() {
         binding = ActivityMediaBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        adapter = MediaAdapter()
+        adapter = MediaAdapter(this)
         binding.data.layoutManager = LinearLayoutManager(this)
         binding.data.adapter = adapter
 
-        binding.fab.setOnClickListener { view ->
+        binding.fab.setOnClickListener {
             createDialog()
         }
         loadData()
@@ -79,6 +77,7 @@ class MediaActivity : AppCompatActivity() {
         it.data.let { res ->
             if (res != null) {
                 adapter.addNewMediaType(res)
+                Snackbar.make(binding.root, "Dodano ${res.name}", Snackbar.LENGTH_SHORT).show()
             }
         }
     }
@@ -91,8 +90,7 @@ class MediaActivity : AppCompatActivity() {
                     binding.root,
                     "failed fetched data",
                     Snackbar.LENGTH_SHORT
-                )
-                    .show()
+                ).show()
                 Status.LOADING -> Log.println(Log.DEBUG, "MediaType", "Loading.....")
             }
         })
@@ -112,8 +110,18 @@ class MediaActivity : AppCompatActivity() {
                         adapter.submitList(list)
                     }
                 }
-            } else {
-                Snackbar.make(binding.root, "Status = false", Snackbar.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    override fun onClick(position: Int, element: String) {
+        val item = adapter.getItem(position)
+        when (element) {
+            "layout" -> Intent(this, MediaDetailsActivity::class.java).apply {
+                this.putExtra("name", item.name)
+                this.putExtra("mediaId", item.id)
+            }.let {
+                ContextCompat.startActivity(this, it, null)
             }
         }
     }

@@ -19,25 +19,6 @@
             android:layout_marginTop="10dp">
 
             <TextView
-                android:id="@+id/mediaName"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:textColor="#000"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintWidth_percent="1" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="36dp"
-            android:layout_marginTop="10dp">
-
-            <TextView
                 android:id="@+id/date"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
@@ -45,7 +26,19 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintWidth_percent="0.4" />
+                app:layout_constraintWidth_percent="0.22" />
+
+            <TextView
+                android:id="@+id/change"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_marginStart="8dp"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@id/date"
+                app:layout_constraintWidth_percent="0.24" />
 
             <TextView
                 android:id="@+id/lastValue"
@@ -53,10 +46,21 @@
                 android:layout_height="0dp"
                 android:layout_marginStart="8dp"
                 android:textSize="16sp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintWidth_percent="0.55" />
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/change"
+                app:layout_constraintWidth_percent="0.25" />
+            <TextView
+                android:id="@+id/previous"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_marginStart="8dp"
+                android:textSize="16sp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/lastValue"
+                app:layout_constraintWidth_percent="0.25" />
+
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.internetapi.api.Resource
 import com.example.internetapi.models.MediaType
 import com.example.internetapi.models.MediaTypeRequest
+import com.example.internetapi.models.MediaUsage
 import com.example.internetapi.repository.MediaRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -33,11 +34,27 @@ class MediaViewModel @Inject constructor(private val mediaRepository: MediaRepos
         return data
     }
 
-    fun addNewMediaType(mediaTypeRequest: MediaTypeRequest):LiveData<Resource<MediaType>> {
+    fun addNewMediaType(mediaTypeRequest: MediaTypeRequest): LiveData<Resource<MediaType>> {
         val data = MutableLiveData<Resource<MediaType>>()
         viewModelScope.launch {
             data.postValue(Resource.loading(null))
             mediaRepository.addNewMediaType(mediaTypeRequest)
+                .let {
+                    if (it.isSuccessful) {
+                        data.postValue(Resource.success(it.body()))
+                    } else {
+                        data.postValue(Resource.error(it.errorBody().toString(), null))
+                    }
+                }
+        }
+        return data
+    }
+
+    fun getMediaUsageByType(mediaTypeId: Int): LiveData<Resource<List<MediaUsage>>> {
+        val data = MutableLiveData<Resource<List<MediaUsage>>>()
+        viewModelScope.launch {
+            data.postValue(Resource.loading(null))
+            mediaRepository.getMediaUsageByType(mediaTypeId)
                 .let {
                     if (it.isSuccessful) {
                         data.postValue(Resource.success(it.body()))
