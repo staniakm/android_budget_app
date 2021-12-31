@@ -43,6 +43,15 @@ class MediaAdapter : RecyclerView.Adapter<MediaViewHolder>() {
     override fun getItemCount(): Int {
         return differ.currentList.size
     }
+
+    fun addNewMediaType(res: MediaType) {
+        differ.currentList.toMutableList().apply {
+            add(res)
+        }.let {
+            differ.submitList(it)
+        }
+
+    }
 }
 
 class MediaViewHolder(val binding: MediaAdapterBinding, val parent: Context) :

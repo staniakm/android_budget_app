@@ -61,6 +61,9 @@ interface ApiService {
 
     @GET("media/type/all")
     suspend fun getMediaTypes(): Response<List<MediaType>>
+
+    @POST("media/type")
+    suspend fun addNewMediaType(@Body mediaTypeRequest: MediaTypeRequest): Response<MediaType>
 }
 
 class ApiHelperImpl @Inject constructor(private val apiService: ApiService) : ApiHelper {
@@ -113,6 +116,10 @@ class ApiHelperImpl @Inject constructor(private val apiService: ApiService) : Ap
     override suspend fun getMediaTypes(): Response<List<MediaType>> {
         return apiService.getMediaTypes()
     }
+
+    override suspend fun addNewMediaType(mediaTypeRequest: MediaTypeRequest): Response<MediaType> {
+        return apiService.addNewMediaType(mediaTypeRequest)
+    }
 }
 
 interface ApiHelper {
@@ -133,4 +140,5 @@ interface ApiHelper {
     suspend fun transferMoney(request: TransferMoneyRequest): Response<UpdateAccountResponse>
 
     suspend fun getMediaTypes(): Response<List<MediaType>>
+    suspend fun addNewMediaType(mediaTypeRequest: MediaTypeRequest): Response<MediaType>
 }

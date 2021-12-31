@@ -1,14 +1,20 @@
 package com.example.internetapi.ui
 
+import android.R
+import android.app.AlertDialog
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.ArrayAdapter
+import android.widget.EditText
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.internetapi.api.Resource
 import com.example.internetapi.databinding.ActivityMediaBinding
+import com.example.internetapi.models.IncomeType
 import com.example.internetapi.models.MediaType
+import com.example.internetapi.models.MediaTypeRequest
 import com.example.internetapi.models.Status
 import com.example.internetapi.ui.adapters.InvoiceDetailsAdapter
 import com.example.internetapi.ui.adapters.MediaAdapter
@@ -33,10 +39,48 @@ class MediaActivity : AppCompatActivity() {
         binding.data.adapter = adapter
 
         binding.fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show()
+            createDialog()
         }
         loadData()
+    }
+
+    private fun createDialog() {
+        val edit = EditText(this)
+
+
+        val alert: AlertDialog.Builder = AlertDialog.Builder(this)
+        alert.setTitle("Add new media type")
+            .setView(edit)
+            .setPositiveButton("OK") { _, _ ->
+                if (edit.text.isNotBlank()) {
+                    this.addNewMedia(edit.text.toString().trim())
+                }
+            }
+            .setNegativeButton("Cancel") { _, _ -> }
+        alert.show()
+    }
+
+    private fun addNewMedia(mediaName: String) {
+        viewModel.addNewMediaType(MediaTypeRequest(mediaName)).observe(this, {
+            when (it.status) {
+                Status.SUCCESS -> processSuccessAddMedia(it)
+                Status.ERROR -> Snackbar.make(
+                    binding.root,
+                    "Failed to add new media with name: $mediaName",
+                    Snackbar.LENGTH_SHORT
+                )
+                    .show()
+                Status.LOADING -> Log.println(Log.DEBUG, "MediaType", "Loading.....")
+            }
+        })
+    }
+
+    private fun processSuccessAddMedia(it: Resource<MediaType>) {
+        it.data.let { res ->
+            if (res != null) {
+                adapter.addNewMediaType(res)
+            }
+        }
     }
 
     private fun loadData() {

@@ -140,7 +140,6 @@ class AccountDetailsActivity : AppCompatActivity() {
         incomeBinding.root.parent?.let {
             (it as ViewGroup).removeView(incomeBinding.root)
         }
-
     }
 
     private fun loadOnSuccessIncome(
