@@ -67,6 +67,9 @@ interface ApiService {
 
     @GET("media/usage/{mediaTypeId}")
     suspend fun getMediaUsageByType(@Path("mediaTypeId") mediaTypeId: Int): Response<List<MediaUsage>>
+
+    @POST("media/usage")
+    suspend fun addMediaUsage(@Body mediaUsageRequest: MediaRegisterRequest): Response<List<MediaUsage>>
 }
 
 class ApiHelperImpl @Inject constructor(private val apiService: ApiService) : ApiHelper {
@@ -127,6 +130,10 @@ class ApiHelperImpl @Inject constructor(private val apiService: ApiService) : Ap
     override suspend fun getMediaUsageByType(mediaTypeId: Int): Response<List<MediaUsage>> {
         return apiService.getMediaUsageByType(mediaTypeId)
     }
+
+    override suspend fun addMediaUsageEntry(mediaUsageRequest: MediaRegisterRequest): Response<List<MediaUsage>> {
+        return apiService.addMediaUsage(mediaUsageRequest)
+    }
 }
 
 interface ApiHelper {
@@ -149,4 +156,5 @@ interface ApiHelper {
     suspend fun getMediaTypes(): Response<List<MediaType>>
     suspend fun addNewMediaType(mediaTypeRequest: MediaTypeRequest): Response<MediaType>
     suspend fun getMediaUsageByType(mediaTypeId: Int): Response<List<MediaUsage>>
+    suspend fun addMediaUsageEntry(mediaUsageRequest: MediaRegisterRequest): Response<List<MediaUsage>>
 }

@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.internetapi.api.Resource
+import com.example.internetapi.models.MediaRegisterRequest
 import com.example.internetapi.models.MediaType
 import com.example.internetapi.models.MediaTypeRequest
 import com.example.internetapi.models.MediaUsage
@@ -65,4 +66,22 @@ class MediaViewModel @Inject constructor(private val mediaRepository: MediaRepos
         }
         return data
     }
+
+    fun addMediaUsageEntry(mediaRegisterRequest: MediaRegisterRequest): LiveData<Resource<List<MediaUsage>>> {
+        val data = MutableLiveData<Resource<List<MediaUsage>>>()
+        viewModelScope.launch {
+            data.postValue(Resource.loading(null))
+            mediaRepository.addMediaUsageEntry(mediaRegisterRequest)
+                .let {
+                    if (it.isSuccessful) {
+                        data.postValue(Resource.success(it.body()))
+                    } else {
+                        data.postValue(Resource.error(it.errorBody().toString(), null))
+                    }
+                }
+        }
+        return data
+    }
+
+
 }

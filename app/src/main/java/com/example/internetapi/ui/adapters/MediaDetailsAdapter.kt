@@ -23,7 +23,9 @@ class MediaDetailsAdapter : RecyclerView.Adapter<MediaDetailsViewHolder>() {
 
     private val differ = AsyncListDiffer(this, diffCallback)
 
-    fun submitList(list: List<MediaUsage>) = differ.submitList(list)
+    fun submitList(list: List<MediaUsage>) {
+        differ.submitList(list)
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MediaDetailsViewHolder {
 
@@ -35,7 +37,8 @@ class MediaDetailsAdapter : RecyclerView.Adapter<MediaDetailsViewHolder>() {
 
     override fun onBindViewHolder(holder: MediaDetailsViewHolder, position: Int) {
         val item = differ.currentList[position]
-        val previousMonthItem = differ.currentList.getOrElse(position + 1) { MediaUsage(-1, 0, 0, 0.0) }
+        val previousMonthItem =
+            differ.currentList.getOrElse(position + 1) { MediaUsage(-1, 0, 0, 0.0) }
         holder.binding.apply {
             date.text = "${item.month}-${item.year}"
             lastValue.text = item.meterRead.toString()
