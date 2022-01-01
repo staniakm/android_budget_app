@@ -14,6 +14,7 @@ import com.example.internetapi.api.Resource
 import com.example.internetapi.databinding.ActivityMediaDetailsBinding
 import com.example.internetapi.databinding.AddMediaMeterViewBinding
 import com.example.internetapi.functions.removeRecycleViewItemOnSwipe
+import com.example.internetapi.functions.toLocalDate
 import com.example.internetapi.models.MediaRegisterRequest
 import com.example.internetapi.models.MediaUsage
 import com.example.internetapi.models.Status
@@ -107,7 +108,7 @@ class MediaDetailsActivity : AppCompatActivity() {
         val alert: AlertDialog.Builder = AlertDialog.Builder(this)
         alert.setTitle("Add meter value")
             .setView(meterBinding.root)
-            .setPositiveButton("OK") { _, i ->
+            .setPositiveButton("OK") { _, _ ->
                 val income = meterBinding.value.text.toString()
                 when (val v = income.toBigDecimalOrNull()) {
                     null -> Log.w(
@@ -116,13 +117,13 @@ class MediaDetailsActivity : AppCompatActivity() {
                     )
                     else -> this.addMeterValue(
                         v,
-                        toDate(meterBinding.date),
+                        meterBinding.date.toLocalDate(),
                         mediaTypeId
                     )
                 }
             }
             .setNegativeButton("Cancel") { _, _ ->
-                Log.i("TAG", "onBindViewHolder: CANCEL")
+                Log.d("TAG", "onBindViewHolder: CANCEL")
             }
         alert.show()
     }
@@ -140,9 +141,5 @@ class MediaDetailsActivity : AppCompatActivity() {
                 Status.LOADING -> Log.println(Log.DEBUG, "MediaType", "Loading.....")
             }
         })
-    }
-
-    private fun toDate(date: DatePicker): LocalDate {
-        return LocalDate.of(date.year, date.month + 1, date.dayOfMonth)
     }
 }

@@ -15,6 +15,7 @@ import com.example.internetapi.config.DateFormatter.yyyymm
 import com.example.internetapi.databinding.ActivityAccountDetailsBinding
 import com.example.internetapi.databinding.IncomeViewBinding
 import com.example.internetapi.databinding.TransferViewBinding
+import com.example.internetapi.functions.toLocalDate
 import com.example.internetapi.global.MonthSelector
 import com.example.internetapi.models.*
 import com.example.internetapi.ui.viewModel.AccountViewModel
@@ -167,20 +168,16 @@ class AccountDetailsActivity : AppCompatActivity() {
                         else -> this.addIncome(
                             accountId,
                             v,
-                            toDate(incomeBinding.date),
+                            incomeBinding.date.toLocalDate(),
                             incomeBinding.description.selectedItem as String
                         )
                     }
                 }
                 .setNegativeButton("Cancel") { _, _ ->
-                    Log.i("TAG", "onBindViewHolder: CANCEL")
+                    Log.d("TAG", "onBindViewHolder: CANCEL")
                 }
             alert.show()
         }
-    }
-
-    private fun toDate(date: DatePicker): LocalDate {
-        return LocalDate.of(date.year, date.month + 1, date.dayOfMonth)
     }
 
     private fun addIncome(accountId: Int, value: BigDecimal, date: LocalDate, description: String) {
