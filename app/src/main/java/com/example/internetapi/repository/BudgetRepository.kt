@@ -8,4 +8,5 @@ class BudgetRepository @Inject constructor(private val apiHelper: ApiHelper) {
     suspend fun getBudgets() = apiHelper.getBudgets()
     suspend fun updateBudget(updateBudgetRequest: UpdateBudgetRequest) =
         apiHelper.updateBudget(updateBudgetRequest)
+    suspend fun recalculateBudgets() = apiHelper.recalculateBudgets()
 }

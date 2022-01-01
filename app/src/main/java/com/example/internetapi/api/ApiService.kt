@@ -50,6 +50,9 @@ interface ApiService {
     @PUT("budget")
     suspend fun updateBudget(@Body updateBudgetRequest: UpdateBudgetRequest): Response<UpdateBudgetResponse>
 
+    @PUT("budget/recalculate")
+    suspend fun recalculateBudgets(@Query("month") month: Int): Response<Budget>
+
     @PUT("invoice/{invoiceId}")
     suspend fun updateInvoiceAccount(
         @Path("invoiceId") invoiceId: Long,
@@ -91,6 +94,10 @@ class ApiHelperImpl @Inject constructor(private val apiService: ApiService) : Ap
 
     override suspend fun updateBudget(updateBudgetRequest: UpdateBudgetRequest): Response<UpdateBudgetResponse> {
         return apiService.updateBudget(updateBudgetRequest)
+    }
+
+    override suspend fun recalculateBudgets(): Response<Budget> {
+        return apiService.recalculateBudgets(MonthSelector.month)
     }
 
     override suspend fun updateAccount(
@@ -143,6 +150,8 @@ interface ApiHelper {
     suspend fun getInvoiceDetails(invoiceId: Long): Response<List<InvoiceDetails>>
     suspend fun getBudgets(): Response<Budget>
     suspend fun updateBudget(updateBudgetRequest: UpdateBudgetRequest): Response<UpdateBudgetResponse>
+    suspend fun recalculateBudgets(): Response<Budget>
+
     suspend fun updateAccount(
         accountId: Int,
         updateAccountRequest: UpdateAccountRequest
@@ -151,8 +160,8 @@ interface ApiHelper {
     suspend fun updateInvoiceAccount(updateInvoiceAccountRequest: UpdateInvoiceAccountRequest): Response<AccountInvoice>
     suspend fun addAccountIncome(request: AccountIncomeRequest): Response<List<AccountIncome>>
     suspend fun getIncomeTypes(): Response<List<IncomeType>>
-    suspend fun transferMoney(request: TransferMoneyRequest): Response<UpdateAccountResponse>
 
+    suspend fun transferMoney(request: TransferMoneyRequest): Response<UpdateAccountResponse>
     suspend fun getMediaTypes(): Response<List<MediaType>>
     suspend fun addNewMediaType(mediaTypeRequest: MediaTypeRequest): Response<MediaType>
     suspend fun getMediaUsageByType(mediaTypeId: Int): Response<List<MediaUsage>>

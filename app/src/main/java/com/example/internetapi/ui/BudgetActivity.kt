@@ -53,8 +53,28 @@ class BudgetActivity : AppCompatActivity() {
             }
         }
 
+        binding.recalculate.setOnClickListener {
+            recalculateBudgets()
+            loadData()
+        }
+
         loadData()
 
+    }
+
+    private fun recalculateBudgets() {
+        viewModel.recalculateBudgets().observe(this, {
+            when (it.status) {
+                Status.SUCCESS -> processSuccess(it)
+                Status.ERROR -> Snackbar.make(
+                    binding.root,
+                    "failed fetched data",
+                    Snackbar.LENGTH_SHORT
+                )
+                    .show()
+                Status.LOADING -> Log.println(Log.DEBUG, "InvoiceDetails", "Loading.....")
+            }
+        })
     }
 
     private fun loadData() {

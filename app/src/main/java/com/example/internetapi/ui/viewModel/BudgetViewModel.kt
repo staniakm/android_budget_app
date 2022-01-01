@@ -50,4 +50,20 @@ class BudgetViewModel @Inject constructor(private val repository: BudgetReposito
         }
         return data
     }
+
+    fun recalculateBudgets(): MutableLiveData<Resource<Budget>> {
+        val data = MutableLiveData<Resource<Budget>>()
+        viewModelScope.launch {
+            data.postValue(Resource.loading(null))
+            repository.recalculateBudgets()
+                .let {
+                    if (it.isSuccessful) {
+                        data.postValue(Resource.success(it.body()))
+                    } else {
+                        data.postValue(Resource.error(it.errorBody().toString(), null))
+                    }
+                }
+        }
+        return data
+    }
 }
