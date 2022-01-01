@@ -33,10 +33,8 @@ abstract class ViewModelDataFunction : ViewModel() {
             function.invoke()
                 .let {
                     if (it.isSuccessful) {
-                        Log.i("TAG", "updateAccount: SUCCESS")
                         data.postValue(Resource.success(it.body()))
                     } else {
-                        Log.e("TAG", "updateAccount: FAILURE")
                         data.postValue(Resource.error(it.errorBody().toString(), null))
                     }
                 }
