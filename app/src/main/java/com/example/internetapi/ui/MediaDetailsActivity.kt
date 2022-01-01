@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.internetapi.api.Resource
 import com.example.internetapi.databinding.ActivityMediaDetailsBinding
 import com.example.internetapi.databinding.AddMediaMeterViewBinding
+import com.example.internetapi.functions.removeRecycleViewItemOnSwipe
 import com.example.internetapi.models.MediaRegisterRequest
 import com.example.internetapi.models.MediaUsage
 import com.example.internetapi.models.Status
@@ -41,16 +42,7 @@ class MediaDetailsActivity : AppCompatActivity() {
         binding.data.layoutManager = LinearLayoutManager(this)
         binding.data.adapter = adapter
 
-        ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
-            override fun onMove(
-                v: RecyclerView,
-                h: RecyclerView.ViewHolder,
-                t: RecyclerView.ViewHolder
-            ) = false
-
-            override fun onSwiped(h: RecyclerView.ViewHolder, dir: Int) =
-                removeItem(h.absoluteAdapterPosition)
-        }).attachToRecyclerView(binding.data)
+        removeRecycleViewItemOnSwipe(binding.data) { pos -> removeItem(pos) }
 
         intent.extras?.let { extra ->
             val mediaTypeId = extra.getInt("mediaId")
@@ -102,10 +94,8 @@ class MediaDetailsActivity : AppCompatActivity() {
 
     private fun processSuccess(it: Resource<List<MediaUsage>>) {
         it.data.let { res ->
-            if (res != null) {
-                res.let { list ->
-                    adapter.submitList(list)
-                }
+            res?.let { list ->
+                adapter.submitList(list)
             }
         }
     }
