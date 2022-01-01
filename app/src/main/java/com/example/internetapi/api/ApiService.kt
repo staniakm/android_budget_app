@@ -73,6 +73,9 @@ interface ApiService {
 
     @POST("media/usage")
     suspend fun addMediaUsage(@Body mediaUsageRequest: MediaRegisterRequest): Response<List<MediaUsage>>
+
+    @DELETE("media/usage/{mediaUsageId}")
+    suspend fun removeMediaUsageItem(@Path("mediaUsageId") id: Int): Response<Void>
 }
 
 class ApiHelperImpl @Inject constructor(private val apiService: ApiService) : ApiHelper {
@@ -141,6 +144,10 @@ class ApiHelperImpl @Inject constructor(private val apiService: ApiService) : Ap
     override suspend fun addMediaUsageEntry(mediaUsageRequest: MediaRegisterRequest): Response<List<MediaUsage>> {
         return apiService.addMediaUsage(mediaUsageRequest)
     }
+
+    override suspend fun removeMediaUsageItem(id: Int): Response<Void> {
+        return apiService.removeMediaUsageItem(id)
+    }
 }
 
 interface ApiHelper {
@@ -166,4 +173,5 @@ interface ApiHelper {
     suspend fun addNewMediaType(mediaTypeRequest: MediaTypeRequest): Response<MediaType>
     suspend fun getMediaUsageByType(mediaTypeId: Int): Response<List<MediaUsage>>
     suspend fun addMediaUsageEntry(mediaUsageRequest: MediaRegisterRequest): Response<List<MediaUsage>>
+    suspend fun removeMediaUsageItem(id: Int): Response<Void>
 }

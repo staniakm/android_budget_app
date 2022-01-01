@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.internetapi.databinding.MediaDetailsAdapterBinding
 import com.example.internetapi.models.MediaUsage
+import java.math.BigDecimal
 
 class MediaDetailsAdapter : RecyclerView.Adapter<MediaDetailsViewHolder>() {
 
@@ -38,17 +39,26 @@ class MediaDetailsAdapter : RecyclerView.Adapter<MediaDetailsViewHolder>() {
     override fun onBindViewHolder(holder: MediaDetailsViewHolder, position: Int) {
         val item = differ.currentList[position]
         val previousMonthItem =
-            differ.currentList.getOrElse(position + 1) { MediaUsage(-1, 0, 0, 0.0) }
+            differ.currentList.getOrElse(position + 1) { MediaUsage(-1, 0, 0, BigDecimal.ZERO) }
         holder.binding.apply {
             date.text = "${item.month}-${item.year}"
             lastValue.text = item.meterRead.toString()
             previous.text = previousMonthItem.meterRead.toString()
-            change.text = (item.meterRead - previousMonthItem.meterRead).toString()
+            change.text = (item.meterRead.minus(previousMonthItem.meterRead)).toString()
         }
     }
 
     override fun getItemCount(): Int {
         return differ.currentList.size
+    }
+
+    fun removeAt(adapterPosition: Int): MediaUsage? {
+        val item = differ.currentList[adapterPosition]
+        differ.currentList.filterIndexed { index, _ -> index != adapterPosition }
+            .let {
+                differ.submitList(it)
+            }
+        return item
     }
 }
 

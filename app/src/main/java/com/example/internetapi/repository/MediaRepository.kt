@@ -11,4 +11,5 @@ class MediaRepository @Inject constructor(
     suspend fun addNewMediaType(mediaTypeRequest: MediaTypeRequest) = apiHelper.addNewMediaType(mediaTypeRequest)
     suspend fun getMediaUsageByType(mediaTypeId: Int) = apiHelper.getMediaUsageByType(mediaTypeId)
     suspend fun addMediaUsageEntry(mediaRegisterRequest: MediaRegisterRequest) = apiHelper.addMediaUsageEntry(mediaRegisterRequest)
+    suspend fun removeUsageItem(id:Int) = apiHelper.removeMediaUsageItem(id)
 }

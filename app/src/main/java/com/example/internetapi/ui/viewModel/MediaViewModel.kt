@@ -83,5 +83,21 @@ class MediaViewModel @Inject constructor(private val mediaRepository: MediaRepos
         return data
     }
 
+    fun removeMediaUsage(id: Int): LiveData<Resource<Void>> {
+        val data = MutableLiveData<Resource<Void>>()
+        viewModelScope.launch {
+            data.postValue(Resource.loading(null))
+            mediaRepository.removeUsageItem(id)
+                .let {
+                    if (it.isSuccessful) {
+                        data.postValue(Resource.success(it.body()))
+                    } else {
+                        data.postValue(Resource.error(it.errorBody().toString(), null))
+                    }
+                }
+        }
+        return data
+    }
+
 
 }
