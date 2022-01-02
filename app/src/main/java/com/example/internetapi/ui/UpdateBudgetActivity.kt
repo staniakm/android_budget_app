@@ -2,19 +2,23 @@ package com.example.internetapi.ui
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import com.example.internetapi.databinding.ActivityUpdateBudgetBinding
-import com.example.internetapi.models.*
+import com.example.internetapi.functions.errorSnackBar
+import com.example.internetapi.models.MonthBudget
+import com.example.internetapi.models.Status
+import com.example.internetapi.models.UpdateBudgetRequest
+import com.example.internetapi.models.UpdateBudgetResponse
 import com.example.internetapi.ui.viewModel.BudgetViewModel
-import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import java.math.BigDecimal
 
 @AndroidEntryPoint
 class UpdateBudgetActivity : AppCompatActivity() {
+    private val FAILED_TO_UPDATE_BUDGET = "Failed to update budget data"
+
     private val budgetViewModel: BudgetViewModel by viewModels()
     private lateinit var binding: ActivityUpdateBudgetBinding
 
@@ -34,31 +38,25 @@ class UpdateBudgetActivity : AppCompatActivity() {
                     binding.planned.setText(planned.toString())
                 }
                 binding.updateBudget.setOnClickListener {
-                    budgetViewModel.updateBudget(
-                        UpdateBudgetRequest(
-                            budget.budgetId,
-                            BigDecimal(binding.planned.text.toString())
-                        )
-                    ).observe(this, {
-                        when (it.status) {
-                            Status.SUCCESS -> updateAdapter(it.data)
-                            Status.ERROR -> Snackbar.make(
-                                binding.root,
-                                "failed update account data",
-                                Snackbar.LENGTH_LONG
-                            )
-                                .show()
-                            Status.LOADING -> Log.println(
-                                Log.DEBUG,
-                                "UpdateBudget..",
-                                "Loading....."
-                            )
-                        }
-                    })
+                    updateBudget(budget)
                 }
-
             }
         }
+    }
+
+    private fun updateBudget(budget: MonthBudget) {
+        budgetViewModel.updateBudget(
+            UpdateBudgetRequest(
+                budget.budgetId,
+                BigDecimal(binding.planned.text.toString())
+            )
+        ).observe(this, {
+            when (it.status) {
+                Status.SUCCESS -> updateAdapter(it.data)
+                Status.ERROR -> errorSnackBar(binding.root, FAILED_TO_UPDATE_BUDGET)
+                Status.LOADING -> {}
+            }
+        })
     }
 
     private fun updateAdapter(accId: UpdateBudgetResponse?) {

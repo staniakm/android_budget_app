@@ -4,29 +4,32 @@ import android.app.AlertDialog
 import android.os.Bundle
 import android.util.Log
 import android.view.ViewGroup
-import android.widget.DatePicker
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.internetapi.api.Resource
 import com.example.internetapi.databinding.ActivityMediaDetailsBinding
 import com.example.internetapi.databinding.AddMediaMeterViewBinding
+import com.example.internetapi.functions.errorSnackBar
 import com.example.internetapi.functions.removeRecycleViewItemOnSwipe
+import com.example.internetapi.functions.successSnackBar
 import com.example.internetapi.functions.toLocalDate
 import com.example.internetapi.models.MediaRegisterRequest
 import com.example.internetapi.models.MediaUsage
 import com.example.internetapi.models.Status
 import com.example.internetapi.ui.adapters.MediaDetailsAdapter
 import com.example.internetapi.ui.viewModel.MediaViewModel
-import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import java.math.BigDecimal
 import java.time.LocalDate
 
 @AndroidEntryPoint
 class MediaDetailsActivity : AppCompatActivity() {
+    private val FAILED_TO_REMOVE_MEDIA_USAGE = "Failed to remove media usage"
+    private val FAILED_TO_ADD_MEDIA_USAGE = "Failed to add media usage entry"
+    private val FAILED_TO_LOAD_MEDIA_USAGE_DATA = "Failed to load media usage data"
+    private val MEDIA_USAGE_REMOVED = "Media usage item removed"
+
     private val viewModel: MediaViewModel by viewModels()
     private lateinit var binding: ActivityMediaDetailsBinding
     private lateinit var adapter: MediaDetailsAdapter
@@ -64,17 +67,9 @@ class MediaDetailsActivity : AppCompatActivity() {
     private fun callRemoveItem(id: Int) {
         viewModel.removeMediaUsage(id).observe(this, {
             when (it.status) {
-                Status.SUCCESS -> Snackbar.make(
-                    binding.root,
-                    "Item removed",
-                    Snackbar.LENGTH_LONG
-                ).show()
-                Status.ERROR -> Snackbar.make(
-                    binding.root,
-                    "Failed to remove media item",
-                    Snackbar.LENGTH_LONG
-                ).show()
-                Status.LOADING -> Log.println(Log.DEBUG, "MediaType", "Loading.....")
+                Status.SUCCESS -> successSnackBar(binding.root, MEDIA_USAGE_REMOVED)
+                Status.ERROR -> errorSnackBar(binding.root, FAILED_TO_REMOVE_MEDIA_USAGE)
+                Status.LOADING -> {}
             }
         })
     }
@@ -83,12 +78,8 @@ class MediaDetailsActivity : AppCompatActivity() {
         viewModel.getMediaUsageByType(mediaTypeId).observe(this, {
             when (it.status) {
                 Status.SUCCESS -> processSuccess(it)
-                Status.ERROR -> Snackbar.make(
-                    binding.root,
-                    "Failed to fetched media usage data",
-                    Snackbar.LENGTH_LONG
-                ).show()
-                Status.LOADING -> Log.println(Log.DEBUG, "MediaType", "Loading.....")
+                Status.ERROR -> errorSnackBar(binding.root, FAILED_TO_LOAD_MEDIA_USAGE_DATA)
+                Status.LOADING -> {}
             }
         })
     }
@@ -122,9 +113,7 @@ class MediaDetailsActivity : AppCompatActivity() {
                     )
                 }
             }
-            .setNegativeButton("Cancel") { _, _ ->
-                Log.d("TAG", "onBindViewHolder: CANCEL")
-            }
+            .setNegativeButton("Cancel") { _, _ -> }
         alert.show()
     }
 
@@ -133,12 +122,8 @@ class MediaDetailsActivity : AppCompatActivity() {
         viewModel.addMediaUsageEntry(request).observe(this, {
             when (it.status) {
                 Status.SUCCESS -> processSuccess(it)
-                Status.ERROR -> Snackbar.make(
-                    binding.root,
-                    "Failed to fetched media usage data",
-                    Snackbar.LENGTH_LONG
-                ).show()
-                Status.LOADING -> Log.println(Log.DEBUG, "MediaType", "Loading.....")
+                Status.ERROR -> errorSnackBar(binding.root, FAILED_TO_ADD_MEDIA_USAGE)
+                Status.LOADING -> {}
             }
         })
     }

@@ -15,11 +15,14 @@ import dagger.hilt.android.AndroidEntryPoint
 import java.math.BigDecimal
 
 import android.content.Intent
+import com.example.internetapi.functions.errorSnackBar
 import com.example.internetapi.models.UpdateAccountResponse
 
 
 @AndroidEntryPoint
 class AccountUpdateActivity : AppCompatActivity() {
+    private val FAILED_TO_UPDATE_ACCOUNT = "Failed to update account data"
+
     private val accountViewModel: AccountViewModel by viewModels()
     private lateinit var binding: ActivityAccountUpdateBinding
 
@@ -43,23 +46,13 @@ class AccountUpdateActivity : AppCompatActivity() {
                             binding.accName.text.toString(),
                             BigDecimal(binding.accMoney.text.toString())
                         )
-                    )
-                        .observe(this, {
-                            when (it.status) {
-                                Status.SUCCESS -> updateAdapter(it.data)
-                                Status.ERROR -> Snackbar.make(
-                                    binding.root,
-                                    "failed update account data",
-                                    Snackbar.LENGTH_LONG
-                                )
-                                    .show()
-                                Status.LOADING -> Log.println(
-                                    Log.DEBUG,
-                                    "AccountDetails",
-                                    "Loading....."
-                                )
-                            }
-                        })
+                    ).observe(this, {
+                        when (it.status) {
+                            Status.SUCCESS -> updateAdapter(it.data)
+                            Status.ERROR -> errorSnackBar(binding.root, FAILED_TO_UPDATE_ACCOUNT)
+                            Status.LOADING -> {}
+                        }
+                    })
                 }
 
             }

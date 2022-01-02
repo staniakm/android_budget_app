@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.util.Log
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
-import android.widget.DatePicker
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -15,11 +14,11 @@ import com.example.internetapi.config.DateFormatter.yyyymm
 import com.example.internetapi.databinding.ActivityAccountDetailsBinding
 import com.example.internetapi.databinding.IncomeViewBinding
 import com.example.internetapi.databinding.TransferViewBinding
+import com.example.internetapi.functions.errorSnackBar
 import com.example.internetapi.functions.toLocalDate
 import com.example.internetapi.global.MonthSelector
 import com.example.internetapi.models.*
 import com.example.internetapi.ui.viewModel.AccountViewModel
-import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -27,6 +26,9 @@ import java.time.format.DateTimeFormatter
 
 @AndroidEntryPoint
 class AccountDetailsActivity : AppCompatActivity() {
+
+    private val FAILED_TO_GET_INCOME_TYPE = "Failed to load income type"
+
     private val accountViewModel: AccountViewModel by viewModels()
     private lateinit var binding: ActivityAccountDetailsBinding
     private lateinit var incomeBinding: IncomeViewBinding
@@ -105,9 +107,7 @@ class AccountDetailsActivity : AppCompatActivity() {
                     )
                 }
             }
-            .setNegativeButton("Cancel") { _, _ ->
-                Log.i("TAG", "onBindViewHolder: CANCEL")
-            }
+            .setNegativeButton("Cancel") { _, _ -> }
         alert.show()
 
 
@@ -130,12 +130,8 @@ class AccountDetailsActivity : AppCompatActivity() {
         accountViewModel.getIncomeTypes().observe(this, {
             when (it.status) {
                 Status.SUCCESS -> loadOnSuccessIncome(it.data, name, accountId)
-                Status.ERROR -> Snackbar.make(
-                    binding.rootView,
-                    "failed fetched data",
-                    Snackbar.LENGTH_LONG
-                ).show()
-                Status.LOADING -> Log.println(Log.DEBUG, "AccountDetails", "Loading.....")
+                Status.ERROR -> errorSnackBar(binding.root, FAILED_TO_GET_INCOME_TYPE)
+                Status.LOADING -> {}
             }
         })
         incomeBinding.root.parent?.let {
@@ -173,9 +169,7 @@ class AccountDetailsActivity : AppCompatActivity() {
                         )
                     }
                 }
-                .setNegativeButton("Cancel") { _, _ ->
-                    Log.d("TAG", "onBindViewHolder: CANCEL")
-                }
+                .setNegativeButton("Cancel") { _, _ -> }
             alert.show()
         }
     }

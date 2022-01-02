@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.internetapi.R
 import com.example.internetapi.api.Resource
 import com.example.internetapi.databinding.ActivityInvoiceDetailsBinding
+import com.example.internetapi.functions.errorSnackBar
 import com.example.internetapi.models.InvoiceDetails
 import com.example.internetapi.models.Status
 import com.example.internetapi.ui.adapters.InvoiceDetailsAdapter
@@ -18,6 +19,7 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class InvoiceDetailsActivity : AppCompatActivity() {
+    private val FAILED_TO_LOAD_INVOICE_DETAILS: String = "Failed to load invoice details"
     private val invoiceViewModel: InvoiceViewModel by viewModels()
     private lateinit var binding: ActivityInvoiceDetailsBinding
     private lateinit var adapter: InvoiceDetailsAdapter
@@ -36,13 +38,8 @@ class InvoiceDetailsActivity : AppCompatActivity() {
             invoiceViewModel.invoiceDetails(invoiceId).observe(this, {
                 when (it.status) {
                     Status.SUCCESS -> loadOnSuccess(it)
-                    Status.ERROR -> Snackbar.make(
-                        binding.rootView,
-                        "failed fetched data",
-                        Snackbar.LENGTH_SHORT
-                    )
-                        .show()
-                    Status.LOADING -> Log.println(Log.DEBUG, "InvoiceDetails", "Loading.....")
+                    Status.ERROR -> errorSnackBar(binding.root, FAILED_TO_LOAD_INVOICE_DETAILS)
+                    Status.LOADING -> {}
                 }
             })
         }
@@ -51,14 +48,6 @@ class InvoiceDetailsActivity : AppCompatActivity() {
     private fun loadOnSuccess(it: Resource<List<InvoiceDetails>>) {
         binding.progress.visibility = View.GONE
         binding.rvInvoices.visibility = View.VISIBLE
-        it.data.let { res ->
-            if (res != null) {
-                res.let { list ->
-                    adapter.submitList(list)
-                }
-            } else {
-                Snackbar.make(binding.root, "Status = false", Snackbar.LENGTH_SHORT).show()
-            }
-        }
+        it.data?.let { list -> adapter.submitList(list) }
     }
 }

@@ -108,14 +108,10 @@ class AccountActivity : AppCompatActivity(), OnItemClickedListener {
             LocalDate.now().withDayOfMonth(1).plusMonths(MonthSelector.month.toLong())
                 .format(DateFormatter.yyyymm)
         it.data.let { res ->
-            if (res != null) {
-                res.let { list ->
-                    adapter.submitList(list)
-                    AccountHolder.accounts = list.map { it.toSimpleAccount() }.toMutableList()
-                }
-            } else {
-                Snackbar.make(binding.rootView, "Status = false", Snackbar.LENGTH_SHORT).show()
-            }
+            res?.let { list ->
+                adapter.submitList(list)
+                AccountHolder.accounts = list.map { it.toSimpleAccount() }.toMutableList()
+            } ?: Snackbar.make(binding.rootView, "Status = false", Snackbar.LENGTH_SHORT).show()
         }
     }
 

@@ -11,6 +11,7 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.internetapi.api.Resource
 import com.example.internetapi.databinding.ActivityMediaBinding
+import com.example.internetapi.functions.errorSnackBar
 import com.example.internetapi.models.MediaType
 import com.example.internetapi.models.MediaTypeRequest
 import com.example.internetapi.models.Status
@@ -62,13 +63,11 @@ class MediaActivity : AppCompatActivity(), OnItemClickedListener {
         viewModel.addNewMediaType(MediaTypeRequest(mediaName)).observe(this, {
             when (it.status) {
                 Status.SUCCESS -> processSuccessAddMedia(it)
-                Status.ERROR -> Snackbar.make(
+                Status.ERROR -> errorSnackBar(
                     binding.root,
-                    "Failed to add new media with name: $mediaName",
-                    Snackbar.LENGTH_SHORT
+                    "Failed to add new media with name: $mediaName"
                 )
-                    .show()
-                Status.LOADING -> Log.println(Log.DEBUG, "MediaType", "Loading.....")
+                Status.LOADING -> {}
             }
         })
     }
@@ -86,30 +85,18 @@ class MediaActivity : AppCompatActivity(), OnItemClickedListener {
         viewModel.getMediaTypes().observe(this, {
             when (it.status) {
                 Status.SUCCESS -> processSuccess(it)
-                Status.ERROR -> Snackbar.make(
-                    binding.root,
-                    "failed fetched data",
-                    Snackbar.LENGTH_SHORT
-                ).show()
+                Status.ERROR -> errorSnackBar(binding.root, "Failed to load media types data")
                 Status.LOADING -> Log.println(Log.DEBUG, "MediaType", "Loading.....")
             }
         })
     }
 
     private fun processSuccess(it: Resource<List<MediaType>>) {
-        it.data.let { res ->
-            if (res != null) {
-                if (res.isEmpty()) {
-                    Snackbar.make(
-                        binding.root,
-                        "No data available. Please add new data",
-                        Snackbar.LENGTH_LONG
-                    ).show()
-                } else {
-                    res.let { list ->
-                        adapter.submitList(list)
-                    }
-                }
+        it.data?.let {
+            if (it.isEmpty()) {
+                errorSnackBar(binding.root, "No data available. Please add new data")
+            } else {
+                adapter.submitList(it)
             }
         }
     }

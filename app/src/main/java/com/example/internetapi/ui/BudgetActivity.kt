@@ -11,6 +11,7 @@ import com.example.internetapi.api.Resource
 import com.example.internetapi.config.ActivityResultCodes
 import com.example.internetapi.config.DateFormatter.yyyymm
 import com.example.internetapi.databinding.ActivityBudgetBinding
+import com.example.internetapi.functions.errorSnackBar
 import com.example.internetapi.global.MonthSelector
 import com.example.internetapi.models.Budget
 import com.example.internetapi.models.Status
@@ -24,6 +25,8 @@ import java.time.LocalDate
 
 @AndroidEntryPoint
 class BudgetActivity : AppCompatActivity() {
+    private val FAILED_TO_RECALCULATE_BUDGETS: String = "Failed to recalculate budgets"
+    private val FAILED_TO_LOAD_BUDGETS: String = "Failed to load budgets data"
     private var df: DecimalFormat = DecimalFormat("##0.00")
 
     private val viewModel: BudgetViewModel by viewModels()
@@ -66,13 +69,8 @@ class BudgetActivity : AppCompatActivity() {
         viewModel.recalculateBudgets().observe(this, {
             when (it.status) {
                 Status.SUCCESS -> processSuccess(it)
-                Status.ERROR -> Snackbar.make(
-                    binding.root,
-                    "failed fetched data",
-                    Snackbar.LENGTH_SHORT
-                )
-                    .show()
-                Status.LOADING -> Log.println(Log.DEBUG, "InvoiceDetails", "Loading.....")
+                Status.ERROR -> errorSnackBar(binding.root, FAILED_TO_RECALCULATE_BUDGETS)
+                Status.LOADING -> {}
             }
         })
     }
@@ -88,13 +86,8 @@ class BudgetActivity : AppCompatActivity() {
         viewModel.getBudgets().observe(this, {
             when (it.status) {
                 Status.SUCCESS -> processSuccess(it)
-                Status.ERROR -> Snackbar.make(
-                    binding.root,
-                    "failed fetched data",
-                    Snackbar.LENGTH_SHORT
-                )
-                    .show()
-                Status.LOADING -> Log.println(Log.DEBUG, "InvoiceDetails", "Loading.....")
+                Status.ERROR -> errorSnackBar(binding.root, FAILED_TO_LOAD_BUDGETS)
+                Status.LOADING -> {}
             }
         })
     }
@@ -108,7 +101,7 @@ class BudgetActivity : AppCompatActivity() {
                     adapter.updateBudget(budget)
                     binding.totalPlaned.text = "Zaplanowane: ${df.format(budget.monthPlanned)}"
                 }
-                RESULT_CANCELED -> Log.i("TAG", "onActivityResult: NO RESULT RETURNED")
+                RESULT_CANCELED -> {}
             }
         }
     }
@@ -123,17 +116,11 @@ class BudgetActivity : AppCompatActivity() {
 
     @SuppressLint("SetTextI18n")
     private fun processSuccess(it: Resource<Budget>) {
-        it.data.let { res ->
-            if (res != null) {
-                res.let { data ->
-                    binding.totalEarned.text = "Zarobione: ${df.format(data.totalEarned)}"
-                    binding.totalPlaned.text = "Zaplanowane: ${df.format(data.totalPlanned)}"
-                    binding.totalSpend.text = "Wydane: ${df.format(data.totalSpend)}"
-                    adapter.submitList(data.budgets)
-                }
-            } else {
-                Snackbar.make(binding.root, "Status = false", Snackbar.LENGTH_SHORT).show()
-            }
+        it.data?.let { data ->
+            binding.totalEarned.text = "Zarobione: ${df.format(data.totalEarned)}"
+            binding.totalPlaned.text = "Zaplanowane: ${df.format(data.totalPlanned)}"
+            binding.totalSpend.text = "Wydane: ${df.format(data.totalSpend)}"
+            adapter.submitList(data.budgets)
         }
     }
 }

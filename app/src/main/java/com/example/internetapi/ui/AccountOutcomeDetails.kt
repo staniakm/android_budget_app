@@ -1,24 +1,26 @@
 package com.example.internetapi.ui
 
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.internetapi.api.Resource
 import com.example.internetapi.databinding.ActivityAccountOutcomeDetailsBinding
+import com.example.internetapi.functions.errorSnackBar
 import com.example.internetapi.models.AccountInvoice
 import com.example.internetapi.models.Status
 import com.example.internetapi.models.UpdateInvoiceAccountRequest
 import com.example.internetapi.ui.adapters.AccountExpensesAdapter
 import com.example.internetapi.ui.viewModel.AccountViewModel
 import com.example.internetapi.ui.viewModel.InvoiceViewModel
-import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class AccountOutcomeDetails : AppCompatActivity() {
+
+    private val FAILED_TO_LOAD_ACCOUNT_INVOICES = "Failed to load account invoices"
+
     private val accountViewModel: AccountViewModel by viewModels()
     private val invoiceViewModel: InvoiceViewModel by viewModels()
     private lateinit var binding: ActivityAccountOutcomeDetailsBinding
@@ -39,16 +41,10 @@ class AccountOutcomeDetails : AppCompatActivity() {
                 accountViewModel.accountInvoices(accountId).observe(this, {
                     when (it.status) {
                         Status.SUCCESS -> loadOnSuccess(it, accountId)
-                        Status.ERROR -> Snackbar.make(
-                            binding.rootView,
-                            "failed fetched data",
-                            Snackbar.LENGTH_SHORT
-                        )
-                            .show()
-                        Status.LOADING -> Log.println(Log.DEBUG, "AccountDetails", "Loading.....")
+                        Status.ERROR -> errorSnackBar(binding.root, FAILED_TO_LOAD_ACCOUNT_INVOICES)
+                        Status.LOADING -> {}
                     }
                 })
-
             }
         }
     }
@@ -69,14 +65,8 @@ class AccountOutcomeDetails : AppCompatActivity() {
     private fun loadOnSuccess(it: Resource<List<AccountInvoice>>, accountId: Int) {
         binding.progress.visibility = View.GONE
         binding.rvInvoices.visibility = View.VISIBLE
-        it.data.let { res ->
-            if (res != null) {
-                res.let { list ->
-                    adapter.submitList(list, accountId)
-                }
-            } else {
-                Snackbar.make(binding.root, "Status = false", Snackbar.LENGTH_SHORT).show()
-            }
+        it.data?.let {
+            adapter.submitList(it, accountId)
         }
     }
 }
