@@ -76,6 +76,13 @@ class AccountDetailsActivity : AppCompatActivity() {
             binding.moveMoney.setOnClickListener {
                 createMoveMoneyDialog(name, accountId)
             }
+            binding.addInvoice.setOnClickListener {
+                Intent(this, AccountOutcomeRegisterActivity::class.java).apply {
+                    this.putExtra("accountId", extra.getInt("accountId"))
+                }.let {
+                    ContextCompat.startActivity(this, it, null)
+                }
+            }
         }
     }
 

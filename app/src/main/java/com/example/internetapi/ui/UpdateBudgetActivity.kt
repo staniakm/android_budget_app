@@ -60,10 +60,12 @@ class UpdateBudgetActivity : AppCompatActivity() {
     }
 
     private fun updateAdapter(accId: UpdateBudgetResponse?) {
-        val returnIntent = Intent()
         accId?.let {
-            returnIntent.putExtra("result", it)
-            setResult(RESULT_OK, returnIntent)
+            Intent().apply {
+                putExtra("result", it)
+            }.let {
+                setResult(RESULT_OK, it)
+            }
         } ?: setResult(RESULT_CANCELED)
 
         finish()
