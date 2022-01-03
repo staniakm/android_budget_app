@@ -76,6 +76,12 @@ interface ApiService {
 
     @DELETE("media/usage/{mediaUsageId}")
     suspend fun removeMediaUsageItem(@Path("mediaUsageId") id: Int): Response<Void>
+
+    @GET("shop/all")
+    suspend fun getAllShops(): Response<List<Shop>>
+
+    @GET("shop/{shopId}")
+    suspend fun getShopItems(@Path("shopId") shopId: Int): Response<List<ShopItem>>
 }
 
 class ApiHelperImpl @Inject constructor(private val apiService: ApiService) : ApiHelper {
@@ -148,6 +154,14 @@ class ApiHelperImpl @Inject constructor(private val apiService: ApiService) : Ap
     override suspend fun removeMediaUsageItem(id: Int): Response<Void> {
         return apiService.removeMediaUsageItem(id)
     }
+
+    override suspend fun getShops(): Response<List<Shop>> {
+        return apiService.getAllShops()
+    }
+
+    override suspend fun getShopItems(shopId: Int): Response<List<ShopItem>> {
+        return apiService.getShopItems(shopId)
+    }
 }
 
 interface ApiHelper {
@@ -174,4 +188,6 @@ interface ApiHelper {
     suspend fun getMediaUsageByType(mediaTypeId: Int): Response<List<MediaUsage>>
     suspend fun addMediaUsageEntry(mediaUsageRequest: MediaRegisterRequest): Response<List<MediaUsage>>
     suspend fun removeMediaUsageItem(id: Int): Response<Void>
+    suspend fun getShops(): Response<List<Shop>>
+    suspend fun getShopItems(shopId: Int): Response<List<ShopItem>>
 }

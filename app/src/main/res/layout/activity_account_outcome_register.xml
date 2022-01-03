@@ -30,11 +30,10 @@
         android:layout_width="match_parent"
         android:layout_height="36dp"
         android:layout_marginTop="16dp"
+        android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/saveInvoice"
-        android:visibility="gone"
-        >
+        app:layout_constraintTop_toBottomOf="@+id/saveInvoice">
 
         <TextView
             android:id="@+id/date"
@@ -61,11 +60,10 @@
         android:layout_width="match_parent"
         android:layout_height="36dp"
         android:layout_marginTop="16dp"
+        android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/data1"
-        android:visibility="gone"
-        >
+        app:layout_constraintTop_toBottomOf="@+id/data1">
 
         <TextView
             android:id="@+id/shop"
@@ -99,6 +97,18 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/data2" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="@dimen/fab_margin"
+        android:layout_marginBottom="16dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/cancelInvoice"
+        app:layout_constraintRight_toRightOf="parent"
+        app:srcCompat="@android:drawable/ic_input_add" />
 
     <Button
         android:id="@+id/cancelInvoice"
