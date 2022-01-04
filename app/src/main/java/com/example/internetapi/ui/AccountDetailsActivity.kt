@@ -63,7 +63,7 @@ class AccountDetailsActivity : AppCompatActivity() {
             binding.outcomeLay.setOnClickListener {
                 Intent(this, AccountOutcomeDetails::class.java).apply {
                     this.putExtra("name", name)
-                    this.putExtra("accountId", extra.getInt("accountId"))
+                    this.putExtra("accountId", accountId)
                     this.putExtra("outcome", outcome)
                 }.let {
                     ContextCompat.startActivity(this, it, null)
@@ -78,7 +78,8 @@ class AccountDetailsActivity : AppCompatActivity() {
             }
             binding.addInvoice.setOnClickListener {
                 Intent(this, AccountOutcomeRegisterActivity::class.java).apply {
-                    this.putExtra("accountId", extra.getInt("accountId"))
+                    this.putExtra("accountId", accountId)
+                    this.putExtra("accountName", name)
                 }.let {
                     ContextCompat.startActivity(this, it, null)
                 }

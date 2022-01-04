@@ -10,7 +10,6 @@ import android.widget.ArrayAdapter
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.example.internetapi.api.Resource
-import com.example.internetapi.config.AccountHolder
 import com.example.internetapi.databinding.ActivityAccountOutcomeRegisterBinding
 import com.example.internetapi.databinding.CreateInvoiceViewBinding
 import com.example.internetapi.functions.errorSnackBar
@@ -35,15 +34,20 @@ class AccountOutcomeRegisterActivity : AppCompatActivity() {
         invoiceBinding = CreateInvoiceViewBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.addInvoice.setOnClickListener {
 
-            binding.addInvoice.visibility = View.GONE
-            binding.saveInvoice.visibility = View.VISIBLE
-            binding.items.visibility = View.VISIBLE
-            binding.data1.visibility = View.VISIBLE
-            binding.data2.visibility = View.VISIBLE
-            binding.fab.visibility = View.VISIBLE
-            loadData()
+        binding.addInvoice.setOnClickListener {
+            intent.extras?.let { extra ->
+                invoice = Invoice(extra.getInt("accountId"))
+
+
+                binding.addInvoice.visibility = View.GONE
+                binding.saveInvoice.visibility = View.VISIBLE
+                binding.items.visibility = View.VISIBLE
+                binding.data1.visibility = View.VISIBLE
+                binding.data2.visibility = View.VISIBLE
+                binding.fab.visibility = View.VISIBLE
+                loadData(extra.getString("accountName"))
+            }
         }
 
         binding.cancelInvoice.setOnClickListener {
@@ -65,10 +69,10 @@ class AccountOutcomeRegisterActivity : AppCompatActivity() {
         invoice = null
     }
 
-    private fun loadData() {
+    private fun loadData(accountName: String?) {
         viewModel.getShops().observe(this, {
             when (it.status) {
-                Status.SUCCESS -> loadOnSuccess(it)
+                Status.SUCCESS -> loadOnSuccess(it, accountName)
                 Status.ERROR -> errorSnackBar(binding.root, FAILED_TO_SHOPS)
                 Status.LOADING -> {}
             }
@@ -91,36 +95,29 @@ class AccountOutcomeRegisterActivity : AppCompatActivity() {
         }
     }
 
-    private fun loadOnSuccess(it: Resource<List<Shop>>) {
+    private fun loadOnSuccess(it: Resource<List<Shop>>, accountName: String?) {
         invoiceBinding.root.parent?.let {
             (it as ViewGroup).removeView(invoiceBinding.root)
         }
-        invoice = Invoice()
-
         val shopAdapter = ArrayAdapter<Shop>(this, R.layout.simple_spinner_dropdown_item)
         shopAdapter.notifyDataSetChanged()
         it.data?.let { shops ->
             shopAdapter.addAll(shops)
             invoiceBinding.shop.setAdapter(shopAdapter)
             invoiceBinding.shop.setSelection(0)
-            invoiceBinding.account.adapter = ArrayAdapter(
-                this,
-                R.layout.simple_spinner_dropdown_item,
-                AccountHolder.accounts
-            )
 
             invoiceBinding.shop.setOnItemClickListener { parent, view, position, id ->
                 Log.i("TAG", "loadOnSuccess: $id, $position, ${parent.getItemAtPosition(position)}")
                 invoice?.shop = parent.getItemAtPosition(position) as Shop
             }
             val alert: AlertDialog.Builder = AlertDialog.Builder(this)
-            alert.setTitle("Add invoice")
+            alert.setTitle("Add invoice for")
+                .setMessage(accountName)
                 .setView(invoiceBinding.root)
                 .setPositiveButton("OK") { _, i ->
                     invoice?.apply {
                         this.date = invoiceBinding.date.toLocalDate()
                         this.setShop(invoiceBinding.shop.text.toString())
-                        this.account = invoiceBinding.account.selectedItem as SimpleAccount
                     }
                     if (invoice!!.isBasicDataNotFilled()) {
                         errorSnackBar(binding.root, "Fill required data")

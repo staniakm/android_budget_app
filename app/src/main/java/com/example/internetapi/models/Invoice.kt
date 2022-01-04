@@ -3,9 +3,8 @@ package com.example.internetapi.models
 import java.time.LocalDate
 import java.util.*
 
-class Invoice {
+class Invoice(val accountId: Int) {
     var date: LocalDate? = null
-    var account: SimpleAccount? = null
     var shop: Shop? = null
 
 
@@ -16,11 +15,11 @@ class Invoice {
     }
 
     fun isBasicDataNotFilled(): Boolean {
-        return account == null || shop == null
+        return shop == null
     }
 
     override fun toString(): String {
-        return "Invoice(date=$date, account=${account?.id}, shop=${shop?.shopId})"
+        return "Invoice(date=$date, account=${accountId}, shop=${shop?.shopId})"
     }
 
 

@@ -22,15 +22,7 @@
             android:datePickerMode="spinner"
             android:calendarViewShown="false"
             />
-        <Spinner
-            android:id="@+id/account"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
 
-            />
         <AutoCompleteTextView
             android:id="@+id/shop"
             android:layout_width="match_parent"
@@ -46,6 +38,6 @@
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
-            android:text="0"/>
+            android:hint="invoice number"/>
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
