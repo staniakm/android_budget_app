@@ -3,6 +3,7 @@ package com.example.internetapi.ui.viewModel
 import androidx.lifecycle.LiveData
 import com.example.internetapi.api.Resource
 import com.example.internetapi.functions.ViewModelDataFunction
+import com.example.internetapi.models.CreateShopRequest
 import com.example.internetapi.models.Shop
 import com.example.internetapi.models.ShopItem
 import com.example.internetapi.repository.ShopRepository
@@ -19,5 +20,10 @@ class AccountOutcomeViewModel @Inject constructor(private val shopRepository: Sh
 
     fun getShopItems(shopId: Int): LiveData<Resource<List<ShopItem>>> {
         return executeLiveDataList { shopRepository.getShopItems(shopId) }
+    }
+
+    fun createShop(name: String): LiveData<Resource<Shop>> {
+
+        return executeLiveDataSingle { shopRepository.createShop(CreateShopRequest(name)) }
     }
 }

@@ -14,14 +14,18 @@ import com.example.internetapi.databinding.ActivityAccountOutcomeRegisterBinding
 import com.example.internetapi.databinding.CreateInvoiceViewBinding
 import com.example.internetapi.functions.errorSnackBar
 import com.example.internetapi.functions.toLocalDate
-import com.example.internetapi.models.*
+import com.example.internetapi.models.Invoice
+import com.example.internetapi.models.Shop
+import com.example.internetapi.models.ShopItem
+import com.example.internetapi.models.Status
 import com.example.internetapi.ui.viewModel.AccountOutcomeViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class AccountOutcomeRegisterActivity : AppCompatActivity() {
 
-    private val FAILED_TO_SHOPS: String = "Failed to load shops"
+    private val FAILED_TO_LOAD_SHOPS: String = "Failed to load shops"
+    private val FAILED_TO_CREATE_SHOP: String = "Failed to create shop"
     private val viewModel: AccountOutcomeViewModel by viewModels()
     private lateinit var binding: ActivityAccountOutcomeRegisterBinding
     private lateinit var invoiceBinding: CreateInvoiceViewBinding
@@ -73,20 +77,40 @@ class AccountOutcomeRegisterActivity : AppCompatActivity() {
         viewModel.getShops().observe(this, {
             when (it.status) {
                 Status.SUCCESS -> loadOnSuccess(it, accountName)
-                Status.ERROR -> errorSnackBar(binding.root, FAILED_TO_SHOPS)
+                Status.ERROR -> errorSnackBar(binding.root, FAILED_TO_LOAD_SHOPS)
                 Status.LOADING -> {}
             }
         })
     }
 
-    private fun loadShopItems(shopId: Int) {
-        viewModel.getShopItems(shopId).observe(this, {
-            when (it.status) {
-                Status.SUCCESS -> loadShopItemsOnSuccess(it)
-                Status.ERROR -> errorSnackBar(binding.root, FAILED_TO_SHOPS)
-                Status.LOADING -> {}
-            }
-        })
+    private fun loadShopItems(shop: Shop) {
+        if (shop.shopId == -1) {
+            viewModel.createShop(shop.name).observe(this, {
+                when (it.status) {
+                    Status.SUCCESS -> successCreateShop(it)
+                    Status.ERROR -> errorSnackBar(binding.root, FAILED_TO_CREATE_SHOP)
+                    Status.LOADING -> {}
+                }
+            })
+        } else {
+            viewModel.getShopItems(shop.shopId).observe(this, {
+                when (it.status) {
+                    Status.SUCCESS -> loadShopItemsOnSuccess(it)
+                    Status.ERROR -> errorSnackBar(binding.root, FAILED_TO_LOAD_SHOPS)
+                    Status.LOADING -> {}
+                }
+            })
+        }
+    }
+
+    private fun successCreateShop(it: Resource<Shop>) {
+        it.data?.let {
+            invoice?.shop = it
+        }
+    }
+
+    private fun loadItems(shopId: Int) {
+        TODO("Not yet implemented")
     }
 
     private fun loadShopItemsOnSuccess(it: Resource<List<ShopItem>>) {
@@ -122,6 +146,8 @@ class AccountOutcomeRegisterActivity : AppCompatActivity() {
                     if (invoice!!.isBasicDataNotFilled()) {
                         errorSnackBar(binding.root, "Fill required data")
                         this.hideElements()
+                    } else {
+                        this.loadShopItems(invoice!!.shop!!)
                     }
                     Log.i("TAG", "loadOnSuccess: $invoice")
                     invoiceBinding.shop.text.clear()

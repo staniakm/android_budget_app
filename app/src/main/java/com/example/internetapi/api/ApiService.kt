@@ -82,6 +82,9 @@ interface ApiService {
 
     @GET("shop/{shopId}")
     suspend fun getShopItems(@Path("shopId") shopId: Int): Response<List<ShopItem>>
+
+    @POST("shop")
+    suspend fun createShop(@Body name: CreateShopRequest): Response<Shop>
 }
 
 class ApiHelperImpl @Inject constructor(private val apiService: ApiService) : ApiHelper {
@@ -162,6 +165,10 @@ class ApiHelperImpl @Inject constructor(private val apiService: ApiService) : Ap
     override suspend fun getShopItems(shopId: Int): Response<List<ShopItem>> {
         return apiService.getShopItems(shopId)
     }
+
+    override suspend fun createShop(shopRequest: CreateShopRequest): Response<Shop> {
+        return apiService.createShop(shopRequest)
+    }
 }
 
 interface ApiHelper {
@@ -190,4 +197,5 @@ interface ApiHelper {
     suspend fun removeMediaUsageItem(id: Int): Response<Void>
     suspend fun getShops(): Response<List<Shop>>
     suspend fun getShopItems(shopId: Int): Response<List<ShopItem>>
+    suspend fun createShop(shopRequest: CreateShopRequest): Response<Shop>
 }

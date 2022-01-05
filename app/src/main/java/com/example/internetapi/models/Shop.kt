@@ -7,3 +7,5 @@ data class Shop(val shopId: Int, val name: String) {
 }
 
 data class ShopItem(val itemId: Int, val name: String)
+
+data class CreateShopRequest(val name: String)
