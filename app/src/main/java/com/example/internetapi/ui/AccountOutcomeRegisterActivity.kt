@@ -11,15 +11,15 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.example.internetapi.api.Resource
 import com.example.internetapi.databinding.ActivityAccountOutcomeRegisterBinding
+import com.example.internetapi.databinding.CreateInvoiceItemViewBinding
 import com.example.internetapi.databinding.CreateInvoiceViewBinding
 import com.example.internetapi.functions.errorSnackBar
 import com.example.internetapi.functions.toLocalDate
-import com.example.internetapi.models.Invoice
-import com.example.internetapi.models.Shop
-import com.example.internetapi.models.ShopItem
-import com.example.internetapi.models.Status
+import com.example.internetapi.models.*
 import com.example.internetapi.ui.viewModel.AccountOutcomeViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import okhttp3.internal.toLongOrDefault
+
 
 @AndroidEntryPoint
 class AccountOutcomeRegisterActivity : AppCompatActivity() {
@@ -29,20 +29,22 @@ class AccountOutcomeRegisterActivity : AppCompatActivity() {
     private val viewModel: AccountOutcomeViewModel by viewModels()
     private lateinit var binding: ActivityAccountOutcomeRegisterBinding
     private lateinit var invoiceBinding: CreateInvoiceViewBinding
+    private lateinit var invoiceItemBinding: CreateInvoiceItemViewBinding
     private val shopItems: MutableList<ShopItem> = mutableListOf()
     private var invoice: Invoice? = null
-
+    private var currentShopItem: ShopItem? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAccountOutcomeRegisterBinding.inflate(layoutInflater)
         invoiceBinding = CreateInvoiceViewBinding.inflate(layoutInflater)
+        invoiceItemBinding = CreateInvoiceItemViewBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
 
         binding.addInvoice.setOnClickListener {
             intent.extras?.let { extra ->
                 invoice = Invoice(extra.getInt("accountId"))
-
+                shopItems.clear()
 
                 binding.addInvoice.visibility = View.GONE
                 binding.saveInvoice.visibility = View.VISIBLE
@@ -71,6 +73,7 @@ class AccountOutcomeRegisterActivity : AppCompatActivity() {
         binding.data2.visibility = View.GONE
         binding.fab.visibility = View.GONE
         invoice = null
+        shopItems.clear()
     }
 
     private fun loadData(accountName: String?) {
@@ -109,13 +112,10 @@ class AccountOutcomeRegisterActivity : AppCompatActivity() {
         }
     }
 
-    private fun loadItems(shopId: Int) {
-        TODO("Not yet implemented")
-    }
 
     private fun loadShopItemsOnSuccess(it: Resource<List<ShopItem>>) {
         it.data?.let {
-            //todo load shop items
+            shopItems.addAll(it)
         }
     }
 
@@ -161,6 +161,59 @@ class AccountOutcomeRegisterActivity : AppCompatActivity() {
     }
 
     private fun addInvoiceItemDialog() {
-        TODO("Not yet implemented")
+        invoiceItemBinding.root.parent?.let {
+            (it as ViewGroup).removeView(invoiceItemBinding.root)
+        }
+        currentShopItem = null
+        val product = ArrayAdapter<ShopItem>(this, R.layout.simple_spinner_dropdown_item)
+        product.notifyDataSetChanged()
+        product.addAll(shopItems)
+        invoiceItemBinding.product.setAdapter(product)
+        invoiceItemBinding.product.setSelection(0)
+
+        invoiceItemBinding.product.setOnItemClickListener { parent, view, position, id ->
+            currentShopItem = parent.getItemAtPosition(position) as ShopItem
+        }
+        val alert: AlertDialog.Builder = AlertDialog.Builder(this)
+        alert.setTitle("Add product for")
+            .setView(invoiceItemBinding.root)
+            .setPositiveButton("OK") { _, i ->
+                if (currentShopItem == null) {
+                    currentShopItem = ShopItem(-1, invoiceItemBinding.product.text.toString())
+                }
+                with(invoiceItemBinding) {
+                    if (price.text.toString().isBlank() || amount.text.toString().isBlank()) {
+                        errorSnackBar(binding.root, "Invaliad value for price or amount")
+                    } else {
+                        InvoiceItem(
+                            currentShopItem!!,
+                            price.text.toString().toBigDecimal(),
+                            amount.text.toString().toBigDecimal(),
+                            discount.text.toString().ifBlank { "0.0" }.toBigDecimal()
+                        ).let {
+                            addNewItem(it)
+                            Log.i("TAG", "loadOnSuccess: $it")
+                        }
+                    }
+                }
+                invoiceItemBinding.product.text.clear()
+            }
+            .setNegativeButton("Cancel") { _, _ -> {} }
+        alert.show()
+    }
+
+    private fun addNewItem(invoiceItem: InvoiceItem) {
+        verifiIfProductIsValid(invoiceItem).let {
+            Log.i("TAG", "addNewItem: $it")
+        }
+
+    }
+
+    private fun verifiIfProductIsValid(invoiceItem: InvoiceItem): InvoiceItem {
+        if (invoiceItem.shopItem.itemId == -1) {
+            Log.i("TAG", "call to add product to shop")
+            return invoiceItem.copy(shopItem = invoiceItem.shopItem)
+        }
+        return invoiceItem
     }
 }

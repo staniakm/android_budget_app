@@ -1,5 +1,6 @@
 package com.example.internetapi.models
 
+import java.math.BigDecimal
 import java.time.LocalDate
 import java.util.*
 
@@ -21,6 +22,14 @@ class Invoice(val accountId: Int) {
     override fun toString(): String {
         return "Invoice(date=$date, account=${accountId}, shop=${shop?.shopId})"
     }
+}
 
 
+data class InvoiceItem(
+    val shopItem: ShopItem,
+    val price: BigDecimal,
+    val amount: BigDecimal,
+    val discount: BigDecimal = BigDecimal.ZERO
+) {
+    fun isNewShopItem(): Boolean = shopItem.itemId == -1
 }
