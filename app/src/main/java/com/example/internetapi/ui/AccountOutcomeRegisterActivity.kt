@@ -20,8 +20,6 @@ import com.example.internetapi.models.*
 import com.example.internetapi.ui.adapters.InvoiceItemsAdapter
 import com.example.internetapi.ui.viewModel.AccountOutcomeViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import java.math.MathContext
-import java.math.RoundingMode
 import java.time.format.DateTimeFormatter
 
 
@@ -109,6 +107,8 @@ class AccountOutcomeRegisterActivity : AppCompatActivity() {
         invoice = null
         shopItems.clear()
         adapter.clear()
+        binding.shop.text = ""
+        binding.date.text = ""
     }
 
     private fun loadData(accountName: String?) {
@@ -133,7 +133,8 @@ class AccountOutcomeRegisterActivity : AppCompatActivity() {
 
     private fun loadOnSuccess(it: Resource<CreateInvoiceResponse>) {
         it.data?.let {
-            Log.i("TAG", "loadOnSuccess: $it")
+            hideElements()
+            errorSnackBar(binding.root, "New invoice created for total sum: ${it.sum}")
         }
     }
 
@@ -246,17 +247,22 @@ class AccountOutcomeRegisterActivity : AppCompatActivity() {
                         InvoiceItem(
                             currentShopItem!!,
                             price.text.toString()
-                                .toBigDecimal(MathContext(2, RoundingMode.HALF_UP)),
+                                .toBigDecimal(),
                             amount.text.toString()
-                                .toBigDecimal(MathContext(3, RoundingMode.HALF_UP)),
+                                .toBigDecimal(),
                             discount.text.toString().ifBlank { "0.0" }
-                                .toBigDecimal(MathContext(2, RoundingMode.HALF_UP))
+                                .toBigDecimal()
                         ).let {
                             addNewItem(it)
                         }
                     }
                 }
-                invoiceItemBinding.product.text.clear()
+                with(invoiceItemBinding) {
+                    this.product.text.clear()
+                    price.text.clear()
+                    amount.text.clear()
+                    discount.text.clear()
+                }
             }
             .setNegativeButton("Cancel") { _, _ -> {} }
         alert.show()

@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.example.internetapi.config.AmountFormatter
 import com.example.internetapi.config.MoneyFormatter
 import com.example.internetapi.databinding.InvoiceDetailsAdapterBinding
 import com.example.internetapi.models.InvoiceItem
@@ -47,7 +48,7 @@ class InvoiceItemsAdapter() : RecyclerView.Adapter<InvoiceItemViewHolder>() {
         val item = differ.currentList[position]
         holder.binding.apply {
             productName.text = item.shopItem.name
-            quantity.text = "Ilość:\n${MoneyFormatter.df.format(item.amount)}"
+            quantity.text = "Ilość:\n${AmountFormatter.df.format(item.amount)}"
             price.text = "Cena:\n${MoneyFormatter.df.format(item.price)}"
             discount.text = "Rabat:\n${MoneyFormatter.df.format(item.discount)}"
             totalPrice.text = "Suma:\n ${MoneyFormatter.df.format(item.totalPrice())}"
