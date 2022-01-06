@@ -131,7 +131,7 @@ class AccountOutcomeRegisterActivity : AppCompatActivity() {
         })
     }
 
-    private fun loadOnSuccess(it: Resource<AccountInvoice>) {
+    private fun loadOnSuccess(it: Resource<CreateInvoiceResponse>) {
         it.data?.let {
             Log.i("TAG", "loadOnSuccess: $it")
         }

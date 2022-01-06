@@ -26,6 +26,15 @@ class Invoice(val accountId: Int) {
     }
 }
 
+data class CreateInvoiceResponse(
+    val id: Long,
+    val date: String,
+    val invoiceNumber: String,
+    val sum: BigDecimal,
+    val description: String,
+    val account: Int,
+    val shop: Int
+)
 
 data class InvoiceItem(
     val shopItem: ShopItem,

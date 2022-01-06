@@ -26,7 +26,7 @@ class AccountOutcomeViewModel @Inject constructor(private val shopRepository: Sh
         return executeLiveDataSingle { shopRepository.createShop(CreateShopRequest(name)) }
     }
 
-    fun createNewInvoice(newInvoiceRequest: NewInvoiceRequest): LiveData<Resource<AccountInvoice>> {
+    fun createNewInvoice(newInvoiceRequest: NewInvoiceRequest): LiveData<Resource<CreateInvoiceResponse>> {
         return executeLiveDataSingle { invoiceRepository.createNewInvoice(newInvoiceRequest) }
     }
 

@@ -87,7 +87,7 @@ interface ApiService {
     suspend fun createShop(@Body name: CreateShopRequest): Response<Shop>
 
     @POST("invoice")
-    suspend fun createNewInvoice(@Body newInvoiceRequest: NewInvoiceRequest): Response<AccountInvoice>
+    suspend fun createNewInvoice(@Body newInvoiceRequest: NewInvoiceRequest): Response<CreateInvoiceResponse>
 
     @POST("shop/newItem")
     suspend fun createNewShopItem(@Body createShopItemRequest: CreateShopItemRequest): Response<ShopItem>
@@ -176,7 +176,7 @@ class ApiHelperImpl @Inject constructor(private val apiService: ApiService) : Ap
         return apiService.createShop(shopRequest)
     }
 
-    override suspend fun createNewInvoice(newInvoiceRequest: NewInvoiceRequest): Response<AccountInvoice> {
+    override suspend fun createNewInvoice(newInvoiceRequest: NewInvoiceRequest): Response<CreateInvoiceResponse> {
         return apiService.createNewInvoice(newInvoiceRequest)
     }
 
@@ -212,6 +212,6 @@ interface ApiHelper {
     suspend fun getShops(): Response<List<Shop>>
     suspend fun getShopItems(shopId: Int): Response<List<ShopItem>>
     suspend fun createShop(shopRequest: CreateShopRequest): Response<Shop>
-    suspend fun createNewInvoice(newInvoiceRequest: NewInvoiceRequest): Response<AccountInvoice>
+    suspend fun createNewInvoice(newInvoiceRequest: NewInvoiceRequest): Response<CreateInvoiceResponse>
     suspend fun createNewShopItem(createShopItemRequest: CreateShopItemRequest): Response<ShopItem>
 }
