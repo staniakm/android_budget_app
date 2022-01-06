@@ -63,6 +63,10 @@ class InvoiceItemsAdapter() : RecyclerView.Adapter<InvoiceItemViewHolder>() {
     fun clear() {
         submitList(listOf())
     }
+
+    fun getItems(): MutableList<InvoiceItem> {
+        return differ.currentList
+    }
 }
 
 class InvoiceItemViewHolder(val binding: InvoiceDetailsAdapterBinding, val context: Context) :

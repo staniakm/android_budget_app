@@ -7,6 +7,8 @@ import java.util.*
 class Invoice(val accountId: Int) {
     var date: LocalDate? = null
     var shop: Shop? = null
+    var number: String = ""
+    var description = ""
 
 
     fun setShop(text: String) {
@@ -34,4 +36,21 @@ data class InvoiceItem(
 ) {
     fun isNewShopItem(): Boolean = shopItem.itemId == -1
     fun totalPrice() = price.multiply(amount).minus(discount)
+    fun toNewInvoiceItemRequest() = NewInvoiceItemRequest(shopItem, price, amount, discount)
 }
+
+data class NewInvoiceRequest(
+    val accountId: Int,
+    val shopId: Int,
+    val date: String,
+    val items: List<NewInvoiceItemRequest>,
+    val sum: BigDecimal = items.sumOf { it.totalPrice },
+    val number: String = "",
+    val description: String = ""
+)
+
+data class NewInvoiceItemRequest(
+    val shopItem: ShopItem, val unitPrice: BigDecimal,
+    val amount: BigDecimal, val discount: BigDecimal,
+    val totalPrice: BigDecimal = unitPrice.multiply(amount).minus(discount)
+)

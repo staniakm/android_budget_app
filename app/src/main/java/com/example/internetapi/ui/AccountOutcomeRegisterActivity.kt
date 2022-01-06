@@ -22,6 +22,7 @@ import com.example.internetapi.ui.viewModel.AccountOutcomeViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import java.math.MathContext
 import java.math.RoundingMode
+import java.time.format.DateTimeFormatter
 
 
 @AndroidEntryPoint
@@ -68,9 +69,35 @@ class AccountOutcomeRegisterActivity : AppCompatActivity() {
             hideElements()
         }
 
+        binding.saveInvoice.setOnClickListener {
+            saveInvoice()
+        }
+
         binding.fab.setOnClickListener {
             addInvoiceItemDialog()
         }
+    }
+
+    private fun saveInvoice() {
+        invoice?.let { inv ->
+            adapter.getItems()
+                .map {
+                    it.toNewInvoiceItemRequest()
+                }.let {
+                    NewInvoiceRequest(
+                        inv.accountId,
+                        inv.shop!!.shopId,
+                        inv.date!!.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),
+                        it,
+                        number = inv.number,
+                        description = inv.description
+                    )
+                }.let {
+                    createInvoiceRequest(it)
+                }
+        }
+
+
     }
 
     private fun hideElements() {
@@ -92,6 +119,22 @@ class AccountOutcomeRegisterActivity : AppCompatActivity() {
                 Status.LOADING -> {}
             }
         })
+    }
+
+    private fun createInvoiceRequest(newInvoiceRequest: NewInvoiceRequest) {
+        viewModel.createNewInvoice(newInvoiceRequest).observe(this, {
+            when (it.status) {
+                Status.SUCCESS -> loadOnSuccess(it)
+                Status.ERROR -> errorSnackBar(binding.root, FAILED_TO_LOAD_SHOPS)
+                Status.LOADING -> {}
+            }
+        })
+    }
+
+    private fun loadOnSuccess(it: Resource<AccountInvoice>) {
+        it.data?.let {
+            Log.i("TAG", "loadOnSuccess: $it")
+        }
     }
 
     private fun loadShopItems(shop: Shop) {
@@ -150,6 +193,7 @@ class AccountOutcomeRegisterActivity : AppCompatActivity() {
                     invoice?.apply {
                         this.date = invoiceBinding.date.toLocalDate()
                         this.setShop(invoiceBinding.shop.text.toString())
+                        this.number = invoiceBinding.number.text.toString()
                     }
                     if (invoice!!.isBasicDataNotFilled()) {
                         errorSnackBar(binding.root, "Fill required data")
@@ -201,9 +245,12 @@ class AccountOutcomeRegisterActivity : AppCompatActivity() {
                     } else {
                         InvoiceItem(
                             currentShopItem!!,
-                            price.text.toString().toBigDecimal(MathContext(2, RoundingMode.HALF_UP)),
-                            amount.text.toString().toBigDecimal(MathContext(3, RoundingMode.HALF_UP)),
-                            discount.text.toString().ifBlank { "0.0" }.toBigDecimal(MathContext(2, RoundingMode.HALF_UP))
+                            price.text.toString()
+                                .toBigDecimal(MathContext(2, RoundingMode.HALF_UP)),
+                            amount.text.toString()
+                                .toBigDecimal(MathContext(3, RoundingMode.HALF_UP)),
+                            discount.text.toString().ifBlank { "0.0" }
+                                .toBigDecimal(MathContext(2, RoundingMode.HALF_UP))
                         ).let {
                             addNewItem(it)
                         }
@@ -216,18 +263,27 @@ class AccountOutcomeRegisterActivity : AppCompatActivity() {
     }
 
     private fun addNewItem(invoiceItem: InvoiceItem) {
-        verifiIfProductIsValid(invoiceItem).let {
-            Log.i("TAG", "addNewItem: $it")
-            adapter.addItem(it)
+        if (invoiceItem.shopItem.itemId == -1) {
+            addItemToShop(invoiceItem)
+            return
         }
-
+        return adapter.addItem(invoiceItem)
     }
 
-    private fun verifiIfProductIsValid(invoiceItem: InvoiceItem): InvoiceItem {
-        if (invoiceItem.shopItem.itemId == -1) {
-            Log.i("TAG", "call to add product to shop")
-            return invoiceItem.copy(shopItem = invoiceItem.shopItem)
+    private fun addItemToShop(item: InvoiceItem) {
+
+        viewModel.createNewShopItem(invoice!!.shop!!.shopId, item.shopItem.name).observe(this, {
+            when (it.status) {
+                Status.SUCCESS -> loadShopItemsAdded(it, item)
+                Status.ERROR -> errorSnackBar(binding.root, FAILED_TO_LOAD_SHOPS)
+                Status.LOADING -> {}
+            }
+        })
+    }
+
+    private fun loadShopItemsAdded(response: Resource<ShopItem>, item: InvoiceItem) {
+        response.data?.let {
+            adapter.addItem(item.copy(shopItem = it))
         }
-        return invoiceItem
     }
 }
