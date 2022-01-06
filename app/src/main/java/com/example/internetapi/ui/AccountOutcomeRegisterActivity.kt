@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.internetapi.api.Resource
 import com.example.internetapi.databinding.ActivityAccountOutcomeRegisterBinding
 import com.example.internetapi.databinding.CreateInvoiceItemViewBinding
@@ -16,9 +17,11 @@ import com.example.internetapi.databinding.CreateInvoiceViewBinding
 import com.example.internetapi.functions.errorSnackBar
 import com.example.internetapi.functions.toLocalDate
 import com.example.internetapi.models.*
+import com.example.internetapi.ui.adapters.InvoiceItemsAdapter
 import com.example.internetapi.ui.viewModel.AccountOutcomeViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import okhttp3.internal.toLongOrDefault
+import java.math.MathContext
+import java.math.RoundingMode
 
 
 @AndroidEntryPoint
@@ -30,16 +33,22 @@ class AccountOutcomeRegisterActivity : AppCompatActivity() {
     private lateinit var binding: ActivityAccountOutcomeRegisterBinding
     private lateinit var invoiceBinding: CreateInvoiceViewBinding
     private lateinit var invoiceItemBinding: CreateInvoiceItemViewBinding
+
+    private lateinit var adapter: InvoiceItemsAdapter
+
     private val shopItems: MutableList<ShopItem> = mutableListOf()
     private var invoice: Invoice? = null
     private var currentShopItem: ShopItem? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAccountOutcomeRegisterBinding.inflate(layoutInflater)
         invoiceBinding = CreateInvoiceViewBinding.inflate(layoutInflater)
         invoiceItemBinding = CreateInvoiceItemViewBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
+        adapter = InvoiceItemsAdapter()
+        binding.items.adapter = adapter
+        binding.items.layoutManager = LinearLayoutManager(this)
 
         binding.addInvoice.setOnClickListener {
             intent.extras?.let { extra ->
@@ -50,7 +59,6 @@ class AccountOutcomeRegisterActivity : AppCompatActivity() {
                 binding.saveInvoice.visibility = View.VISIBLE
                 binding.items.visibility = View.VISIBLE
                 binding.data1.visibility = View.VISIBLE
-                binding.data2.visibility = View.VISIBLE
                 binding.fab.visibility = View.VISIBLE
                 loadData(extra.getString("accountName"))
             }
@@ -70,10 +78,10 @@ class AccountOutcomeRegisterActivity : AppCompatActivity() {
         binding.saveInvoice.visibility = View.GONE
         binding.items.visibility = View.GONE
         binding.data1.visibility = View.GONE
-        binding.data2.visibility = View.GONE
         binding.fab.visibility = View.GONE
         invoice = null
         shopItems.clear()
+        adapter.clear()
     }
 
     private fun loadData(accountName: String?) {
@@ -147,6 +155,7 @@ class AccountOutcomeRegisterActivity : AppCompatActivity() {
                         errorSnackBar(binding.root, "Fill required data")
                         this.hideElements()
                     } else {
+                        this.updateInvoiceData(invoice!!)
                         this.loadShopItems(invoice!!.shop!!)
                     }
                     Log.i("TAG", "loadOnSuccess: $invoice")
@@ -158,6 +167,11 @@ class AccountOutcomeRegisterActivity : AppCompatActivity() {
                 }
             alert.show()
         }
+    }
+
+    private fun updateInvoiceData(invoice: Invoice) {
+        binding.shop.text = invoice.shop?.name
+        binding.date.text = invoice.date.toString()
     }
 
     private fun addInvoiceItemDialog() {
@@ -187,12 +201,11 @@ class AccountOutcomeRegisterActivity : AppCompatActivity() {
                     } else {
                         InvoiceItem(
                             currentShopItem!!,
-                            price.text.toString().toBigDecimal(),
-                            amount.text.toString().toBigDecimal(),
-                            discount.text.toString().ifBlank { "0.0" }.toBigDecimal()
+                            price.text.toString().toBigDecimal(MathContext(2, RoundingMode.HALF_UP)),
+                            amount.text.toString().toBigDecimal(MathContext(3, RoundingMode.HALF_UP)),
+                            discount.text.toString().ifBlank { "0.0" }.toBigDecimal(MathContext(2, RoundingMode.HALF_UP))
                         ).let {
                             addNewItem(it)
-                            Log.i("TAG", "loadOnSuccess: $it")
                         }
                     }
                 }
@@ -205,6 +218,7 @@ class AccountOutcomeRegisterActivity : AppCompatActivity() {
     private fun addNewItem(invoiceItem: InvoiceItem) {
         verifiIfProductIsValid(invoiceItem).let {
             Log.i("TAG", "addNewItem: $it")
+            adapter.addItem(it)
         }
 
     }

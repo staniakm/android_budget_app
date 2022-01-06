@@ -29,7 +29,9 @@ data class InvoiceItem(
     val shopItem: ShopItem,
     val price: BigDecimal,
     val amount: BigDecimal,
-    val discount: BigDecimal = BigDecimal.ZERO
+    val discount: BigDecimal = BigDecimal.ZERO,
+    val timestamp: Long = System.currentTimeMillis()
 ) {
     fun isNewShopItem(): Boolean = shopItem.itemId == -1
+    fun totalPrice() = price.multiply(amount).minus(discount)
 }
