@@ -1,9 +1,7 @@
 package com.example.internetapi.di
 
 import com.example.internetapi.BuildConfig
-import com.example.internetapi.api.ApiHelper
-import com.example.internetapi.api.ApiHelperImpl
-import com.example.internetapi.api.ApiService
+import com.example.internetapi.api.*
 import com.example.internetapi.constant.Constant
 import dagger.Module
 import dagger.Provides
@@ -49,6 +47,14 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideAccountApiService(retrofit: Retrofit): AccountApiService = retrofit.create(AccountApiService::class.java)
+
+    @Provides
+    @Singleton
     fun provideApiHelper(apiHelper: ApiHelperImpl): ApiHelper = apiHelper
+
+    @Provides
+    @Singleton
+    fun provideAccountApiHelper(apiHelper: AccountApiHelperImpl): AccountApiHelper = apiHelper
 
 }
