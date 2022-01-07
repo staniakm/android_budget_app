@@ -1,11 +1,11 @@
 package com.example.internetapi.repository
 
-import com.example.internetapi.api.ApiHelper
+import com.example.internetapi.api.MediaApiHelper
 import com.example.internetapi.models.*
 import javax.inject.Inject
 
 class MediaRepository @Inject constructor(
-    private val apiHelper: ApiHelper
+    private val apiHelper: MediaApiHelper
 ) {
     suspend fun getMediaTypes() = apiHelper.getMediaTypes()
     suspend fun addNewMediaType(mediaTypeRequest: MediaTypeRequest) = apiHelper.addNewMediaType(mediaTypeRequest)

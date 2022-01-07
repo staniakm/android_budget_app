@@ -43,7 +43,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideApiService(retrofit: Retrofit): ApiService = retrofit.create(ApiService::class.java)
+    fun provideApiService(retrofit: Retrofit): MediaApiService = retrofit.create(MediaApiService::class.java)
 
     @Provides
     @Singleton
@@ -51,10 +51,34 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideApiHelper(apiHelper: ApiHelperImpl): ApiHelper = apiHelper
+    fun provideBudgetApiService(retrofit: Retrofit): BudgetApiService = retrofit.create(BudgetApiService::class.java)
+
+    @Provides
+    @Singleton
+    fun provideInvoiceApiService(retrofit: Retrofit): InvoiceApiService = retrofit.create(InvoiceApiService::class.java)
+
+    @Provides
+    @Singleton
+    fun provideShopApiService(retrofit: Retrofit): ShopApiService = retrofit.create(ShopApiService::class.java)
+
+    @Provides
+    @Singleton
+    fun provideApiHelper(apiHelper: MediaApiHelperImpl): MediaApiHelper = apiHelper
 
     @Provides
     @Singleton
     fun provideAccountApiHelper(apiHelper: AccountApiHelperImpl): AccountApiHelper = apiHelper
+
+    @Provides
+    @Singleton
+    fun provideBudgetApiHelper(apiHelper: BudgetApiHelperImpl): BudgetApiHelper = apiHelper
+
+    @Provides
+    @Singleton
+    fun provideInvoiceApiHelper(apiHelper: InvoiceApiHelperImpl): InvoiceApiHelper = apiHelper
+
+    @Provides
+    @Singleton
+    fun provideShopApiHelper(apiHelper: ShopApiHelperImpl): ShopApiHelper = apiHelper
 
 }
