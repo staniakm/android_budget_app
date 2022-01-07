@@ -2,7 +2,6 @@ package com.example.internetapi.ui
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -10,10 +9,10 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.internetapi.api.Resource
 import com.example.internetapi.config.AccountHolder
-import com.example.internetapi.config.ActivityResultCodes.UPDATE_ACCOUNT
 import com.example.internetapi.config.DateFormatter
 import com.example.internetapi.config.MoneyFormatter
 import com.example.internetapi.databinding.ActivityAccountBinding
+import com.example.internetapi.functions.getResultFromActiviy
 import com.example.internetapi.global.MonthSelector
 import com.example.internetapi.models.Account
 import com.example.internetapi.models.Status
@@ -35,7 +34,6 @@ class AccountActivity : AppCompatActivity(), OnItemClickedListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.i("TAG", "onCreate: ")
         binding = ActivityAccountBinding.inflate(layoutInflater)
         setContentView(binding.root)
         adapter = AccountAdapter(this)
@@ -65,19 +63,6 @@ class AccountActivity : AppCompatActivity(), OnItemClickedListener {
                 Status.ERROR -> loadOnFailure()
             }
         })
-    }
-
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == UPDATE_ACCOUNT) {
-            when (resultCode) {
-                RESULT_OK -> data?.getSerializableExtra("result")?.let {
-                    adapter.updateListItem(it as UpdateAccountResponse)
-                }
-                RESULT_CANCELED -> Log.i("TAG", "onActivityResult: NO RESULT RETURNED")
-            }
-        }
     }
 
     override fun onResume() {
@@ -115,6 +100,12 @@ class AccountActivity : AppCompatActivity(), OnItemClickedListener {
         }
     }
 
+    private var updateActivity = getResultFromActiviy(this) { result ->
+        result.data?.getSerializableExtra("result")?.let {
+            adapter.updateListItem(it as UpdateAccountResponse)
+        }
+    }
+
     override fun onClick(position: Int, element: String) {
         val item = adapter.getItem(position)
         when (element) {
@@ -129,8 +120,7 @@ class AccountActivity : AppCompatActivity(), OnItemClickedListener {
             "edit" -> Intent(this, AccountUpdateActivity::class.java).apply {
                 this.putExtra("account", item)
             }.let {
-                //FIXME switch to new api
-                this.startActivityForResult(it, UPDATE_ACCOUNT)
+                updateActivity.launch(it)
             }
         }
     }
