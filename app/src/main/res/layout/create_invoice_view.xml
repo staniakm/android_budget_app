@@ -30,6 +30,7 @@
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
+            android:hint="@string/shop"
             />
         <EditText
             android:id="@+id/number"
@@ -38,6 +39,6 @@
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
-            android:hint="invoice number"/>
+            android:hint="@string/invoice_number"/>
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
