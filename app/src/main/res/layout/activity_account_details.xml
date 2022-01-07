@@ -87,6 +87,7 @@
         android:layout_height="40dp"
         android:layout_marginTop="16dp"
         android:text="Dodaj wydatek"
+        app:icon="@android:drawable/ic_input_add"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/outcomeLay" />
@@ -97,6 +98,7 @@
         android:layout_height="40dp"
         android:layout_marginTop="8dp"
         android:text="Dodaj przychód"
+        app:icon="@android:drawable/ic_input_add"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/addInvoice" />
@@ -107,6 +109,7 @@
         android:layout_height="40dp"
         android:layout_marginTop="8dp"
         android:text="Przesuń środki"
+        app:icon="@android:drawable/ic_popup_sync"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/addIncome" />

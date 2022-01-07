@@ -77,6 +77,10 @@ class AccountOutcomeRegisterActivity : AppCompatActivity() {
     }
 
     private fun saveInvoice() {
+        if (adapter.getItems().isEmpty()){
+            errorSnackBar(binding.root, "Empty invoice item list.\n Unable to save invoice")
+            return
+        }
         invoice?.let { inv ->
             adapter.getItems()
                 .map {
@@ -222,6 +226,12 @@ class AccountOutcomeRegisterActivity : AppCompatActivity() {
     private fun addInvoiceItemDialog() {
         invoiceItemBinding.root.parent?.let {
             (it as ViewGroup).removeView(invoiceItemBinding.root)
+        }
+        with(invoiceItemBinding) {
+            this.product.text.clear()
+            price.text.clear()
+            amount.text.clear()
+            discount.text.clear()
         }
         currentShopItem = null
         val product = ArrayAdapter<ShopItem>(this, R.layout.simple_spinner_dropdown_item)
