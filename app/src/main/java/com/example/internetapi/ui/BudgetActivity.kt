@@ -3,28 +3,27 @@ package com.example.internetapi.ui
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.internetapi.api.Resource
-import com.example.internetapi.config.ActivityResultCodes
 import com.example.internetapi.config.DateFormatter.yyyymm
 import com.example.internetapi.databinding.ActivityBudgetBinding
 import com.example.internetapi.functions.errorSnackBar
+import com.example.internetapi.functions.getResultFromActiviy
 import com.example.internetapi.global.MonthSelector
 import com.example.internetapi.models.Budget
 import com.example.internetapi.models.Status
 import com.example.internetapi.models.UpdateBudgetResponse
 import com.example.internetapi.ui.adapters.MonthBudgetAdapter
+import com.example.internetapi.ui.adapters.OnItemClickedListener
 import com.example.internetapi.ui.viewModel.BudgetViewModel
-import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import java.text.DecimalFormat
 import java.time.LocalDate
 
 @AndroidEntryPoint
-class BudgetActivity : AppCompatActivity() {
+class BudgetActivity : AppCompatActivity(), OnItemClickedListener {
     private val FAILED_TO_RECALCULATE_BUDGETS: String = "Failed to recalculate budgets"
     private val FAILED_TO_LOAD_BUDGETS: String = "Failed to load budgets data"
     private var df: DecimalFormat = DecimalFormat("##0.00")
@@ -92,24 +91,10 @@ class BudgetActivity : AppCompatActivity() {
         })
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == ActivityResultCodes.UPDATE_BUDGET) {
-            when (resultCode) {
-                RESULT_OK -> data?.getSerializableExtra("result")?.let {
-                    val budget = it as UpdateBudgetResponse
-                    adapter.updateBudget(budget)
-                    binding.totalPlaned.text = "Zaplanowane: ${df.format(budget.monthPlanned)}"
-                }
-                RESULT_CANCELED -> {}
-            }
-        }
-    }
-
     private fun bindAdapter() {
         binding = ActivityBudgetBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        adapter = MonthBudgetAdapter()
+        adapter = MonthBudgetAdapter(this)
         binding.rvBudgets.layoutManager = LinearLayoutManager(this)
         binding.rvBudgets.adapter = adapter
     }
@@ -121,6 +106,25 @@ class BudgetActivity : AppCompatActivity() {
             binding.totalPlaned.text = "Zaplanowane: ${df.format(data.totalPlanned)}"
             binding.totalSpend.text = "Wydane: ${df.format(data.totalSpend)}"
             adapter.submitList(data.budgets)
+        }
+    }
+
+    private var resultLauncher = getResultFromActiviy(this) { result ->
+        result.data?.getSerializableExtra("result")?.let {
+            val budget = it as UpdateBudgetResponse
+            adapter.updateBudget(budget)
+            binding.totalPlaned.text = "Zaplanowane: ${df.format(budget.monthPlanned)}"
+        }
+    }
+
+    override fun onClick(position: Int, element: String) {
+        val item = adapter.getItem(position)
+        when (element) {
+            "layout" -> Intent(this, UpdateBudgetActivity::class.java).apply {
+                this.putExtra("budget", item)
+            }.let {
+                resultLauncher.launch(it)
+            }
         }
     }
 }

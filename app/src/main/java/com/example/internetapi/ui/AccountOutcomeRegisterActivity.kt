@@ -2,6 +2,7 @@ package com.example.internetapi.ui
 
 import android.R
 import android.app.AlertDialog
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -41,6 +42,7 @@ class AccountOutcomeRegisterActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         binding = ActivityAccountOutcomeRegisterBinding.inflate(layoutInflater)
         invoiceBinding = CreateInvoiceViewBinding.inflate(layoutInflater)
         invoiceItemBinding = CreateInvoiceItemViewBinding.inflate(layoutInflater)
