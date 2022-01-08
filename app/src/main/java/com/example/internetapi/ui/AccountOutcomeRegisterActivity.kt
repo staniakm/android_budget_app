@@ -17,6 +17,7 @@ import com.example.internetapi.databinding.ActivityAccountOutcomeRegisterBinding
 import com.example.internetapi.databinding.CreateInvoiceItemViewBinding
 import com.example.internetapi.databinding.CreateInvoiceViewBinding
 import com.example.internetapi.functions.errorSnackBar
+import com.example.internetapi.functions.removeRecycleViewItemOnSwipe
 import com.example.internetapi.functions.toLocalDate
 import com.example.internetapi.models.*
 import com.example.internetapi.ui.adapters.InvoiceItemsAdapter
@@ -52,6 +53,8 @@ class AccountOutcomeRegisterActivity : AppCompatActivity() {
         binding.items.adapter = adapter
         binding.items.layoutManager = LinearLayoutManager(this)
 
+        removeRecycleViewItemOnSwipe(binding.items) { pos -> removeItem(pos) }
+
         binding.addInvoice.setOnClickListener {
             intent.extras?.let { extra ->
                 invoice = Invoice(extra.getInt("accountId"))
@@ -78,7 +81,11 @@ class AccountOutcomeRegisterActivity : AppCompatActivity() {
             addInvoiceItemDialog()
         }
     }
-
+    private fun removeItem(absoluteAdapterPosition: Int) {
+        adapter.removeAt(absoluteAdapterPosition).let {
+            binding.total.text = MoneyFormatter.df.format(it)
+        }
+    }
     private fun saveInvoice() {
         if (adapter.getItems().isEmpty()) {
             errorSnackBar(binding.root, "Empty invoice item list.\n Unable to save invoice")
@@ -101,8 +108,6 @@ class AccountOutcomeRegisterActivity : AppCompatActivity() {
                     createInvoiceRequest(it)
                 }
         }
-
-
     }
 
     private fun hideElements() {

@@ -69,6 +69,17 @@ class InvoiceItemsAdapter() : RecyclerView.Adapter<InvoiceItemViewHolder>() {
     fun getItems(): MutableList<InvoiceItem> {
         return differ.currentList
     }
+
+    fun removeAt(absoluteAdapterPosition: Int): BigDecimal {
+        val item = differ.currentList[absoluteAdapterPosition]
+        val sum = differ.currentList.fold(BigDecimal.ZERO) { acc, i -> acc.add(i.totalPrice()) }
+            .minus(item.totalPrice())
+        differ.currentList.filterIndexed { index, _ -> index != absoluteAdapterPosition }
+            .let {
+                differ.submitList(it)
+            }
+        return sum
+    }
 }
 
 class InvoiceItemViewHolder(val binding: InvoiceDetailsAdapterBinding, val context: Context) :
