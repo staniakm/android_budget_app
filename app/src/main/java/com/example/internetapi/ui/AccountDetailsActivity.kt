@@ -104,9 +104,9 @@ class AccountDetailsActivity : AppCompatActivity() {
                 val income = transferBinding.value.text.toString()
                 val targetAccount = (transferBinding.targetAccount.selectedItem as SimpleAccount).id
                 when (val value = income.toBigDecimalOrNull()) {
-                    null -> Log.w(
-                        "AccountDetails",
-                        "Income value is not parsable to BigDecimal"
+                    null -> errorSnackBar(
+                        binding.root,
+                        "Provided value: $income - is not parsable to number"
                     )
                     else -> this.transferMoney(
                         accountId,

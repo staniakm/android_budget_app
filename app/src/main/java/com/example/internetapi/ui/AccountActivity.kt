@@ -12,6 +12,7 @@ import com.example.internetapi.config.AccountHolder
 import com.example.internetapi.config.DateFormatter
 import com.example.internetapi.config.MoneyFormatter
 import com.example.internetapi.databinding.ActivityAccountBinding
+import com.example.internetapi.functions.errorSnackBar
 import com.example.internetapi.functions.getResultFromActiviy
 import com.example.internetapi.global.MonthSelector
 import com.example.internetapi.models.Account
@@ -46,7 +47,10 @@ class AccountActivity : AppCompatActivity(), OnItemClickedListener {
             MonthSelector.previous()
             loadData()
         }
-
+        binding.monthManipulator.date.setOnClickListener {
+            MonthSelector.current()
+            loadData()
+        }
         binding.monthManipulator.next.setOnClickListener {
             if (MonthSelector.month < 0) {
                 MonthSelector.next()
@@ -75,8 +79,7 @@ class AccountActivity : AppCompatActivity(), OnItemClickedListener {
             progress.visibility = View.GONE
             rvAccounts.visibility = View.GONE
         }
-        Snackbar.make(binding.rootView, "Something went wrong", Snackbar.LENGTH_SHORT)
-            .show()
+        errorSnackBar(binding.root, "Something went wrong")
     }
 
     private fun loadOnLoading() {

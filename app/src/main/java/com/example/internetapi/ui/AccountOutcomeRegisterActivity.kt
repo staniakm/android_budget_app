@@ -12,6 +12,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.internetapi.api.Resource
+import com.example.internetapi.config.MoneyFormatter
 import com.example.internetapi.databinding.ActivityAccountOutcomeRegisterBinding
 import com.example.internetapi.databinding.CreateInvoiceItemViewBinding
 import com.example.internetapi.databinding.CreateInvoiceViewBinding
@@ -79,7 +80,7 @@ class AccountOutcomeRegisterActivity : AppCompatActivity() {
     }
 
     private fun saveInvoice() {
-        if (adapter.getItems().isEmpty()){
+        if (adapter.getItems().isEmpty()) {
             errorSnackBar(binding.root, "Empty invoice item list.\n Unable to save invoice")
             return
         }
@@ -285,7 +286,10 @@ class AccountOutcomeRegisterActivity : AppCompatActivity() {
             addItemToShop(invoiceItem)
             return
         }
-        return adapter.addItem(invoiceItem)
+        adapter.addItem(invoiceItem).let {
+            binding.total.text = MoneyFormatter.df.format(it)
+        }
+
     }
 
     private fun addItemToShop(item: InvoiceItem) {
@@ -301,7 +305,9 @@ class AccountOutcomeRegisterActivity : AppCompatActivity() {
 
     private fun loadShopItemsAdded(response: Resource<ShopItem>, item: InvoiceItem) {
         response.data?.let {
-            adapter.addItem(item.copy(shopItem = it))
+            adapter.addItem(item.copy(shopItem = it)).let {
+                binding.total.text = MoneyFormatter.df.format(it)
+            }
         }
     }
 }

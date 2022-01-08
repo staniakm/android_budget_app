@@ -4,7 +4,6 @@ import android.R
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Spinner
@@ -21,7 +20,6 @@ import com.example.internetapi.models.SimpleAccount
 import com.example.internetapi.models.Status
 import com.example.internetapi.models.UpdateInvoiceAccountRequest
 import com.example.internetapi.ui.adapters.AccountExpensesAdapter
-import com.example.internetapi.ui.adapters.AccountExpensesViewHolder
 import com.example.internetapi.ui.adapters.OnItemClickedListener
 import com.example.internetapi.ui.viewModel.AccountViewModel
 import com.example.internetapi.ui.viewModel.InvoiceViewModel
@@ -111,11 +109,7 @@ class AccountOutcomeDetails : AppCompatActivity(), OnItemClickedListener {
         alert.setTitle("Change account for selected invoice")
             .setMessage("${item.listId}")
             .setView(spinner)
-            .setPositiveButton("OK") { _, i ->
-                Log.i(
-                    "TAG",
-                    "onBindViewHolder: OK ${(spinner.selectedItem as SimpleAccount).id}"
-                )
+            .setPositiveButton("OK") { _, _ ->
                 this.updateInvoiceAccount(
                     item.listId,
                     accountId,
