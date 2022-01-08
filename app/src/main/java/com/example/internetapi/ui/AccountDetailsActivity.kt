@@ -4,11 +4,15 @@ import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.view.menu.MenuBuilder
 import androidx.core.content.ContextCompat
+import com.example.internetapi.R
 import com.example.internetapi.config.AccountHolder
 import com.example.internetapi.config.DateFormatter.yyyymm
 import com.example.internetapi.databinding.ActivityAccountDetailsBinding
@@ -23,6 +27,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+
 
 @AndroidEntryPoint
 class AccountDetailsActivity : AppCompatActivity() {
@@ -69,14 +74,34 @@ class AccountDetailsActivity : AppCompatActivity() {
                     ContextCompat.startActivity(this, it, null)
                 }
             }
-            binding.addIncome.setOnClickListener {
+        }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        if (menu is MenuBuilder) {
+            menu.setOptionalIconsVisible(true)
+        }
+        menuInflater.inflate(R.menu.menu_activity, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == R.id.add_income_menu) {
+            intent.extras?.let { extra ->
+                val name = extra.getString("name", "")
+                val accountId = extra.getInt("accountId")
                 createIncomeAddDialog(name, accountId)
             }
-
-            binding.moveMoney.setOnClickListener {
+        } else if (item.itemId == R.id.transfer_money_menu) {
+            intent.extras?.let { extra ->
+                val name = extra.getString("name", "")
+                val accountId = extra.getInt("accountId")
                 createMoveMoneyDialog(name, accountId)
             }
-            binding.addInvoice.setOnClickListener {
+        } else if (item.itemId == R.id.add_invoice_menu) {
+            intent.extras?.let { extra ->
+                val name = extra.getString("name", "")
+                val accountId = extra.getInt("accountId")
                 Intent(this, AccountOutcomeRegisterActivity::class.java).apply {
                     this.putExtra("accountId", accountId)
                     this.putExtra("accountName", name)
@@ -85,6 +110,7 @@ class AccountDetailsActivity : AppCompatActivity() {
                 }
             }
         }
+        return super.onOptionsItemSelected(item)
     }
 
     private fun createMoveMoneyDialog(name: String, accountId: Int) {

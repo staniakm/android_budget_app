@@ -10,7 +10,10 @@
     <string name="hello_first_fragment">Hello first fragment</string>
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
     <string name="edit_account_btn_text">Edit</string>
-    <string name="title_activity_media">MediaActivity</string>
+    <string name="title_activity_media">Media</string>
     <string name="shop">shop</string>
     <string name="invoice_number">invoice number</string>
+    <string name="add_invoice">Dodaj wydatek</string>
+    <string name="add_income">Dodaj przychód</string>
+    <string name="transfer_money">Przesuń środki</string>
 </resources>

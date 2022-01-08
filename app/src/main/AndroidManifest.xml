@@ -12,39 +12,58 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.InternetApi"
-        android:usesCleartextTraffic="true">
+        android:usesCleartextTraffic="true"
+        android:fullBackupContent="true">
         <activity
             android:name=".ui.AccountOutcomeRegisterActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:label="Register outcome" />
         <activity
             android:name=".ui.MediaDetailsActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:label="Media details" />
         <activity
             android:name=".ui.MediaActivity"
             android:exported="false"
-            android:label="@string/title_activity_media"
-            android:theme="@style/Theme.InternetApi.NoActionBar" />
+            android:label="@string/title_activity_media" />
         <activity
             android:name=".ui.ChartActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:theme="@style/Theme.InternetApi.NoActionBar" />
         <activity
             android:name=".ui.AccountIncomeDetails"
-            android:exported="false" />
+            android:exported="false"
+            android:label="Income details" />
         <activity
             android:name=".ui.AccountOutcomeDetails"
-            android:exported="false" />
+            android:exported="false"
+            android:label="Outcome details" />
         <activity
             android:name=".ui.SettingsActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:label="Settings" />
         <activity
             android:name=".ui.UpdateBudgetActivity"
-            android:exported="false" />
-        <activity android:name=".ui.AccountUpdateActivity" />
-        <activity android:name=".ui.BudgetUpdateActivity" />
-        <activity android:name=".ui.BudgetActivity" />
-        <activity android:name=".ui.AccountActivity" />
-        <activity android:name=".ui.InvoiceDetailsActivity" />
-        <activity android:name=".ui.AccountDetailsActivity" />
+            android:exported="false"
+            android:label="Update budget" />
+        <activity
+            android:name=".ui.AccountUpdateActivity"
+            android:label="Update account" />
+        <activity
+            android:name=".ui.BudgetUpdateActivity"
+            android:label="Update budget" />
+        <activity
+            android:name=".ui.BudgetActivity"
+            android:label="Budgets" />
+        <activity
+            android:name=".ui.AccountActivity"
+            android:label="Accounts" />
+        <activity
+            android:name=".ui.InvoiceDetailsActivity"
+            android:label="Invoice details" />
+        <activity
+            android:name=".ui.AccountDetailsActivity"
+            android:label="Account Details" />
         <activity android:name=".ui.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

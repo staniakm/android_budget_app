@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".ui.AccountDetailsActivity">
+    <item
+        android:id="@+id/add_invoice_menu"
+        android:icon="@android:drawable/ic_input_add"
+        android:title="@string/add_invoice" />
+    <item
+        android:id="@+id/add_income_menu"
+        android:icon="@android:drawable/ic_input_add"
+        android:title="@string/add_income" />
+    <item
+        android:id="@+id/transfer_money_menu"
+        android:icon="@android:drawable/ic_popup_sync"
+        android:title="@string/transfer_money" />
+</menu>
