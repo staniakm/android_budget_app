@@ -6,6 +6,7 @@ import com.example.internetapi.models.*
 import retrofit2.Response
 import retrofit2.http.*
 import javax.inject.Inject
+
 interface AccountApiService {
     @GET(ACCOUNT)
     suspend fun getAccounts(@Query("month") month: Int): Response<List<Account>>
@@ -43,9 +44,13 @@ interface AccountApiService {
     @GET("$ACCOUNT/income/type")
     suspend fun getIncomeTypes(): Response<List<IncomeType>>
 
+    @GET("$ACCOUNT/{accountId}/operations")
+    suspend fun getAccountOperations(@Path("accountId") accountId: Int): Response<List<AccountOperation>>
+
 }
 
-class AccountApiHelperImpl @Inject constructor(private val apiService: AccountApiService) : AccountApiHelper {
+class AccountApiHelperImpl @Inject constructor(private val apiService: AccountApiService) :
+    AccountApiHelper {
     override suspend fun getAccounts(): Response<List<Account>> =
         apiService.getAccounts(MonthSelector.month)
 
@@ -61,6 +66,7 @@ class AccountApiHelperImpl @Inject constructor(private val apiService: AccountAp
     ): Response<UpdateAccountResponse> {
         return apiService.updateAccount(accountId, updateAccountRequest)
     }
+
     override suspend fun addAccountIncome(request: AccountIncomeRequest): Response<List<AccountIncome>> {
         return apiService.addAccountIncome(request.accountId, request)
     }
@@ -73,6 +79,9 @@ class AccountApiHelperImpl @Inject constructor(private val apiService: AccountAp
         return apiService.transferMoney(request.accountId, request)
     }
 
+    override suspend fun getAccountOperations(accountId: Int): Response<List<AccountOperation>> {
+        return apiService.getAccountOperations(accountId)
+    }
 }
 
 interface AccountApiHelper {
@@ -85,6 +94,8 @@ interface AccountApiHelper {
         accountId: Int,
         updateAccountRequest: UpdateAccountRequest
     ): Response<UpdateAccountResponse>
+
     suspend fun getIncomeTypes(): Response<List<IncomeType>>
+    suspend fun getAccountOperations(accountId: Int): Response<List<AccountOperation>>
 
 }

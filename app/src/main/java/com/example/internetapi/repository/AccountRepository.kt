@@ -21,4 +21,5 @@ class AccountRepository @Inject constructor(
 
     suspend fun getIncomeTypes() = apiHelper.getIncomeTypes()
     suspend fun transferMoney(request: TransferMoneyRequest) = apiHelper.transferMoney(request)
+    suspend fun getOperations(accountId: Int) = apiHelper.getAccountOperations(accountId)
 }

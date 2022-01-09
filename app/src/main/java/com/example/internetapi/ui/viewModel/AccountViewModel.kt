@@ -50,4 +50,8 @@ class AccountViewModel @Inject constructor(private val accountRepository: Accoun
     fun transferMoney(request: TransferMoneyRequest): LiveData<Resource<UpdateAccountResponse>> {
         return executeLiveDataSingle { accountRepository.transferMoney(request) }
     }
+
+    fun getOperations(accountId: Int): LiveData<Resource<List<AccountOperation>>> {
+        return executeLiveDataList { accountRepository.getOperations(accountId) }
+    }
 }

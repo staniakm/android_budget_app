@@ -12,7 +12,9 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.menu.MenuBuilder
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.internetapi.R
+import com.example.internetapi.api.Resource
 import com.example.internetapi.config.AccountHolder
 import com.example.internetapi.config.DateFormatter.yyyymm
 import com.example.internetapi.databinding.ActivityAccountDetailsBinding
@@ -22,6 +24,8 @@ import com.example.internetapi.functions.errorSnackBar
 import com.example.internetapi.functions.toLocalDate
 import com.example.internetapi.global.MonthSelector
 import com.example.internetapi.models.*
+import com.example.internetapi.ui.adapters.AccountIncomesAdapter
+import com.example.internetapi.ui.adapters.AccountOperationAdapter
 import com.example.internetapi.ui.viewModel.AccountViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import java.math.BigDecimal
@@ -38,6 +42,7 @@ class AccountDetailsActivity : AppCompatActivity() {
     private lateinit var binding: ActivityAccountDetailsBinding
     private lateinit var incomeBinding: IncomeViewBinding
     private lateinit var transferBinding: TransferViewBinding
+    private lateinit var adapter: AccountOperationAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,6 +50,9 @@ class AccountDetailsActivity : AppCompatActivity() {
         incomeBinding = IncomeViewBinding.inflate(layoutInflater)
         transferBinding = TransferViewBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        adapter = AccountOperationAdapter()
+        binding.rvOperations.layoutManager = LinearLayoutManager(this)
+        binding.rvOperations.adapter = adapter
 
         intent.extras?.let { extra ->
             val name = extra.getString("name", "")
@@ -74,7 +82,27 @@ class AccountDetailsActivity : AppCompatActivity() {
                     ContextCompat.startActivity(this, it, null)
                 }
             }
+            loadData(accountId)
         }
+
+
+    }
+
+    private fun loadData(accountId: Int) {
+        accountViewModel.getOperations(accountId).observe(this, {
+            when (it.status) {
+                Status.SUCCESS -> loadOperations(it)
+                Status.ERROR -> errorSnackBar(binding.root, FAILED_TO_GET_INCOME_TYPE)
+                Status.LOADING -> {}
+            }
+        })
+    }
+
+    private fun loadOperations(operations: Resource<List<AccountOperation>>) {
+        operations.data?.let {
+            adapter.submitList(it)
+        }
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
