@@ -3,6 +3,7 @@ package com.example.internetapi.ui.adapters
 import android.content.Context
 import android.graphics.Color
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
@@ -50,11 +51,10 @@ class AccountOperationAdapter : RecyclerView.Adapter<AccountOperationsViewHolder
         holder.binding.apply {
             date.text = item.date
             value.text = MoneyFormatter.df.format(item.value)
-            type.text = item.type
             if (item.type == "OUTCOME") {
-                this.type.setTextColor(Color.RED)
+                this.outcomeIcon.visibility = View.VISIBLE
             } else {
-                this.type.setTextColor(Color.GREEN)
+                this.incomeIcon.visibility = View.VISIBLE
             }
         }
     }
