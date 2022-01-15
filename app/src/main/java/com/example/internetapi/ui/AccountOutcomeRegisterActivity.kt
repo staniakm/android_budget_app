@@ -81,11 +81,13 @@ class AccountOutcomeRegisterActivity : AppCompatActivity() {
             addInvoiceItemDialog()
         }
     }
+
     private fun removeItem(absoluteAdapterPosition: Int) {
         adapter.removeAt(absoluteAdapterPosition).let {
             binding.total.text = MoneyFormatter.df.format(it)
         }
     }
+
     private fun saveInvoice() {
         if (adapter.getItems().isEmpty()) {
             errorSnackBar(binding.root, "Empty invoice item list.\n Unable to save invoice")
@@ -217,6 +219,7 @@ class AccountOutcomeRegisterActivity : AppCompatActivity() {
                     }
                     Log.i("TAG", "loadOnSuccess: $invoice")
                     invoiceBinding.shop.text.clear()
+                    invoiceBinding.number.text.clear()
                 }
                 .setNegativeButton("Cancel") { _, _ -> this.hideElements() }
                 .setOnCancelListener {
