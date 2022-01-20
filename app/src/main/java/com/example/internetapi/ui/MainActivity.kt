@@ -45,12 +45,17 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         val preferences = getSharedPreferences("accountSharedPreferences", MODE_PRIVATE)
         preferences.getString("hostAddress", "")?.let {
-            binding.accounts.visibility =
-                if (it.isNotBlank()) View.VISIBLE else View.INVISIBLE
-            binding.budgets.visibility =
-                if (it.isNotBlank()) View.VISIBLE else View.INVISIBLE
-            binding.charts.visibility = if (it.isNotBlank()) View.VISIBLE else View.INVISIBLE
+            if (it.isNotBlank()) setVisibility(View.VISIBLE) else setVisibility(View.INVISIBLE)
             Constant.BASE_URL = it
+        }
+    }
+
+    private fun setVisibility(visibilityValue: Int) {
+        with(binding) {
+            accounts.visibility = visibilityValue
+            budgets.visibility = visibilityValue
+            charts.visibility = visibilityValue
+            media.visibility = visibilityValue
         }
     }
 }
