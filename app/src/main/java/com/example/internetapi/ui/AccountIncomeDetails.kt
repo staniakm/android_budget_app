@@ -36,13 +36,13 @@ class AccountIncomeDetails : AppCompatActivity() {
             binding.incomeSum.text = extra.getString("income", "0.0")
             binding.name.text = extra.getString("name", "")
             extra.getInt("accountId").let { accountId ->
-                accountViewModel.getAccountIncome(accountId).observe(this, {
+                accountViewModel.getAccountIncome(accountId).observe(this) {
                     when (it.status) {
                         Status.SUCCESS -> loadOnSuccessIncome(it)
                         Status.ERROR -> errorSnackBar(binding.root, FAILED_TO_LOAD_ACCOUNT_INCOME)
                         Status.LOADING -> {}
                     }
-                })
+                }
             }
         }
     }

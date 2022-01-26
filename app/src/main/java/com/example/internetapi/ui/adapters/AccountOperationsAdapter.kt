@@ -1,7 +1,6 @@
 package com.example.internetapi.ui.adapters
 
 import android.content.Context
-import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,7 +11,8 @@ import com.example.internetapi.config.MoneyFormatter
 import com.example.internetapi.databinding.AccountOperationAdapterBinding
 import com.example.internetapi.models.AccountOperation
 
-class AccountOperationAdapter : RecyclerView.Adapter<AccountOperationsViewHolder>() {
+class AccountOperationAdapter(private val listener: OnItemClickedListener) :
+    RecyclerView.Adapter<AccountOperationsViewHolder>() {
 
     private val diffCallback = object : DiffUtil.ItemCallback<AccountOperation>() {
         override fun areItemsTheSame(
@@ -43,7 +43,7 @@ class AccountOperationAdapter : RecyclerView.Adapter<AccountOperationsViewHolder
                 false
             )
 
-        return AccountOperationsViewHolder(binding, parent.context)
+        return AccountOperationsViewHolder(binding, parent.context, listener)
     }
 
     override fun onBindViewHolder(holder: AccountOperationsViewHolder, position: Int) {
@@ -53,8 +53,12 @@ class AccountOperationAdapter : RecyclerView.Adapter<AccountOperationsViewHolder
             value.text = MoneyFormatter.df.format(item.value)
             if (item.type == "OUTCOME") {
                 this.outcomeIcon.visibility = View.VISIBLE
+                accIncExp.setOnClickListener {
+                    listener.onClick(position, "outcome")
+                }
             } else {
                 this.incomeIcon.visibility = View.VISIBLE
+                listener.onClick(position, "income")
             }
         }
     }
@@ -62,10 +66,15 @@ class AccountOperationAdapter : RecyclerView.Adapter<AccountOperationsViewHolder
     override fun getItemCount(): Int {
         return differ.currentList.size
     }
+
+    fun getItem(position: Int): AccountOperation {
+        return differ.currentList[position]
+    }
 }
 
 class AccountOperationsViewHolder(
     val binding: AccountOperationAdapterBinding,
     val parent: Context,
+    val listener: OnItemClickedListener,
 ) :
     RecyclerView.ViewHolder(binding.root)

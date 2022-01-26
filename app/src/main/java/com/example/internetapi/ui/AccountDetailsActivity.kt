@@ -24,8 +24,8 @@ import com.example.internetapi.functions.errorSnackBar
 import com.example.internetapi.functions.toLocalDate
 import com.example.internetapi.global.MonthSelector
 import com.example.internetapi.models.*
-import com.example.internetapi.ui.adapters.AccountIncomesAdapter
 import com.example.internetapi.ui.adapters.AccountOperationAdapter
+import com.example.internetapi.ui.adapters.OnItemClickedListener
 import com.example.internetapi.ui.viewModel.AccountViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import java.math.BigDecimal
@@ -34,8 +34,9 @@ import java.time.format.DateTimeFormatter
 
 
 @AndroidEntryPoint
-class AccountDetailsActivity : AppCompatActivity() {
+class AccountDetailsActivity : AppCompatActivity(), OnItemClickedListener {
 
+    private val TAG: String = "AccountDetailsActivity"
     private val FAILED_TO_GET_INCOME_TYPE = "Failed to load income type"
 
     private val accountViewModel: AccountViewModel by viewModels()
@@ -50,7 +51,7 @@ class AccountDetailsActivity : AppCompatActivity() {
         incomeBinding = IncomeViewBinding.inflate(layoutInflater)
         transferBinding = TransferViewBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        adapter = AccountOperationAdapter()
+        adapter = AccountOperationAdapter(this)
         binding.rvOperations.layoutManager = LinearLayoutManager(this)
         binding.rvOperations.adapter = adapter
 
@@ -96,6 +97,18 @@ class AccountDetailsActivity : AppCompatActivity() {
                 Status.LOADING -> {}
             }
         })
+    }
+
+    override fun onClick(position: Int, element: String) {
+        val item = adapter.getItem(position)
+        when (element) {
+            "outcome" -> Intent(this, InvoiceDetailsActivity::class.java).apply {
+                this.putExtra("invoiceId", item.id)
+            }.let {
+                ContextCompat.startActivity(this, it, null)
+            }
+            "income" -> Log.i(TAG, "onClick: Not implemented")
+        }
     }
 
     private fun loadOperations(operations: Resource<List<AccountOperation>>) {
