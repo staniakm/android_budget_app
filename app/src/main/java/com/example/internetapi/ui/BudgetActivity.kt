@@ -65,13 +65,13 @@ class BudgetActivity : AppCompatActivity(), OnItemClickedListener {
     }
 
     private fun recalculateBudgets() {
-        viewModel.recalculateBudgets().observe(this, {
+        viewModel.recalculateBudgets().observe(this) {
             when (it.status) {
                 Status.SUCCESS -> processSuccess(it)
                 Status.ERROR -> errorSnackBar(binding.root, FAILED_TO_RECALCULATE_BUDGETS)
                 Status.LOADING -> {}
             }
-        })
+        }
     }
 
     private fun loadData() {
@@ -82,13 +82,13 @@ class BudgetActivity : AppCompatActivity(), OnItemClickedListener {
             .format(yyyymm)
         binding.monthManipulator.next.text = date.plusMonths(MonthSelector.month.toLong() + 1)
             .format(yyyymm)
-        viewModel.getBudgets().observe(this, {
+        viewModel.getBudgets().observe(this) {
             when (it.status) {
                 Status.SUCCESS -> processSuccess(it)
                 Status.ERROR -> errorSnackBar(binding.root, FAILED_TO_LOAD_BUDGETS)
                 Status.LOADING -> {}
             }
-        })
+        }
     }
 
     private fun bindAdapter() {
@@ -102,9 +102,9 @@ class BudgetActivity : AppCompatActivity(), OnItemClickedListener {
     @SuppressLint("SetTextI18n")
     private fun processSuccess(it: Resource<Budget>) {
         it.data?.let { data ->
-            binding.totalEarned.text = "Zarobione: ${df.format(data.totalEarned)}"
-            binding.totalPlaned.text = "Zaplanowane: ${df.format(data.totalPlanned)}"
-            binding.totalSpend.text = "Wydane: ${df.format(data.totalSpend)}"
+            binding.totalEarnedValue.text = df.format(data.totalEarned)
+            binding.totalPlanedValue.text = df.format(data.totalPlanned)
+            binding.totalSpendValue.text = df.format(data.totalSpend)
             adapter.submitList(data.budgets)
         }
     }
@@ -113,7 +113,7 @@ class BudgetActivity : AppCompatActivity(), OnItemClickedListener {
         result.data?.getSerializableExtra("result")?.let {
             val budget = it as UpdateBudgetResponse
             adapter.updateBudget(budget)
-            binding.totalPlaned.text = "Zaplanowane: ${df.format(budget.monthPlanned)}"
+            binding.totalPlanedValue.text = df.format(budget.monthPlanned)
         }
     }
 

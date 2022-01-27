@@ -35,13 +35,13 @@ class InvoiceDetailsActivity : AppCompatActivity() {
 
         intent.extras?.let { extra ->
             val invoiceId = extra.getLong("invoiceId")
-            invoiceViewModel.invoiceDetails(invoiceId).observe(this, {
+            invoiceViewModel.invoiceDetails(invoiceId).observe(this) {
                 when (it.status) {
                     Status.SUCCESS -> loadOnSuccess(it)
                     Status.ERROR -> errorSnackBar(binding.root, FAILED_TO_LOAD_INVOICE_DETAILS)
                     Status.LOADING -> {}
                 }
-            })
+            }
         }
     }
 

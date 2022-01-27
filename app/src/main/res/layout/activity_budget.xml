@@ -15,43 +15,91 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
+    <LinearLayout
         android:id="@+id/totalEarned"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="40dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
-        android:text="Zarobione"
-        android:textSize="18sp"
-        app:layout_constraintBottom_toTopOf="@+id/totalSpend"
+        android:layout_marginEnd="8dp"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toTopOf="@+id/totalPlaned"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/monthManipulator" />
+        app:layout_constraintTop_toBottomOf="@id/monthManipulator">
 
-    <TextView
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="Zarobione: "
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/totalEarnedValue"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:textSize="18sp" />
+    </LinearLayout>
+
+    <LinearLayout
         android:id="@+id/totalPlaned"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="40dp"
+        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:text="Zaplanowane"
-        android:textSize="18sp"
+        android:layout_marginEnd="8dp"
+        android:orientation="horizontal"
         app:layout_constraintBottom_toTopOf="@+id/totalSpend"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/totalEarned"
-        app:layout_constraintTop_toBottomOf="@+id/monthManipulator" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/totalEarned">
 
-    <TextView
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="Zaplanowane"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/totalPlanedValue"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:textSize="18sp" />
+    </LinearLayout>
+
+    <LinearLayout
         android:id="@+id/totalSpend"
         android:layout_width="match_parent"
         android:layout_height="40dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
-        android:text="Wydane"
-        android:textSize="18sp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/totalPlaned" />
+        app:layout_constraintTop_toBottomOf="@+id/totalPlaned"
+        app:layout_goneMarginEnd="8dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.5"
+            android:text="Wydane"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/totalSpendValue"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.5"
+            android:textSize="18sp" />
+    </LinearLayout>
+
 
     <Button
         android:id="@+id/recalculate"

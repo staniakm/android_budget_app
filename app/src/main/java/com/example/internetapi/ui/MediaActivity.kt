@@ -60,7 +60,7 @@ class MediaActivity : AppCompatActivity(), OnItemClickedListener {
     }
 
     private fun addNewMedia(mediaName: String) {
-        viewModel.addNewMediaType(MediaTypeRequest(mediaName)).observe(this, {
+        viewModel.addNewMediaType(MediaTypeRequest(mediaName)).observe(this) {
             when (it.status) {
                 Status.SUCCESS -> processSuccessAddMedia(it)
                 Status.ERROR -> errorSnackBar(
@@ -69,7 +69,7 @@ class MediaActivity : AppCompatActivity(), OnItemClickedListener {
                 )
                 Status.LOADING -> {}
             }
-        })
+        }
     }
 
     private fun processSuccessAddMedia(it: Resource<MediaType>) {
