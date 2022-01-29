@@ -3,6 +3,7 @@ package com.example.internetapi.ui
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.example.internetapi.config.MoneyFormatter.df
@@ -18,6 +19,7 @@ import java.math.BigDecimal
 
 @AndroidEntryPoint
 class UpdateBudgetActivity : AppCompatActivity() {
+    private val TAG: String = "UpdateBudgetActivity"
     private val FAILED_TO_UPDATE_BUDGET = "Failed to update budget data"
 
     private val budgetViewModel: BudgetViewModel by viewModels()
@@ -28,11 +30,10 @@ class UpdateBudgetActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityUpdateBudgetBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        loadBudgetItems()
-
         intent.extras?.let { extra ->
             extra.getSerializable("budget")?.let { budgetObjects ->
                 val budget = budgetObjects as MonthBudget
+                loadBudgetItems(budget.budgetId)
                 with(budget) {
                     binding.category.text = category
                     binding.spendValue.text = df.format(spent)
@@ -46,8 +47,14 @@ class UpdateBudgetActivity : AppCompatActivity() {
         }
     }
 
-    private fun loadBudgetItems() {
-
+    private fun loadBudgetItems(budgetId: Int) {
+        budgetViewModel.getBudgetItems(budgetId).observe(this){
+            when(it.status){
+                Status.SUCCESS -> Log.i(TAG, "loadBudgetItems: SUCCESS")
+                Status.ERROR -> Log.i(TAG, "loadBudgetItems: FAILURE")
+                Status.LOADING -> Log.i(TAG, "loadBudgetItems: LOADING")
+            }
+        }
 
     }
 

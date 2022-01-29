@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import com.example.internetapi.api.Resource
 import com.example.internetapi.functions.ViewModelDataFunction
 import com.example.internetapi.models.Budget
+import com.example.internetapi.models.InvoiceDetails
 import com.example.internetapi.models.UpdateBudgetRequest
 import com.example.internetapi.models.UpdateBudgetResponse
 import com.example.internetapi.repository.BudgetRepository
@@ -24,5 +25,9 @@ class BudgetViewModel @Inject constructor(private val repository: BudgetReposito
 
     fun recalculateBudgets(): LiveData<Resource<Budget>> {
         return executeLiveDataSingle { repository.recalculateBudgets() }
+    }
+
+    fun getBudgetItems(budgetId: Int): LiveData<Resource<List<InvoiceDetails>>> {
+        return executeLiveDataList { repository.getBudgetItems(budgetId) }
     }
 }

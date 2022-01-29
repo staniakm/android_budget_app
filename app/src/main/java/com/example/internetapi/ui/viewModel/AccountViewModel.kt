@@ -17,7 +17,7 @@ class AccountViewModel @Inject constructor(private val accountRepository: Accoun
         return executeLiveDataList { accountRepository.getAccountInvoices(accountId) }
     }
 
-    fun getAccounts(): MutableLiveData<Resource<List<Account>>> {
+    fun getAccounts(): LiveData<Resource<List<Account>>> {
         return executeLiveDataList { accountRepository.getAccounts() }
     }
 
