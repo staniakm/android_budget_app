@@ -6,13 +6,12 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.internetapi.config.MoneyFormatter.df
 import com.example.internetapi.databinding.ActivityUpdateBudgetBinding
 import com.example.internetapi.functions.errorSnackBar
-import com.example.internetapi.models.MonthBudget
-import com.example.internetapi.models.Status
-import com.example.internetapi.models.UpdateBudgetRequest
-import com.example.internetapi.models.UpdateBudgetResponse
+import com.example.internetapi.models.*
+import com.example.internetapi.ui.adapters.BudgetItemAdapter
 import com.example.internetapi.ui.viewModel.BudgetViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import java.math.BigDecimal
@@ -24,11 +23,15 @@ class UpdateBudgetActivity : AppCompatActivity() {
 
     private val budgetViewModel: BudgetViewModel by viewModels()
     private lateinit var binding: ActivityUpdateBudgetBinding
+    private lateinit var adapter: BudgetItemAdapter
 
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityUpdateBudgetBinding.inflate(layoutInflater)
+        adapter = BudgetItemAdapter()
+        binding.rvBudgetItems.layoutManager = LinearLayoutManager(this)
+        binding.rvBudgetItems.adapter = adapter
         setContentView(binding.root)
         intent.extras?.let { extra ->
             extra.getSerializable("budget")?.let { budgetObjects ->
@@ -48,14 +51,21 @@ class UpdateBudgetActivity : AppCompatActivity() {
     }
 
     private fun loadBudgetItems(budgetId: Int) {
-        budgetViewModel.getBudgetItems(budgetId).observe(this){
-            when(it.status){
-                Status.SUCCESS -> Log.i(TAG, "loadBudgetItems: SUCCESS")
-                Status.ERROR -> Log.i(TAG, "loadBudgetItems: FAILURE")
+        budgetViewModel.getBudgetItems(budgetId).observe(this) {
+            when (it.status) {
+                Status.SUCCESS -> budgetItemsLoaded(it.data)
+                Status.ERROR -> errorSnackBar(binding.root, "Unable to load budget items")
                 Status.LOADING -> Log.i(TAG, "loadBudgetItems: LOADING")
             }
         }
 
+    }
+
+    private fun budgetItemsLoaded(items: List<InvoiceDetails>?) {
+        items?.let {
+
+            adapter.submitList(it)
+        }
     }
 
     private fun updateBudget(budget: MonthBudget) {

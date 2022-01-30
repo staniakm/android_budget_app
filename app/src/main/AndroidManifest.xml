@@ -50,9 +50,6 @@
             android:name=".ui.AccountUpdateActivity"
             android:label="Update account" />
         <activity
-            android:name=".ui.BudgetUpdateActivity"
-            android:label="Update budget" />
-        <activity
             android:name=".ui.BudgetActivity"
             android:label="Budgets" />
         <activity
