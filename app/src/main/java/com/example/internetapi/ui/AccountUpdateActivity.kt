@@ -46,13 +46,13 @@ class AccountUpdateActivity : AppCompatActivity() {
                             binding.accName.text.toString(),
                             BigDecimal(binding.accMoney.text.toString())
                         )
-                    ).observe(this, {
+                    ).observe(this) {
                         when (it.status) {
                             Status.SUCCESS -> updateAdapter(it.data)
                             Status.ERROR -> errorSnackBar(binding.root, FAILED_TO_UPDATE_ACCOUNT)
                             Status.LOADING -> {}
                         }
-                    })
+                    }
                 }
 
             }

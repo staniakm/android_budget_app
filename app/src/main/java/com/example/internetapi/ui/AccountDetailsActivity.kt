@@ -184,8 +184,6 @@ class AccountDetailsActivity : AppCompatActivity(), OnItemClickedListener {
             }
             .setNegativeButton("Cancel") { _, _ -> }
         alert.show()
-
-
     }
 
     private fun transferMoney(accountId: Int, value: BigDecimal, targetAccount: Int) {

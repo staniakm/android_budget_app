@@ -84,54 +84,89 @@
                     android:layout_weight="0.7" />
             </LinearLayout>
 
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/planed_layout"
+            <LinearLayout
+                android:id="@+id/layoutPlaned"
                 android:layout_width="match_parent"
-                android:layout_height="70dp"
+                android:layout_height="40dp"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginEnd="8dp"
+
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/layoutPercentage">
 
                 <TextView
-                    android:id="@+id/desc"
+                    android:id="@+id/plannedLabel"
                     android:layout_width="0dp"
-                    android:layout_height="20dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="0.3"
                     android:text="Zaplanowane"
+                    />
 
-                    app:layout_constraintEnd_toEndOf="@id/planed_layout"
-                    app:layout_constraintHorizontal_bias="0.0"
-                    app:layout_constraintStart_toStartOf="@id/planed_layout"
-                    app:layout_constraintTop_toTopOf="@id/planed_layout" />
-
-                <EditText
-                    android:id="@+id/planned"
+                <TextView
+                    android:id="@+id/planedValue"
                     android:layout_width="0dp"
-                    android:layout_height="50dp"
-                    android:layout_marginTop="5dp"
-                    android:inputType="numberSigned"
-                    android:text="planned"
-                    android:textAlignment="center"
-                    android:textSize="25sp"
-                    app:layout_constraintEnd_toEndOf="@id/planed_layout"
-                    app:layout_constraintHorizontal_bias="1.0"
-                    app:layout_constraintStart_toStartOf="@id/planed_layout"
-                    app:layout_constraintTop_toBottomOf="@id/desc" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
+                    android:layout_height="match_parent"
+                    android:layout_weight="0.4" />
+                <Button
+                    android:id="@+id/edit"
+                    android:layout_width="0dp"
+                    android:layout_weight="0.3"
+                    android:layout_height="match_parent"
+                    android:text="Edytuj"
+                    />
 
-            <Button
-                android:id="@+id/updateBudget"
-                android:layout_width="match_parent"
-                android:layout_height="35dp"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="10dp"
-                android:layout_marginEnd="8dp"
-                android:text="Zapisz"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/planed_layout" />
+            </LinearLayout>
+
+<!--            <androidx.constraintlayout.widget.ConstraintLayout-->
+<!--                android:id="@+id/planed_layout"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="70dp"-->
+<!--                android:layout_marginStart="8dp"-->
+<!--                android:layout_marginTop="8dp"-->
+<!--                android:layout_marginEnd="8dp"-->
+<!--                app:layout_constraintEnd_toEndOf="parent"-->
+<!--                app:layout_constraintStart_toStartOf="parent"-->
+<!--                app:layout_constraintTop_toBottomOf="@id/layoutPercentage">-->
+
+<!--                <TextView-->
+<!--                    android:id="@+id/desc"-->
+<!--                    android:layout_width="0dp"-->
+<!--                    android:layout_height="20dp"-->
+<!--                    android:text="Zaplanowane"-->
+
+<!--                    app:layout_constraintEnd_toEndOf="@id/planed_layout"-->
+<!--                    app:layout_constraintHorizontal_bias="0.0"-->
+<!--                    app:layout_constraintStart_toStartOf="@id/planed_layout"-->
+<!--                    app:layout_constraintTop_toTopOf="@id/planed_layout" />-->
+
+<!--                <EditText-->
+<!--                    android:id="@+id/planned"-->
+<!--                    android:layout_width="0dp"-->
+<!--                    android:layout_height="50dp"-->
+<!--                    android:layout_marginTop="5dp"-->
+<!--                    android:inputType="numberSigned"-->
+<!--                    android:text="planned"-->
+<!--                    android:textAlignment="center"-->
+<!--                    android:textSize="25sp"-->
+<!--                    app:layout_constraintEnd_toEndOf="@id/planed_layout"-->
+<!--                    app:layout_constraintHorizontal_bias="1.0"-->
+<!--                    app:layout_constraintStart_toStartOf="@id/planed_layout"-->
+<!--                    app:layout_constraintTop_toBottomOf="@id/desc" />-->
+<!--            </androidx.constraintlayout.widget.ConstraintLayout>-->
+
+<!--            <Button-->
+<!--                android:id="@+id/updateBudget"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="35dp"-->
+<!--                android:layout_marginStart="8dp"-->
+<!--                android:layout_marginTop="10dp"-->
+<!--                android:layout_marginEnd="8dp"-->
+<!--                android:text="Zapisz"-->
+<!--                app:layout_constraintEnd_toEndOf="parent"-->
+<!--                app:layout_constraintStart_toStartOf="parent"-->
+<!--                app:layout_constraintTop_toBottomOf="@id/layoutPlaned" />-->
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvBudgetItems"
@@ -141,7 +176,7 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/updateBudget" />
+                app:layout_constraintTop_toBottomOf="@+id/layoutPlaned" />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

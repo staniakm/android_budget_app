@@ -1,9 +1,12 @@
 package com.example.internetapi.ui
 
 import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
+import android.text.InputType
 import android.util.Log
+import android.widget.EditText
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -36,16 +39,16 @@ class UpdateBudgetActivity : AppCompatActivity() {
         intent.extras?.let { extra ->
             extra.getSerializable("budget")?.let { budgetObjects ->
                 val budget = budgetObjects as MonthBudget
-                loadBudgetItems(budget.budgetId)
                 with(budget) {
                     binding.category.text = category
                     binding.spendValue.text = df.format(spent)
                     binding.percentageValue.text = "$percentage %"
-                    binding.planned.setText(planned.toString())
+                    binding.planedValue.text = df.format(planned)
                 }
-                binding.updateBudget.setOnClickListener {
-                    updateBudget(budget)
+                binding.edit.setOnClickListener {
+                    createUpdateBudgetDialog(budget)
                 }
+                loadBudgetItems(budget.budgetId)
             }
         }
     }
@@ -58,21 +61,18 @@ class UpdateBudgetActivity : AppCompatActivity() {
                 Status.LOADING -> Log.i(TAG, "loadBudgetItems: LOADING")
             }
         }
-
     }
 
     private fun budgetItemsLoaded(items: List<InvoiceDetails>?) {
         items?.let {
-
             adapter.submitList(it)
         }
     }
 
-    private fun updateBudget(budget: MonthBudget) {
+    private fun updateBudget(budgetId: Int, planned: BigDecimal) {
         budgetViewModel.updateBudget(
             UpdateBudgetRequest(
-                budget.budgetId,
-                BigDecimal(binding.planned.text.toString())
+                budgetId, planned
             )
         ).observe(this) {
             when (it.status) {
@@ -83,6 +83,30 @@ class UpdateBudgetActivity : AppCompatActivity() {
         }
     }
 
+
+    private fun createUpdateBudgetDialog(budget: MonthBudget) {
+        val edit = EditText(this)
+        edit.setText(df.format(budget.planned))
+        edit.inputType = InputType.TYPE_CLASS_NUMBER
+
+        val alert: AlertDialog.Builder = AlertDialog.Builder(this)
+        alert.setTitle("Update planed value for budget")
+            .setMessage("Spend: ${budget.spent}")
+            .setView(edit)
+            .setPositiveButton("OK") { _, _ ->
+                val income = edit.text.toString()
+                when (val value = income.toBigDecimalOrNull()) {
+                    null -> errorSnackBar(
+                        binding.root,
+                        "Provided value: $income - is not parsable to number"
+                    )
+                    else -> updateBudget(budgetId = budget.budgetId, value)
+                }
+            }
+            .setNegativeButton("Cancel") { _, _ -> }
+        alert.show()
+    }
+
     private fun updateAdapter(accId: UpdateBudgetResponse?) {
         accId?.let {
             Intent().apply {
@@ -91,7 +115,6 @@ class UpdateBudgetActivity : AppCompatActivity() {
                 setResult(RESULT_OK, it)
             }
         } ?: setResult(RESULT_CANCELED)
-
         finish()
     }
 }
