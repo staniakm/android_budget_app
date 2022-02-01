@@ -21,6 +21,9 @@
             android:layout_height="wrap_content"
             android:datePickerMode="spinner"
             android:calendarViewShown="false"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginTop="8dp"
             />
         <Spinner
             android:id="@+id/description"
@@ -37,7 +40,8 @@
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
-            android:text="0"
+            android:layout_marginBottom="8dp"
+            android:text="@string/zero"
             android:inputType="numberDecimal"/>
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

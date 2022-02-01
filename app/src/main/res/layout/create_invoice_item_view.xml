@@ -20,7 +20,7 @@
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
-            android:hint="product" />
+            android:hint="@string/product" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/accMain"
@@ -36,7 +36,7 @@
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginEnd="8dp"
-                android:hint="price"
+                android:hint="@string/price"
                 android:inputType="numberDecimal"
                 android:singleLine="true"
                 app:layout_constraintStart_toStartOf="parent"
@@ -50,7 +50,7 @@
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginEnd="8dp"
-                android:hint="amount"
+                android:hint="@string/amount"
                 android:inputType="numberDecimal"
                 app:layout_constraintStart_toEndOf="@+id/price"
                 app:layout_constraintTop_toTopOf="parent"
@@ -62,7 +62,7 @@
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginEnd="8dp"
-                android:hint="discount"
+                android:hint="@string/discount"
                 android:inputType="numberDecimal"
                 app:layout_constraintStart_toEndOf="@+id/amount"
                 app:layout_constraintTop_toTopOf="parent"
