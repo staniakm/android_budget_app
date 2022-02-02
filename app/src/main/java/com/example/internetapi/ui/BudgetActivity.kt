@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.internetapi.api.Resource
 import com.example.internetapi.config.DateFormatter.yyyymm
+import com.example.internetapi.config.MoneyFormatter.df
 import com.example.internetapi.databinding.ActivityBudgetBinding
 import com.example.internetapi.functions.errorSnackBar
 import com.example.internetapi.functions.getResultFromActiviy
@@ -19,14 +20,12 @@ import com.example.internetapi.ui.adapters.MonthBudgetAdapter
 import com.example.internetapi.ui.adapters.OnItemClickedListener
 import com.example.internetapi.ui.viewModel.BudgetViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import java.text.DecimalFormat
 import java.time.LocalDate
 
 @AndroidEntryPoint
 class BudgetActivity : AppCompatActivity(), OnItemClickedListener {
     private val FAILED_TO_RECALCULATE_BUDGETS: String = "Failed to recalculate budgets"
     private val FAILED_TO_LOAD_BUDGETS: String = "Failed to load budgets data"
-    private var df: DecimalFormat = DecimalFormat("##0.00")
 
     private val viewModel: BudgetViewModel by viewModels()
     private lateinit var binding: ActivityBudgetBinding

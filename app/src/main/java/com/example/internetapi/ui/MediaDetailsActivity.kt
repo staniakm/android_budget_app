@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.internetapi.R
 import com.example.internetapi.api.Resource
 import com.example.internetapi.databinding.ActivityMediaDetailsBinding
 import com.example.internetapi.databinding.AddMediaMeterViewBinding
@@ -65,23 +66,23 @@ class MediaDetailsActivity : AppCompatActivity() {
     }
 
     private fun callRemoveItem(id: Int) {
-        viewModel.removeMediaUsage(id).observe(this, {
+        viewModel.removeMediaUsage(id).observe(this) {
             when (it.status) {
                 Status.SUCCESS -> successSnackBar(binding.root, MEDIA_USAGE_REMOVED)
                 Status.ERROR -> errorSnackBar(binding.root, FAILED_TO_REMOVE_MEDIA_USAGE)
                 Status.LOADING -> {}
             }
-        })
+        }
     }
 
     private fun loadData(mediaTypeId: Int) {
-        viewModel.getMediaUsageByType(mediaTypeId).observe(this, {
+        viewModel.getMediaUsageByType(mediaTypeId).observe(this) {
             when (it.status) {
                 Status.SUCCESS -> processSuccess(it)
                 Status.ERROR -> errorSnackBar(binding.root, FAILED_TO_LOAD_MEDIA_USAGE_DATA)
                 Status.LOADING -> {}
             }
-        })
+        }
     }
 
     private fun processSuccess(it: Resource<List<MediaUsage>>) {
@@ -99,7 +100,7 @@ class MediaDetailsActivity : AppCompatActivity() {
         val alert: AlertDialog.Builder = AlertDialog.Builder(this)
         alert.setTitle("Add meter value")
             .setView(meterBinding.root)
-            .setPositiveButton("OK") { _, _ ->
+            .setPositiveButton(getString(R.string.ok)) { _, _ ->
                 val income = meterBinding.value.text.toString()
                 when (val v = income.toBigDecimalOrNull()) {
                     null -> Log.w(
@@ -113,18 +114,18 @@ class MediaDetailsActivity : AppCompatActivity() {
                     )
                 }
             }
-            .setNegativeButton("Cancel") { _, _ -> }
+            .setNegativeButton(getString(R.string.cancel)) { _, _ -> }
         alert.show()
     }
 
     private fun addMeterValue(value: BigDecimal, date: LocalDate, mediaTypeId: Int) {
         val request = MediaRegisterRequest(mediaTypeId, value, date.year, date.monthValue)
-        viewModel.addMediaUsageEntry(request).observe(this, {
+        viewModel.addMediaUsageEntry(request).observe(this) {
             when (it.status) {
                 Status.SUCCESS -> processSuccess(it)
                 Status.ERROR -> errorSnackBar(binding.root, FAILED_TO_ADD_MEDIA_USAGE)
                 Status.LOADING -> {}
             }
-        })
+        }
     }
 }

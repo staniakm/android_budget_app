@@ -10,6 +10,7 @@ import android.widget.EditText
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.internetapi.R
 import com.example.internetapi.config.MoneyFormatter.df
 import com.example.internetapi.databinding.ActivityUpdateBudgetBinding
 import com.example.internetapi.functions.errorSnackBar
@@ -93,7 +94,7 @@ class UpdateBudgetActivity : AppCompatActivity() {
         alert.setTitle("Update planed value for budget")
             .setMessage("Spend: ${budget.spent}")
             .setView(edit)
-            .setPositiveButton("OK") { _, _ ->
+            .setPositiveButton(getString(R.string.ok)) { _, _ ->
                 val income = edit.text.toString()
                 when (val value = income.toBigDecimalOrNull()) {
                     null -> errorSnackBar(
@@ -103,7 +104,7 @@ class UpdateBudgetActivity : AppCompatActivity() {
                     else -> updateBudget(budgetId = budget.budgetId, value)
                 }
             }
-            .setNegativeButton("Cancel") { _, _ -> }
+            .setNegativeButton(getString(R.string.cancel)) { _, _ -> }
         alert.show()
     }
 

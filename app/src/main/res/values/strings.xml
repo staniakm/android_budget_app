@@ -42,4 +42,6 @@
     <string name="price">cena</string>
     <string name="amount">ilość</string>
     <string name="discount">rabat</string>
+    <string name="cancel">Anuluj</string>
+    <string name="ok">OK</string>
 </resources>

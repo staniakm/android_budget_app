@@ -60,13 +60,13 @@ class AccountActivity : AppCompatActivity(), OnItemClickedListener {
     }
 
     private fun loadData() {
-        accountViewModel.getAccounts().observe(this, {
+        accountViewModel.getAccounts().observe(this) {
             when (it.status) {
                 Status.SUCCESS -> loadOnSuccess(it)
                 Status.LOADING -> loadOnLoading()
                 Status.ERROR -> loadOnFailure()
             }
-        })
+        }
     }
 
     override fun onResume() {

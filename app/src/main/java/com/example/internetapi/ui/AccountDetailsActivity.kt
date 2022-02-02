@@ -167,7 +167,7 @@ class AccountDetailsActivity : AppCompatActivity(), OnItemClickedListener {
         alert.setTitle("Transfer money")
             .setMessage(name)
             .setView(transferBinding.root)
-            .setPositiveButton("OK") { _, _ ->
+            .setPositiveButton(getString(R.string.ok)) { _, _ ->
                 val income = transferBinding.value.text.toString()
                 val targetAccount = (transferBinding.targetAccount.selectedItem as SimpleAccount).id
                 when (val value = income.toBigDecimalOrNull()) {
@@ -182,7 +182,7 @@ class AccountDetailsActivity : AppCompatActivity(), OnItemClickedListener {
                     )
                 }
             }
-            .setNegativeButton("Cancel") { _, _ -> }
+            .setNegativeButton(getString(R.string.cancel)) { _, _ -> }
         alert.show()
     }
 
@@ -227,7 +227,7 @@ class AccountDetailsActivity : AppCompatActivity(), OnItemClickedListener {
             alert.setTitle("Add account income")
                 .setMessage(name)
                 .setView(incomeBinding.root)
-                .setPositiveButton("OK") { _, i ->
+                .setPositiveButton(getString(R.string.ok)) { _, i ->
                     val income = incomeBinding.value.text.toString()
                     when (val v = income.toBigDecimalOrNull()) {
                         null -> Log.w(
@@ -242,7 +242,7 @@ class AccountDetailsActivity : AppCompatActivity(), OnItemClickedListener {
                         )
                     }
                 }
-                .setNegativeButton("Cancel") { _, _ -> }
+                .setNegativeButton(getString(R.string.cancel)) { _, _ -> }
             alert.show()
         }
     }

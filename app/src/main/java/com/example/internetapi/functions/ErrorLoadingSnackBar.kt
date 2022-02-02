@@ -1,9 +1,10 @@
 package com.example.internetapi.functions
 
+import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.google.android.material.snackbar.Snackbar
 
-fun errorSnackBar(root: ConstraintLayout, data: String) {
+fun errorSnackBar(root: ViewGroup, data: String) {
     Snackbar.make(
         root,
         data,

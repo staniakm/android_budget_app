@@ -109,14 +109,14 @@ class AccountOutcomeDetails : AppCompatActivity(), OnItemClickedListener {
         alert.setTitle("Change account for selected invoice")
             .setMessage("${item.listId}")
             .setView(spinner)
-            .setPositiveButton("OK") { _, _ ->
+            .setPositiveButton(getString(R.string.ok)) { _, _ ->
                 this.updateInvoiceAccount(
                     item.listId,
                     accountId,
                     (spinner.selectedItem as SimpleAccount).id
                 )
             }
-            .setNegativeButton("Cancel") { _, _ -> }
+            .setNegativeButton(getString(R.string.cancel)) { _, _ -> }
         alert.show()
     }
 

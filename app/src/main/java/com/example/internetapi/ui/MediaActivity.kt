@@ -9,6 +9,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.internetapi.R
 import com.example.internetapi.api.Resource
 import com.example.internetapi.databinding.ActivityMediaBinding
 import com.example.internetapi.functions.errorSnackBar
@@ -45,17 +46,15 @@ class MediaActivity : AppCompatActivity(), OnItemClickedListener {
 
     private fun createDialog() {
         val edit = EditText(this)
-
-
         val alert: AlertDialog.Builder = AlertDialog.Builder(this)
         alert.setTitle("Add new media type")
             .setView(edit)
-            .setPositiveButton("OK") { _, _ ->
+            .setPositiveButton(getString(R.string.ok)) { _, _ ->
                 if (edit.text.isNotBlank()) {
                     this.addNewMedia(edit.text.toString().trim())
                 }
             }
-            .setNegativeButton("Cancel") { _, _ -> }
+            .setNegativeButton(getString(R.string.cancel)) { _, _ -> }
         alert.show()
     }
 
