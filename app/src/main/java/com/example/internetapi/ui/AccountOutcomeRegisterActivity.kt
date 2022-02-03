@@ -57,15 +57,10 @@ class AccountOutcomeRegisterActivity : AppCompatActivity() {
 
         binding.addInvoice.setOnClickListener {
             intent.extras?.let { extra ->
-                invoice = Invoice(extra.getInt("accountId"))
-                shopItems.clear()
-
-                binding.addInvoice.visibility = View.GONE
-                binding.saveInvoice.visibility = View.VISIBLE
-                binding.items.visibility = View.VISIBLE
-                binding.data1.visibility = View.VISIBLE
-                binding.fab.visibility = View.VISIBLE
-                loadData(extra.getString("accountName"))
+                val accountId = extra.getInt("accountId")
+                val accountName = extra.getString("accountName")
+                invoice = Invoice(accountId)
+                loadData(accountName)
             }
         }
 
@@ -152,23 +147,25 @@ class AccountOutcomeRegisterActivity : AppCompatActivity() {
         }
     }
 
-    private fun loadShopItems(shop: Shop) {
-        if (shop.shopId == -1) {
-            viewModel.createShop(shop.name).observe(this, {
-                when (it.status) {
-                    Status.SUCCESS -> successCreateShop(it)
-                    Status.ERROR -> errorSnackBar(binding.root, FAILED_TO_CREATE_SHOP)
-                    Status.LOADING -> {}
-                }
-            })
-        } else {
-            viewModel.getShopItems(shop.shopId).observe(this, {
-                when (it.status) {
-                    Status.SUCCESS -> loadShopItemsOnSuccess(it)
-                    Status.ERROR -> errorSnackBar(binding.root, FAILED_TO_LOAD_SHOPS)
-                    Status.LOADING -> {}
-                }
-            })
+    private fun loadShopItems() {
+        invoice?.shop?.let { shop ->
+            if (invoice?.shop?.shopId == -1) {
+                viewModel.createShop(shop.name).observe(this, {
+                    when (it.status) {
+                        Status.SUCCESS -> successCreateShop(it)
+                        Status.ERROR -> errorSnackBar(binding.root, FAILED_TO_CREATE_SHOP)
+                        Status.LOADING -> {}
+                    }
+                })
+            } else {
+                viewModel.getShopItems(shop.shopId).observe(this, {
+                    when (it.status) {
+                        Status.SUCCESS -> loadShopItemsOnSuccess(it)
+                        Status.ERROR -> errorSnackBar(binding.root, FAILED_TO_LOAD_SHOPS)
+                        Status.LOADING -> {}
+                    }
+                })
+            }
         }
     }
 
@@ -214,8 +211,8 @@ class AccountOutcomeRegisterActivity : AppCompatActivity() {
                         errorSnackBar(binding.root, "Fill required data")
                         this.hideElements()
                     } else {
-                        this.updateInvoiceData(invoice!!)
-                        this.loadShopItems(invoice!!.shop!!)
+                        invoiceCreated()
+
                     }
                     Log.i("TAG", "loadOnSuccess: $invoice")
                     invoiceBinding.shop.text.clear()
@@ -229,9 +226,20 @@ class AccountOutcomeRegisterActivity : AppCompatActivity() {
         }
     }
 
-    private fun updateInvoiceData(invoice: Invoice) {
-        binding.shop.text = invoice.shop?.name
-        binding.date.text = invoice.date.toString()
+    fun invoiceCreated() {
+        shopItems.clear()
+        binding.addInvoice.visibility = View.GONE
+        binding.saveInvoice.visibility = View.VISIBLE
+        binding.items.visibility = View.VISIBLE
+        binding.data1.visibility = View.VISIBLE
+        binding.fab.visibility = View.VISIBLE
+        this.updateInvoiceData()
+        this.loadShopItems()
+    }
+
+    private fun updateInvoiceData() {
+        binding.shop.text = invoice?.shop?.name
+        binding.date.text = invoice?.date.toString()
     }
 
     private fun addInvoiceItemDialog() {
