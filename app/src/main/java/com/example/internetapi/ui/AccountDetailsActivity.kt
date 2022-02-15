@@ -31,6 +31,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import kotlin.properties.Delegates
 
 
 @AndroidEntryPoint
@@ -44,6 +45,7 @@ class AccountDetailsActivity : AppCompatActivity(), OnItemClickedListener {
     private lateinit var incomeBinding: IncomeViewBinding
     private lateinit var transferBinding: TransferViewBinding
     private lateinit var adapter: AccountOperationAdapter
+    private var accountId by Delegates.notNull<Int>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,7 +61,7 @@ class AccountDetailsActivity : AppCompatActivity(), OnItemClickedListener {
             val name = extra.getString("name", "")
             val income = extra.getString("income", "0.0").toString()
             val outcome = extra.getString("outcome", "0.0").toString()
-            val accountId = extra.getInt("accountId")
+            accountId = extra.getInt("accountId")
             binding.name.text =
                 "$name - ${LocalDate.now().plusMonths(MonthSelector.month.toLong()).format(yyyymm)}"
             binding.incomeSum.text = income
@@ -85,8 +87,11 @@ class AccountDetailsActivity : AppCompatActivity(), OnItemClickedListener {
             }
             loadData(accountId)
         }
+    }
 
-
+    override fun onResume() {
+        super.onResume()
+        loadData(accountId)
     }
 
     private fun loadData(accountId: Int) {
