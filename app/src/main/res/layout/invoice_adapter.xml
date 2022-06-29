@@ -18,18 +18,29 @@
             android:layout_height="36dp"
             android:layout_marginTop="10dp">
 
+            <ImageView
+                android:id="@+id/deleteInvoice"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:contentDescription="@string/delete_invoice"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:src="@drawable/delete_icon"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
             <TextView
                 android:id="@+id/shopName"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="0dp"
+                android:layout_marginStart="8dp"
                 android:textColor="#000"
                 android:textSize="20sp"
                 android:textStyle="bold"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                 />
+                app:layout_constraintStart_toEndOf="@id/deleteInvoice"
+                app:layout_constraintTop_toTopOf="parent" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <androidx.constraintlayout.widget.ConstraintLayout

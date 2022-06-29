@@ -71,10 +71,12 @@ class AccountExpensesViewHolder(
 ) :
     RecyclerView.ViewHolder(binding.root), View.OnClickListener, View.OnLongClickListener {
     private val layout = binding.layout
+    private val deleteInvoice = binding.deleteInvoice
 
     init {
         layout.setOnClickListener(this)
         layout.setOnLongClickListener(this)
+        deleteInvoice.setOnClickListener(this)
     }
 
     override fun onClick(v: View?) {
@@ -83,6 +85,9 @@ class AccountExpensesViewHolder(
                 if (it != RecyclerView.NO_POSITION) {
                     listener.onClick(it, "layout")
                 }
+            }
+            deleteInvoice.id -> bindingAdapterPosition.let {
+                listener.onClick(it, "deleteInvoice")
             }
         }
     }

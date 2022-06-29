@@ -25,4 +25,10 @@ class InvoiceViewModel @Inject constructor(private val invoiceRepository: Invoic
             )
         }
     }
+
+    fun deleteInvoice(listId: Long): LiveData<Resource<Void>> {
+        return executeLiveDataSingle {
+            invoiceRepository.deleteInvoice(listId)
+        }
+    }
 }

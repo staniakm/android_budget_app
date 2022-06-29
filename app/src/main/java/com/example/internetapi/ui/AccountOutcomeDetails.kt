@@ -4,6 +4,7 @@ import android.R
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Spinner
@@ -15,6 +16,7 @@ import com.example.internetapi.api.Resource
 import com.example.internetapi.config.AccountHolder
 import com.example.internetapi.databinding.ActivityAccountOutcomeDetailsBinding
 import com.example.internetapi.functions.errorSnackBar
+import com.example.internetapi.functions.successSnackBar
 import com.example.internetapi.models.AccountInvoice
 import com.example.internetapi.models.SimpleAccount
 import com.example.internetapi.models.Status
@@ -28,7 +30,9 @@ import kotlin.properties.Delegates
 
 @AndroidEntryPoint
 class AccountOutcomeDetails : AppCompatActivity(), OnItemClickedListener {
-
+    private val INVOICE_REMOVED: String = "Selected invoice removed"
+    private val FAILED_TO_REMOVE_INVOICE: String = "Faile to revmoce selected invoice"
+    private val TAG = "AccountOutcomeDetails"
     private val FAILED_TO_LOAD_ACCOUNT_INVOICES = "Failed to load account invoices"
 
     private val accountViewModel: AccountViewModel by viewModels()
@@ -91,7 +95,31 @@ class AccountOutcomeDetails : AppCompatActivity(), OnItemClickedListener {
                 ContextCompat.startActivity(this, it, null)
             }
             "layoutLong" -> createSpinner(item)
+            "deleteInvoice" -> removeItemPopup(item)
         }
+    }
+
+    private fun removeItemPopup(item: AccountInvoice) {
+        Log.i(TAG, "removeItemPopup: $item")
+        val alert: AlertDialog.Builder = AlertDialog.Builder(this)
+        alert.setTitle("Invoice removal")
+            .setMessage("Do you want to remove selected invoice?")
+            .setPositiveButton(getString(R.string.ok)) { _, _ ->
+                invoiceViewModel.deleteInvoice(item.listId).observe(this) {
+                    when (it.status) {
+                        Status.SUCCESS -> {
+                            successSnackBar(binding.root, INVOICE_REMOVED)
+                            adapter.removeInvoice(item.listId)
+                        }
+                        Status.ERROR -> errorSnackBar(binding.root, FAILED_TO_REMOVE_INVOICE)
+                        Status.LOADING -> {}
+                    }
+                }
+
+            }
+            .setNegativeButton(getString(R.string.cancel)) { _, _ -> }
+        alert.show()
+
     }
 
     private fun createSpinner(

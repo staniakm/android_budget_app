@@ -3,6 +3,7 @@ package com.example.internetapi.repository
 import com.example.internetapi.api.InvoiceApiHelper
 import com.example.internetapi.models.NewInvoiceRequest
 import com.example.internetapi.models.UpdateInvoiceAccountRequest
+import retrofit2.Response
 import javax.inject.Inject
 
 class InvoiceRepository @Inject constructor(
@@ -14,4 +15,8 @@ class InvoiceRepository @Inject constructor(
 
     suspend fun createNewInvoice(newInvoiceRequest: NewInvoiceRequest) =
         apiHelper.createNewInvoice(newInvoiceRequest)
+
+    suspend fun deleteInvoice(listId: Long): Response<Void> {
+        return apiHelper.deleteInvoice(listId)
+    }
 }

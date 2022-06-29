@@ -21,6 +21,8 @@ interface InvoiceApiService {
     @POST(INVOICE)
     suspend fun createNewInvoice(@Body newInvoiceRequest: NewInvoiceRequest): Response<CreateInvoiceResponse>
 
+    @DELETE("$INVOICE/{invoiceId}")
+    suspend fun deleteInvoice(@Path("invoiceId") invoiceId: Long): Response<Void>
 }
 
 class InvoiceApiHelperImpl @Inject constructor(private val apiService: InvoiceApiService) :
@@ -41,6 +43,9 @@ class InvoiceApiHelperImpl @Inject constructor(private val apiService: InvoiceAp
         return apiService.createNewInvoice(newInvoiceRequest)
     }
 
+    override suspend fun deleteInvoice(invoiceId: Long): Response<Void> {
+        return apiService.deleteInvoice(invoiceId)
+    }
 }
 
 interface InvoiceApiHelper {
@@ -48,4 +53,5 @@ interface InvoiceApiHelper {
     suspend fun getInvoiceDetails(invoiceId: Long): Response<List<InvoiceDetails>>
     suspend fun updateInvoiceAccount(updateInvoiceAccountRequest: UpdateInvoiceAccountRequest): Response<AccountInvoice>
     suspend fun createNewInvoice(newInvoiceRequest: NewInvoiceRequest): Response<CreateInvoiceResponse>
+    suspend fun deleteInvoice(invoiceId: Long): Response<Void>
 }
