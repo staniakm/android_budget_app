@@ -56,12 +56,7 @@ class AccountOutcomeRegisterActivity : AppCompatActivity() {
         removeRecycleViewItemOnSwipe(binding.items) { pos -> removeItem(pos) }
 
         binding.addInvoice.setOnClickListener {
-            intent.extras?.let { extra ->
-                val accountId = extra.getInt("accountId")
-                val accountName = extra.getString("accountName")
-                invoice = Invoice(accountId)
-                loadData(accountName)
-            }
+            createinvoiceMetadata()
         }
 
         binding.cancelInvoice.setOnClickListener {
@@ -74,6 +69,16 @@ class AccountOutcomeRegisterActivity : AppCompatActivity() {
 
         binding.fab.setOnClickListener {
             addInvoiceItemDialog()
+        }
+        createinvoiceMetadata()
+    }
+
+    private fun createinvoiceMetadata() {
+        intent.extras?.let { extra ->
+            val accountId = extra.getInt("accountId")
+            val accountName = extra.getString("accountName")
+            invoice = Invoice(accountId)
+            loadData(accountName)
         }
     }
 
