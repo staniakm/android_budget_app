@@ -1,12 +1,15 @@
 package com.example.internetapi.ui.adapters
 
 import android.content.Context
+import android.provider.Settings.Global.getString
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.example.internetapi.R
+import com.example.internetapi.config.MoneyFormatter.df
 import com.example.internetapi.databinding.CategoryAdapterBinding
 import com.example.internetapi.models.Category
 
@@ -39,6 +42,8 @@ class CategoryAdapter(private val listener: OnItemClickedListener) :
         val item = differ.currentList[position]
         holder.binding.apply {
             categoryName.text = item.name
+            month.text = "Ostatni miesiąc:\n${df.format(item.monthSummary)}" //todo fix it
+            year.text = "Rok:\n${df.format(item.yearSummary)}"
         }
     }
 
