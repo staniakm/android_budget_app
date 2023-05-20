@@ -39,6 +39,10 @@ class MainActivity : AppCompatActivity() {
         binding.media.setOnClickListener {
             startActivity(Intent(this, MediaActivity::class.java))
         }
+
+        binding.categories.setOnClickListener {
+            startActivity(Intent(this, CategoryActivity::class.java))
+        }
     }
 
     override fun onResume() {

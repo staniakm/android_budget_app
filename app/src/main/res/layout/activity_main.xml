@@ -57,6 +57,18 @@
         app:layout_constraintTop_toBottomOf="@+id/charts" />
 
     <TextView
+        android:id="@+id/categories"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/start_menu_categories"
+        android:textAlignment="center"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/media" />
+
+    <TextView
         android:id="@+id/settings"
         android:layout_width="match_parent"
         android:layout_height="50dp"

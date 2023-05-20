@@ -43,23 +43,32 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideApiService(retrofit: Retrofit): MediaApiService = retrofit.create(MediaApiService::class.java)
+    fun provideApiService(retrofit: Retrofit): MediaApiService =
+        retrofit.create(MediaApiService::class.java)
 
     @Provides
     @Singleton
-    fun provideAccountApiService(retrofit: Retrofit): AccountApiService = retrofit.create(AccountApiService::class.java)
+    fun provideAccountApiService(retrofit: Retrofit): AccountApiService =
+        retrofit.create(AccountApiService::class.java)
 
     @Provides
     @Singleton
-    fun provideBudgetApiService(retrofit: Retrofit): BudgetApiService = retrofit.create(BudgetApiService::class.java)
+    fun provideBudgetApiService(retrofit: Retrofit): BudgetApiService =
+        retrofit.create(BudgetApiService::class.java)
 
     @Provides
     @Singleton
-    fun provideInvoiceApiService(retrofit: Retrofit): InvoiceApiService = retrofit.create(InvoiceApiService::class.java)
+    fun provideInvoiceApiService(retrofit: Retrofit): InvoiceApiService =
+        retrofit.create(InvoiceApiService::class.java)
 
     @Provides
     @Singleton
-    fun provideShopApiService(retrofit: Retrofit): ShopApiService = retrofit.create(ShopApiService::class.java)
+    fun provideShopApiService(retrofit: Retrofit): ShopApiService =
+        retrofit.create(ShopApiService::class.java)
+
+    @Provides
+    @Singleton
+    fun provideCategoryApiService(retrofit: Retrofit): CategoryApiService = retrofit.create(CategoryApiService::class.java)
 
     @Provides
     @Singleton
@@ -80,5 +89,9 @@ object AppModule {
     @Provides
     @Singleton
     fun provideShopApiHelper(apiHelper: ShopApiHelperImpl): ShopApiHelper = apiHelper
+
+    @Provides
+    @Singleton
+    fun provideCategoryApiHelper(apiHelper: CategoryApiHelperImpl): CategoryApiHelper = apiHelper
 
 }

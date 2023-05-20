@@ -27,6 +27,10 @@
             android:exported="false"
             android:label="@string/title_activity_media" />
         <activity
+            android:name=".ui.CategoryActivity"
+            android:exported="false"
+            android:label="@string/title_activity_category" />
+        <activity
             android:name=".ui.ChartActivity"
             android:exported="false"
             android:theme="@style/Theme.InternetApi.NoActionBar" />

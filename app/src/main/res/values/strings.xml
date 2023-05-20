@@ -11,6 +11,7 @@
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
     <string name="edit_account_btn_text">Edit</string>
     <string name="title_activity_media">Media</string>
+    <string name="title_activity_category">Media</string>
     <string name="shop">sklep</string>
     <string name="invoice_number">numer paragonu</string>
     <string name="add_invoice">Dodaj wydatek</string>
@@ -34,6 +35,7 @@
     <string name="start_menu_budget">BUDŻET</string>
     <string name="start_menu_charts">WYKRESY</string>
     <string name="start_menu_media">MEDIA</string>
+    <string name="start_menu_categories">KATEGORIE</string>
     <string name="start_menu_settings">USTAWIENIA</string>
     <string name="host_api_url">Adres servera</string>
     <string name="budget_percentage_used">Procent:</string>
