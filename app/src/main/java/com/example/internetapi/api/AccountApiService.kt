@@ -41,6 +41,9 @@ interface AccountApiService {
         @Body request: TransferMoneyRequest
     ): Response<UpdateAccountResponse>
 
+    @POST("$ACCOUNT/transfer")
+    suspend fun transferMoney(@Body request: TransferMoneyRequest): Response<UpdateAccountResponse>
+
     @GET("$ACCOUNT/income/type")
     suspend fun getIncomeTypes(): Response<List<IncomeType>>
 
@@ -76,7 +79,7 @@ class AccountApiHelperImpl @Inject constructor(private val apiService: AccountAp
     }
 
     override suspend fun transferMoney(request: TransferMoneyRequest): Response<UpdateAccountResponse> {
-        return apiService.transferMoney(request.accountId, request)
+        return apiService.transferMoney(request)
     }
 
     override suspend fun getAccountOperations(accountId: Int): Response<List<AccountOperation>> {
