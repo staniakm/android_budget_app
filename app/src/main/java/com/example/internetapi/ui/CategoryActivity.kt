@@ -1,9 +1,11 @@
 package com.example.internetapi.ui
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.internetapi.api.Resource
 import com.example.internetapi.databinding.ActivityCategoryBinding
@@ -56,13 +58,16 @@ class CategoryActivity : AppCompatActivity(), OnItemClickedListener {
 
     override fun onClick(position: Int, element: String) {
         val item = adapter.getItem(position)
-//        when (element) {
-//            "layout" -> Intent(this, CategoryDetailsActivity::class.java).apply {
-//                this.putExtra("name", item.name)
-//                this.putExtra("mediaId", item.id)
-//            }.let {
-//                ContextCompat.startActivity(this, it, null)
-//            }
-//        }
+
+        when (element) {
+            "layout" ->
+                Intent(this, CategoryDetailsActivity::class.java)
+                    .apply {
+                        this.putExtra("name", item.name)
+                        this.putExtra("categoryId", item.id)
+                    }.let {
+                        ContextCompat.startActivity(this, it, null)
+                    }
+        }
     }
 }

@@ -9,6 +9,9 @@ interface CategoryApiService {
 
     @GET("category")
     suspend fun getCategories(): Response<List<Category>>
+
+    @GET("category/{categoryId}/details")
+    suspend fun getCategoryDetails(@Path("categoryId") budgetId: Int): Response<List<CategoryDetails>>
 }
 
 class CategoryApiHelperImpl @Inject constructor(private val apiService: CategoryApiService) :
@@ -17,9 +20,14 @@ class CategoryApiHelperImpl @Inject constructor(private val apiService: Category
     override suspend fun getCategories(): Response<List<Category>> {
         return apiService.getCategories()
     }
+
+    override suspend fun getCategoryDetails(categoryId: Int): Response<List<CategoryDetails>> {
+        return apiService.getCategoryDetails(categoryId)
+    }
 }
 
 interface CategoryApiHelper {
 
     suspend fun getCategories(): Response<List<Category>>
+    suspend fun getCategoryDetails(categoryId: Int): Response<List<CategoryDetails>>
 }

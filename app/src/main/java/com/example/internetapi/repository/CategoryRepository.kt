@@ -7,4 +7,5 @@ class CategoryRepository @Inject constructor(
     private val apiHelper: CategoryApiHelper
 ) {
     suspend fun getCategories() = apiHelper.getCategories()
+    suspend fun getCategoryDetails(categoryId: Int) = apiHelper.getCategoryDetails(categoryId)
 }
