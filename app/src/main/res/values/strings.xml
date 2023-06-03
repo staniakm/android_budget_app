@@ -11,7 +11,7 @@
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
     <string name="edit_account_btn_text">Edit</string>
     <string name="title_activity_media">Media</string>
-    <string name="title_activity_category">Media</string>
+    <string name="title_activity_category">Kategorie</string>
     <string name="shop">sklep</string>
     <string name="invoice_number">numer paragonu</string>
     <string name="add_invoice">Dodaj wydatek</string>
@@ -48,4 +48,6 @@
     <string name="ok">OK</string>
     <string name="delete_invoice">delete invoice</string>
     <string name="last_month_outcome">Ostani miesiąc %1$s</string>
+    <string name="change_item_category">Zmień kategorię przedmiotu</string>
+    <string name="show_assortment_expenses">Pokaż szczegóły miesiąca</string>
 </resources>

@@ -8,14 +8,17 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.internetapi.api.Resource
+import com.example.internetapi.config.DateFormatter
 import com.example.internetapi.databinding.ActivityCategoryBinding
 import com.example.internetapi.functions.errorSnackBar
+import com.example.internetapi.global.MonthSelector
 import com.example.internetapi.models.Category
 import com.example.internetapi.models.Status
 import com.example.internetapi.ui.adapters.CategoryAdapter
 import com.example.internetapi.ui.adapters.OnItemClickedListener
 import com.example.internetapi.ui.viewModel.CategoryViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import java.time.LocalDate
 
 @AndroidEntryPoint
 class CategoryActivity : AppCompatActivity(), OnItemClickedListener {
@@ -34,6 +37,21 @@ class CategoryActivity : AppCompatActivity(), OnItemClickedListener {
         binding.data.adapter = adapter
 
         loadData()
+
+        binding.monthManipulator.previous.setOnClickListener {
+            MonthSelector.previous()
+            loadData()
+        }
+        binding.monthManipulator.date.setOnClickListener {
+            MonthSelector.current()
+            loadData()
+        }
+        binding.monthManipulator.next.setOnClickListener {
+            if (MonthSelector.month < 0) {
+                MonthSelector.next()
+                loadData()
+            }
+        }
     }
 
     private fun loadData() {
@@ -47,6 +65,9 @@ class CategoryActivity : AppCompatActivity(), OnItemClickedListener {
     }
 
     private fun processSuccess(it: Resource<List<Category>>) {
+        binding.monthManipulator.date.text =
+            LocalDate.now().withDayOfMonth(1).plusMonths(MonthSelector.month.toLong())
+                .format(DateFormatter.yyyymm)
         it.data?.let {
             if (it.isEmpty()) {
                 errorSnackBar(binding.root, "No data available. Please add new data")

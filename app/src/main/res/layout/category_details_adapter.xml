@@ -28,7 +28,23 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintWidth_percent="1" />
+                app:layout_constraintWidth_percent="0.85" />
+            <TextView
+                android:id="@+id/textViewOptions"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentTop="true"
+                android:textAlignment="center"
+                android:text="&#8942;"
+                android:textAppearance="?android:textAppearanceLarge"
+                app:layout_constraintStart_toEndOf="@id/assortmentName"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintWidth_percent="0.1"
+                android:shadowColor="@color/design_default_color_on_secondary"
+                />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -46,17 +62,6 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintWidth_percent="0.4" />
-
-            <TextView
-                android:id="@+id/year"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:layout_marginStart="8dp"
-                android:textSize="16sp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintWidth_percent="0.55" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
