@@ -56,20 +56,26 @@
             android:label="Update budget" />
         <activity
             android:name=".ui.AccountUpdateActivity"
+            android:exported="false"
             android:label="Update account" />
         <activity
             android:name=".ui.BudgetActivity"
+            android:exported="false"
             android:label="Budgets" />
         <activity
             android:name=".ui.AccountActivity"
+            android:exported="false"
             android:label="Accounts" />
         <activity
             android:name=".ui.InvoiceDetailsActivity"
+            android:exported="false"
             android:label="Invoice details" />
         <activity
             android:name=".ui.AccountDetailsActivity"
+            android:exported="false"
             android:label="Account Details" />
-        <activity android:name=".ui.MainActivity">
+        <activity android:name=".ui.MainActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
