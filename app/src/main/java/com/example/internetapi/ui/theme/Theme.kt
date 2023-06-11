@@ -1,4 +1,4 @@
-//package com.example.composeapp5.ui.theme
+//package com.example.internetapi.ui.theme
 //
 //import android.app.Activity
 //import android.os.Build
