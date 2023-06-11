@@ -27,7 +27,7 @@ class CategoryDetailsActivity : AppCompatActivity() {
         binding = ActivityCategoryDetailsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        adapter = CategoryDetailsAdapter()
+        adapter = CategoryDetailsAdapter(viewModel, this)
         binding.data.layoutManager = LinearLayoutManager(this)
         binding.data.adapter = adapter
 

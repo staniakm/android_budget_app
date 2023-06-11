@@ -7,6 +7,10 @@ data class Category(
     val name: String,
     val monthSummary: BigDecimal,
     val yearSummary: BigDecimal
-)
+){
+    override fun toString(): String {
+        return name
+    }
+}
 
 data class CategoryDetails(val assortmentId: Long, val name: String, val price: BigDecimal)
