@@ -9,7 +9,7 @@ android {
     defaultConfig {
         applicationId "com.example.internetapi"
         minSdkVersion 26
-        targetSdkVersion 31
+        targetSdkVersion 33
         versionCode 1
         versionName "1.0"
 

@@ -4,6 +4,8 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.material.MaterialTheme
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
@@ -52,8 +54,19 @@ class AccountAdapter(private val listener: OnItemClickedListener) :
         val item = differ.currentList[position]
         holder.binding.apply {
             accName.text = item.name
-            accIncome.text = "Przychód: ${df.format(item.income)}"
-            accExpense.text = "Wydatki: ${df.format(item.expense)}"
+            composeAccountIncomeOutcome.apply {
+                setViewCompositionStrategy(
+                    ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
+                )
+                setContent {
+                    MaterialTheme {
+                        AccountInfo(item)
+                    }
+//                accIncome.text = "Przychód: ${df.format(item.income)}"
+//                accExpense.text = "Wydatki: ${df.format(item.expense)}"
+                }
+            }
+
             accCurrentBalance.text = "Stan konta: ${df.format(item.moneyAmount)}"
         }
     }
@@ -86,6 +99,7 @@ class AccountViewHolder(
                     listener.onClick(it, "layout")
                 }
             }
+
             editButton.id -> bindingAdapterPosition.let {
                 listener.onClick(it, "edit")
             }
