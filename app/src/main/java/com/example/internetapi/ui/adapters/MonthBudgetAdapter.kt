@@ -5,6 +5,8 @@ import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.material.MaterialTheme
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
@@ -41,23 +43,16 @@ class MonthBudgetAdapter(private val listener: OnItemClickedListener) :
     override fun onBindViewHolder(holder: MonthBudgetViewHolder, position: Int) {
         val item = differ.currentList[position]
         holder.binding.apply {
-            budgetName.text = item.category
-            spend.text = "Wyd: ${df.format(item.spent)}"
-            planed.text = "Zap: ${df.format(item.planned)}"
-            percentage.text = "${item.percentage}%"
-            progressBar.setProgress(item.percentage, false)
-            if (item.spent > item.planned) {
-                this.spend.setTextColor(Color.RED)
-                progressBar.progressDrawable.setColorFilter(
-                    Color.RED, android.graphics.PorterDuff.Mode.SRC_IN
+            composeBudgetCardSummary.apply {
+                setViewCompositionStrategy(
+                    ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
                 )
-            } else {
-                this.spend.setTextColor(Color.GREEN)
-                progressBar.progressDrawable.setColorFilter(
-                    Color.BLUE, android.graphics.PorterDuff.Mode.SRC_IN
-                )
+                setContent {
+                    MaterialTheme {
+                        BudgetSummaryCard(item)
+                    }
+                }
             }
-
         }
     }
 
