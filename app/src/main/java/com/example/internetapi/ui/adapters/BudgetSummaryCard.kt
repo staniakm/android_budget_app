@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
@@ -29,9 +30,12 @@ import com.example.internetapi.models.MonthBudget
 import java.math.BigDecimal
 
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun BudgetSummaryCard(item: MonthBudget) {
-    Surface {
+fun BudgetSummaryCard(item: MonthBudget, surfaceClick: () -> Unit) {
+    Surface(
+        onClick = surfaceClick
+    ) {
         Column {
             BudgetName(item.category)
             PlannedSpend(item.planned, item.spent)
@@ -70,9 +74,9 @@ private fun PlannedSpend(planned: BigDecimal, spent: BigDecimal) {
                 .fillMaxWidth()
                 .weight(1f),
             fontSize = 16.sp,
-            color = if (spent > planned){
+            color = if (spent > planned) {
                 Color.Red
-            }else {
+            } else {
                 Color.Unspecified
             }
         )
@@ -125,7 +129,7 @@ private fun BudgetSummaryCardPreview() {
                 spent = BigDecimal(123.33),
                 planned = BigDecimal(200),
                 percentage = 150
-            )
+            ), {}
         )
     }
 }

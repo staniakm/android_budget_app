@@ -37,7 +37,7 @@ class MonthBudgetAdapter(private val listener: OnItemClickedListener) :
         val binding =
             BudgetAdapterBinding.inflate(LayoutInflater.from(parent.context), parent, false)
 
-        return MonthBudgetViewHolder(binding, parent.context, listener)
+        return MonthBudgetViewHolder(binding, parent.context)
     }
 
     override fun onBindViewHolder(holder: MonthBudgetViewHolder, position: Int) {
@@ -49,7 +49,7 @@ class MonthBudgetAdapter(private val listener: OnItemClickedListener) :
                 )
                 setContent {
                     MaterialTheme {
-                        BudgetSummaryCard(item)
+                        BudgetSummaryCard(item) { listener.onClick(position = position, "layout") }
                     }
                 }
             }
@@ -76,23 +76,7 @@ class MonthBudgetAdapter(private val listener: OnItemClickedListener) :
 
 class MonthBudgetViewHolder(
     val binding: BudgetAdapterBinding,
-    val parent: Context,
-    private val listener: OnItemClickedListener
+    val parent: Context
 ) :
-    RecyclerView.ViewHolder(binding.root), View.OnClickListener {
-    private val layout = binding.layout
-
-    init {
-        layout.setOnClickListener(this)
-    }
-
-    override fun onClick(v: View?) {
-        when (v?.id) {
-            layout.id -> bindingAdapterPosition.let {
-                if (it != RecyclerView.NO_POSITION) {
-                    listener.onClick(it, "layout")
-                }
-            }
-        }
-    }
+    RecyclerView.ViewHolder(binding.root) {
 }
