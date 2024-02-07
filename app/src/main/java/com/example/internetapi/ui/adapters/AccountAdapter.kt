@@ -47,7 +47,7 @@ class AccountAdapter(private val listener: OnItemClickedListener) :
         val binding =
             AccountAdapterBinding.inflate(LayoutInflater.from(parent.context), parent, false)
 
-        return AccountViewHolder(binding, parent.context, listener)
+        return AccountViewHolder(binding, parent.context)
     }
 
     override fun onBindViewHolder(holder: AccountViewHolder, position: Int) {
@@ -59,7 +59,10 @@ class AccountAdapter(private val listener: OnItemClickedListener) :
                 )
                 setContent {
                     MaterialTheme {
-                        AccountInfo(item) { listener.onClick(position, "edit") }
+                        AccountInfo(
+                            item,
+                            surfaceClick = { listener.onClick(position, "layout") },
+                            editAccountClick = { listener.onClick(position, "edit") })
                     }
                 }
             }
@@ -77,28 +80,6 @@ class AccountAdapter(private val listener: OnItemClickedListener) :
 class AccountViewHolder(
     val binding: AccountAdapterBinding,
     val parent: Context,
-    private val listener: OnItemClickedListener
 ) :
-    RecyclerView.ViewHolder(binding.root), View.OnClickListener {
-    private val layout = binding.layout
-//    private val editButton = binding.editBtn
-
-    init {
-        layout.setOnClickListener(this)
-//        editButton.setOnClickListener(this)
-    }
-
-    override fun onClick(v: View?) {
-        when (v?.id) {
-            layout.id -> bindingAdapterPosition.let {
-                if (it != RecyclerView.NO_POSITION) {
-                    listener.onClick(it, "layout")
-                }
-            }
-
-//            editButton.id -> bindingAdapterPosition.let {
-//                listener.onClick(it, "edit")
-//            }
-        }
-    }
+    RecyclerView.ViewHolder(binding.root) {
 }

@@ -3,18 +3,16 @@ package com.example.internetapi.ui.adapters
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Button
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -24,11 +22,18 @@ import com.example.internetapi.config.MoneyFormatter
 import com.example.internetapi.models.Account
 import java.math.BigDecimal
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun AccountInfo(item: Account, editClick: () -> Unit) {
-    Surface {
+fun AccountInfo(
+    item: Account,
+    surfaceClick: () -> Unit,
+    editAccountClick: () -> Unit
+) {
+    Surface(
+        onClick = surfaceClick
+    ) {
         Column {
-            HeaderRow(name = item.name, editClick)
+            HeaderRow(name = item.name, editAccountClick)
             AccountTotal(item.moneyAmount)
             IncomeOutcome(item = item)
         }
@@ -117,7 +122,8 @@ private fun AccountInfoPreview() {
                 BigDecimal(2.33),
                 BigDecimal(3.44)
             ),
-            { println("Click button")}
+            surfaceClick = { println("Surface click") },
+            editAccountClick = { println("Click button") }
         )
     }
 }
