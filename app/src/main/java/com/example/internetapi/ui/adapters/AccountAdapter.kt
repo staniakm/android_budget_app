@@ -53,21 +53,17 @@ class AccountAdapter(private val listener: OnItemClickedListener) :
     override fun onBindViewHolder(holder: AccountViewHolder, position: Int) {
         val item = differ.currentList[position]
         holder.binding.apply {
-            accName.text = item.name
             composeAccountIncomeOutcome.apply {
                 setViewCompositionStrategy(
                     ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
                 )
                 setContent {
                     MaterialTheme {
-                        AccountInfo(item)
+                        AccountInfo(item) { listener.onClick(position, "edit") }
                     }
-//                accIncome.text = "Przychód: ${df.format(item.income)}"
-//                accExpense.text = "Wydatki: ${df.format(item.expense)}"
                 }
             }
 
-            accCurrentBalance.text = "Stan konta: ${df.format(item.moneyAmount)}"
         }
     }
 
@@ -85,11 +81,11 @@ class AccountViewHolder(
 ) :
     RecyclerView.ViewHolder(binding.root), View.OnClickListener {
     private val layout = binding.layout
-    private val editButton = binding.editBtn
+//    private val editButton = binding.editBtn
 
     init {
         layout.setOnClickListener(this)
-        editButton.setOnClickListener(this)
+//        editButton.setOnClickListener(this)
     }
 
     override fun onClick(v: View?) {
@@ -100,9 +96,9 @@ class AccountViewHolder(
                 }
             }
 
-            editButton.id -> bindingAdapterPosition.let {
-                listener.onClick(it, "edit")
-            }
+//            editButton.id -> bindingAdapterPosition.let {
+//                listener.onClick(it, "edit")
+//            }
         }
     }
 }
