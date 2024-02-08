@@ -1,5 +1,6 @@
 package com.example.internetapi.ui.adapters
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Card
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
@@ -33,8 +35,13 @@ import java.math.BigDecimal
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun BudgetSummaryCard(item: MonthBudget, surfaceClick: () -> Unit) {
-    Surface(
-        onClick = surfaceClick
+    Card(
+        onClick = surfaceClick,
+        modifier = Modifier
+            .padding(8.dp)
+            .fillMaxWidth(),
+        elevation = 3.dp,
+        border = BorderStroke(1.dp, Color.Black)
     ) {
         Column {
             BudgetName(item.category)
@@ -51,6 +58,7 @@ private fun BudgetName(name: String) {
         fontSize = 20.sp,
         textAlign = TextAlign.Center,
         modifier = Modifier.fillMaxWidth()
+            .padding(5.dp)
     )
 }
 
