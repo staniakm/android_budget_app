@@ -19,6 +19,7 @@ import com.example.internetapi.models.MonthBudget
 import com.example.internetapi.models.Status
 import com.example.internetapi.models.UpdateBudgetResponse
 import com.example.internetapi.ui.adapters.BudgetList
+import com.example.internetapi.ui.theme.InternetApiTheme
 import com.example.internetapi.ui.viewModel.BudgetViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import java.time.LocalDate
@@ -95,10 +96,10 @@ class BudgetActivity : AppCompatActivity() {
         binding = ActivityBudgetBinding.inflate(layoutInflater)
         setContentView(binding.root)
         binding.composeView.setContent {
-            MaterialTheme {
+            InternetApiTheme {
                 BudgetList(
-                    budgets = budgets,
-                    { monthBudget -> onClick(monthBudget) })
+                    budgets = budgets
+                ) { monthBudget -> onClick(monthBudget) }
             }
         }
     }

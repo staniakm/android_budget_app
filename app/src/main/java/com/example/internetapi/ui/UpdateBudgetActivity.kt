@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.internetapi.R
 import com.example.internetapi.config.MoneyFormatter.df
+import com.example.internetapi.config.MoneyFormatter.dfInt
 import com.example.internetapi.databinding.ActivityUpdateBudgetBinding
 import com.example.internetapi.functions.errorSnackBar
 import com.example.internetapi.models.*
@@ -87,7 +88,7 @@ class UpdateBudgetActivity : AppCompatActivity() {
 
     private fun createUpdateBudgetDialog(budget: MonthBudget) {
         val edit = EditText(this)
-        edit.setText(df.format(budget.planned))
+        edit.setText(dfInt.format(budget.planned.toInt()))
         edit.inputType = InputType.TYPE_CLASS_NUMBER
 
         val alert: AlertDialog.Builder = AlertDialog.Builder(this)
