@@ -7,11 +7,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.Button
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -20,9 +18,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.internetapi.config.MoneyFormatter
 import com.example.internetapi.models.Account
+import com.example.internetapi.ui.theme.InternetApiTheme
 import java.math.BigDecimal
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun AccountInfo(
     item: Account,
@@ -114,7 +112,7 @@ private fun IncomeOutcome(item: Account) {
 @Preview
 @Composable
 private fun AccountInfoPreview() {
-    MaterialTheme {
+    InternetApiTheme(darkTheme = true) {
         AccountInfo(
             item = Account(
                 1, "Account name",

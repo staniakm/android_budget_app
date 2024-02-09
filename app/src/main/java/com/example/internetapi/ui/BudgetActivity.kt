@@ -5,7 +5,6 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.mutableStateListOf
 import com.example.internetapi.api.Resource
 import com.example.internetapi.config.DateFormatter.yyyymm

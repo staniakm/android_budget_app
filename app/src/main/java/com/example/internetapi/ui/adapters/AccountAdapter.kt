@@ -2,17 +2,15 @@ package com.example.internetapi.ui.adapters
 
 import android.content.Context
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import androidx.compose.material.MaterialTheme
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.example.internetapi.config.MoneyFormatter.df
 import com.example.internetapi.databinding.AccountAdapterBinding
 import com.example.internetapi.models.Account
 import com.example.internetapi.models.UpdateAccountResponse
+import com.example.internetapi.ui.theme.InternetApiTheme
 
 class AccountAdapter(private val listener: OnItemClickedListener) :
     RecyclerView.Adapter<AccountViewHolder>() {
@@ -58,7 +56,7 @@ class AccountAdapter(private val listener: OnItemClickedListener) :
                     ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
                 )
                 setContent {
-                    MaterialTheme {
+                    InternetApiTheme {
                         AccountInfo(
                             item,
                             surfaceClick = { listener.onClick(position, "layout") },
