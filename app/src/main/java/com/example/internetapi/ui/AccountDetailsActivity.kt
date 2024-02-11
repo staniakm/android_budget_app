@@ -31,6 +31,7 @@ import com.example.internetapi.ui.viewModel.AccountViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import kotlin.properties.Delegates
 
@@ -69,30 +70,40 @@ class AccountDetailsActivity : AppCompatActivity() {
             val income = extra.getString("income", "0.0").toString()
             val outcome = extra.getString("outcome", "0.0").toString()
             accountId = extra.getInt("accountId")
-            binding.name.text =
-                "$name - ${LocalDate.now().plusMonths(MonthSelector.month.toLong()).format(yyyymm)}"
-            binding.incomeSum.text = income
-            binding.outcomeSum.text = outcome
-
-            binding.incomeLay.setOnClickListener {
-                Intent(this, AccountIncomeDetails::class.java).apply {
-                    this.putExtra("name", name)
-                    this.putExtra("accountId", extra.getInt("accountId"))
-                    this.putExtra("income", income)
-                }.let {
-                    ContextCompat.startActivity(this, it, null)
-                }
-            }
-            binding.outcomeLay.setOnClickListener {
-                Intent(this, AccountOutcomeDetails::class.java).apply {
-                    this.putExtra("name", name)
-                    this.putExtra("accountId", accountId)
-                    this.putExtra("outcome", outcome)
-                }.let {
-                    ContextCompat.startActivity(this, it, null)
+            binding.composeSummaryView.setContent {
+                InternetApiTheme {
+                    AccountSummary(
+                        "$name - ${
+                            YearMonth.now().plusMonths(MonthSelector.month.toLong()).format(yyyymm)
+                        }",
+                        income,
+                        outcome,
+                        { incomeRowClick(name, income, accountId) },
+                        { outcomeRowClick(name, outcome, accountId) },
+                    )
                 }
             }
             loadData(accountId)
+        }
+    }
+
+    private fun outcomeRowClick(name: String, outcome: String, accountId: Int) {
+        Intent(this, AccountOutcomeDetails::class.java).apply {
+            this.putExtra("name", name)
+            this.putExtra("accountId", accountId)
+            this.putExtra("outcome", outcome)
+        }.let {
+            ContextCompat.startActivity(this, it, null)
+        }
+    }
+
+    private fun incomeRowClick(name: String, income: String, accountId: Int) {
+        Intent(this, AccountIncomeDetails::class.java).apply {
+            this.putExtra("name", name)
+            this.putExtra("accountId", accountId)
+            this.putExtra("income", income)
+        }.let {
+            ContextCompat.startActivity(this, it, null)
         }
     }
 
@@ -111,7 +122,7 @@ class AccountDetailsActivity : AppCompatActivity() {
         }
     }
 
-    fun onClick(item: AccountOperation) {
+    private fun onClick(item: AccountOperation) {
         when (item.type) {
             "OUTCOME" -> Intent(this, InvoiceDetailsActivity::class.java).apply {
                 this.putExtra("invoiceId", item.id)

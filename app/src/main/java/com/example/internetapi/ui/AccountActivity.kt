@@ -24,6 +24,7 @@ import com.example.internetapi.ui.viewModel.AccountViewModel
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import java.time.LocalDate
+import java.time.YearMonth
 
 
 @AndroidEntryPoint
@@ -80,7 +81,6 @@ class AccountActivity : AppCompatActivity() {
     private fun loadOnFailure() {
         with(binding) {
             progress.visibility = View.GONE
-            rvAccounts.visibility = View.GONE
         }
         errorSnackBar(binding.root, "Something went wrong")
     }
@@ -88,16 +88,13 @@ class AccountActivity : AppCompatActivity() {
     private fun loadOnLoading() {
         with(binding) {
             progress.visibility = View.VISIBLE
-            rvAccounts.visibility = View.GONE
         }
     }
 
     private fun loadOnSuccess(it: Resource<List<Account>>) {
         binding.progress.visibility = View.GONE
-        binding.rvAccounts.visibility = View.VISIBLE
         binding.monthManipulator.date.text =
-            LocalDate.now().withDayOfMonth(1).plusMonths(MonthSelector.month.toLong())
-                .format(DateFormatter.yyyymm)
+            YearMonth.now().plusMonths(MonthSelector.month.toLong()).format(DateFormatter.yyyymm)
         it.data.let { res ->
             res?.let { list ->
                 accounts.clear()
