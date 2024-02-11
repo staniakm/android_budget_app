@@ -4,12 +4,14 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.internetapi.config.MoneyFormatter
 import com.example.internetapi.databinding.AccountOperationAdapterBinding
 import com.example.internetapi.models.AccountOperation
+import com.example.internetapi.ui.theme.InternetApiTheme
 
 class AccountOperationAdapter(private val listener: OnItemClickedListener) :
     RecyclerView.Adapter<AccountOperationsViewHolder>() {
@@ -49,16 +51,15 @@ class AccountOperationAdapter(private val listener: OnItemClickedListener) :
     override fun onBindViewHolder(holder: AccountOperationsViewHolder, position: Int) {
         val item = differ.currentList[position]
         holder.binding.apply {
-            date.text = item.date
-            value.text = MoneyFormatter.df.format(item.value)
-            if (item.type == "OUTCOME") {
-                this.outcomeIcon.visibility = View.VISIBLE
-                accIncExp.setOnClickListener {
-                    listener.onClick(position, "outcome")
+            this.composeView.apply {
+                setViewCompositionStrategy(
+                    ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
+                )
+                setContent {
+                    InternetApiTheme {
+                        AccountOperationCard(item)
+                    }
                 }
-            } else {
-                this.incomeIcon.visibility = View.VISIBLE
-                listener.onClick(position, "income")
             }
         }
     }

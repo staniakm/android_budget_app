@@ -120,7 +120,7 @@ private fun ColorProgressBar(progress: Int) {
             .padding(2.dp),
         contentAlignment = Alignment.Center
     ) {
-        Text(text = "${(progress)}%", color = Color.Gray, fontSize = 16.sp)
+        Text(text = "${(progress)}%", color = Color.LightGray, fontSize = 16.sp)
     }
 }
 
