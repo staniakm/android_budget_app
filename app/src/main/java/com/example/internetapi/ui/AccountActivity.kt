@@ -5,8 +5,8 @@ import android.os.Bundle
 import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.runtime.mutableStateListOf
 import androidx.core.content.ContextCompat
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.internetapi.api.Resource
 import com.example.internetapi.config.AccountHolder
 import com.example.internetapi.config.DateFormatter
@@ -18,8 +18,8 @@ import com.example.internetapi.global.MonthSelector
 import com.example.internetapi.models.Account
 import com.example.internetapi.models.Status
 import com.example.internetapi.models.UpdateAccountResponse
-import com.example.internetapi.ui.adapters.AccountAdapter
-import com.example.internetapi.ui.adapters.OnItemClickedListener
+import com.example.internetapi.ui.adapters.AccountInfoList
+import com.example.internetapi.ui.theme.InternetApiTheme
 import com.example.internetapi.ui.viewModel.AccountViewModel
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
@@ -27,20 +27,23 @@ import java.time.LocalDate
 
 
 @AndroidEntryPoint
-class AccountActivity : AppCompatActivity(), OnItemClickedListener {
+class AccountActivity : AppCompatActivity() {
 
     private val accountViewModel: AccountViewModel by viewModels()
     private lateinit var binding: ActivityAccountBinding
-    private lateinit var adapter: AccountAdapter
+    private val accounts = mutableStateListOf<Account>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAccountBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        adapter = AccountAdapter(this)
-        binding.rvAccounts.layoutManager = LinearLayoutManager(this)
-        binding.rvAccounts.adapter = adapter
-
+        binding.composeView.setContent {
+            InternetApiTheme {
+                AccountInfoList(accounts = accounts,
+                    surfaceClick = { account -> onLayoutClick(account) },
+                    editAccountClick = { account: Account -> onEditAccountClick(account) })
+            }
+        }
         loadData()
 
         binding.monthManipulator.previous.setOnClickListener {
@@ -97,7 +100,8 @@ class AccountActivity : AppCompatActivity(), OnItemClickedListener {
                 .format(DateFormatter.yyyymm)
         it.data.let { res ->
             res?.let { list ->
-                adapter.submitList(list)
+                accounts.clear()
+                accounts.addAll(list)
                 AccountHolder.accounts = list.map { it.toSimpleAccount() }.toMutableList()
             } ?: Snackbar.make(binding.rootView, "Status = false", Snackbar.LENGTH_SHORT).show()
         }
@@ -105,26 +109,35 @@ class AccountActivity : AppCompatActivity(), OnItemClickedListener {
 
     private var updateActivity = getResultFromActiviy(this) { result ->
         result.data?.getSerializableExtra("result")?.let {
-            adapter.updateListItem(it as UpdateAccountResponse)
+            val account = it as UpdateAccountResponse
+            updateAccountList(account)
         }
     }
 
-    override fun onClick(position: Int, element: String) {
-        val item = adapter.getItem(position)
-        when (element) {
-            "layout" -> Intent(this, AccountDetailsActivity::class.java).apply {
-                this.putExtra("name", item.name)
-                this.putExtra("accountId", item.id)
-                this.putExtra("income", MoneyFormatter.df.format(item.income))
-                this.putExtra("outcome", MoneyFormatter.df.format(item.expense))
-            }.let {
-                ContextCompat.startActivity(this, it, null)
-            }
-            "edit" -> Intent(this, AccountUpdateActivity::class.java).apply {
-                this.putExtra("account", item)
-            }.let {
-                updateActivity.launch(it)
-            }
+    private fun onLayoutClick(item: Account) {
+        Intent(this, AccountDetailsActivity::class.java).apply {
+            this.putExtra("name", item.name)
+            this.putExtra("accountId", item.id)
+            this.putExtra("income", MoneyFormatter.df.format(item.income))
+            this.putExtra("outcome", MoneyFormatter.df.format(item.expense))
+        }.let {
+            ContextCompat.startActivity(this, it, null)
+        }
+    }
+
+    private fun onEditAccountClick(item: Account) {
+        Intent(this, AccountUpdateActivity::class.java).apply {
+            this.putExtra("account", item)
+        }.let {
+            updateActivity.launch(it)
+        }
+    }
+
+    private fun updateAccountList(accountResponse: UpdateAccountResponse) {
+        accounts.replaceAll {
+            if (it.id == accountResponse.id.toInt())
+                it.copy(name = accountResponse.name, moneyAmount = accountResponse.amount)
+            else it
         }
     }
 }

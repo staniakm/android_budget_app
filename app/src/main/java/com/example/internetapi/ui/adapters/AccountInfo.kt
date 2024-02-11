@@ -24,14 +24,14 @@ import java.math.BigDecimal
 @Composable
 fun AccountInfo(
     item: Account,
-    surfaceClick: () -> Unit,
-    editAccountClick: () -> Unit
+    surfaceClick: (account: Account) -> Unit,
+    editAccountClick: (account: Account) -> Unit
 ) {
     Surface(
-        onClick = surfaceClick
+        onClick = { surfaceClick(item) }
     ) {
         Column {
-            HeaderRow(name = item.name, editAccountClick)
+            HeaderRow(name = item.name) { editAccountClick(item) }
             AccountTotal(item.moneyAmount)
             IncomeOutcome(item = item)
         }
