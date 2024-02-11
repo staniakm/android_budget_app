@@ -1,5 +1,6 @@
 package com.example.internetapi.ui
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
@@ -11,8 +12,8 @@ import android.widget.ArrayAdapter
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.menu.MenuBuilder
+import androidx.compose.runtime.mutableStateListOf
 import androidx.core.content.ContextCompat
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.internetapi.R
 import com.example.internetapi.api.Resource
 import com.example.internetapi.config.AccountHolder
@@ -24,8 +25,8 @@ import com.example.internetapi.functions.errorSnackBar
 import com.example.internetapi.functions.toLocalDate
 import com.example.internetapi.global.MonthSelector
 import com.example.internetapi.models.*
-import com.example.internetapi.ui.adapters.AccountOperationAdapter
-import com.example.internetapi.ui.adapters.OnItemClickedListener
+import com.example.internetapi.ui.adapters.AccountOperationsList
+import com.example.internetapi.ui.theme.InternetApiTheme
 import com.example.internetapi.ui.viewModel.AccountViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import java.math.BigDecimal
@@ -35,7 +36,7 @@ import kotlin.properties.Delegates
 
 
 @AndroidEntryPoint
-class AccountDetailsActivity : AppCompatActivity(), OnItemClickedListener {
+class AccountDetailsActivity : AppCompatActivity() {
 
     private val TAG: String = "AccountDetailsActivity"
     private val FAILED_TO_GET_INCOME_TYPE = "Failed to load income type"
@@ -44,18 +45,24 @@ class AccountDetailsActivity : AppCompatActivity(), OnItemClickedListener {
     private lateinit var binding: ActivityAccountDetailsBinding
     private lateinit var incomeBinding: IncomeViewBinding
     private lateinit var transferBinding: TransferViewBinding
-    private lateinit var adapter: AccountOperationAdapter
     private var accountId by Delegates.notNull<Int>()
+    private val accountOperations = mutableStateListOf<AccountOperation>()
 
+    @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAccountDetailsBinding.inflate(layoutInflater)
         incomeBinding = IncomeViewBinding.inflate(layoutInflater)
         transferBinding = TransferViewBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        adapter = AccountOperationAdapter(this)
-        binding.rvOperations.layoutManager = LinearLayoutManager(this)
-        binding.rvOperations.adapter = adapter
+
+        binding.composeView.setContent {
+            InternetApiTheme {
+                AccountOperationsList(
+                    operations = accountOperations,
+                    onItemClick = { operation -> onClick(operation) })
+            }
+        }
 
         intent.extras?.let { extra ->
             val name = extra.getString("name", "")
@@ -95,34 +102,36 @@ class AccountDetailsActivity : AppCompatActivity(), OnItemClickedListener {
     }
 
     private fun loadData(accountId: Int) {
-        accountViewModel.getOperations(accountId).observe(this, {
+        accountViewModel.getOperations(accountId).observe(this) {
             when (it.status) {
                 Status.SUCCESS -> loadOperations(it)
                 Status.ERROR -> errorSnackBar(binding.root, FAILED_TO_GET_INCOME_TYPE)
                 Status.LOADING -> {}
             }
-        })
+        }
     }
 
-    override fun onClick(position: Int, element: String) {
-        val item = adapter.getItem(position)
-        when (element) {
-            "outcome" -> Intent(this, InvoiceDetailsActivity::class.java).apply {
+    fun onClick(item: AccountOperation) {
+        when (item.type) {
+            "OUTCOME" -> Intent(this, InvoiceDetailsActivity::class.java).apply {
                 this.putExtra("invoiceId", item.id)
             }.let {
                 ContextCompat.startActivity(this, it, null)
             }
-            "income" -> Log.i(TAG, "onClick: Not implemented")
+
+            "INCOME" -> Log.i(TAG, "onClick: Not implemented")
         }
     }
 
     private fun loadOperations(operations: Resource<List<AccountOperation>>) {
         operations.data?.let {
-            adapter.submitList(it)
+            accountOperations.clear()
+            accountOperations.addAll(it)
         }
 
     }
 
+    @SuppressLint("RestrictedApi")
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         if (menu is MenuBuilder) {
             menu.setOptionalIconsVisible(true)
@@ -132,27 +141,33 @@ class AccountDetailsActivity : AppCompatActivity(), OnItemClickedListener {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.add_income_menu) {
-            intent.extras?.let { extra ->
-                val name = extra.getString("name", "")
-                val accountId = extra.getInt("accountId")
-                createIncomeAddDialog(name, accountId)
+        when (item.itemId) {
+            R.id.add_income_menu -> {
+                intent.extras?.let { extra ->
+                    val name = extra.getString("name", "")
+                    val accountId = extra.getInt("accountId")
+                    createIncomeAddDialog(name, accountId)
+                }
             }
-        } else if (item.itemId == R.id.transfer_money_menu) {
-            intent.extras?.let { extra ->
-                val name = extra.getString("name", "")
-                val accountId = extra.getInt("accountId")
-                createMoveMoneyDialog(name, accountId)
+
+            R.id.transfer_money_menu -> {
+                intent.extras?.let { extra ->
+                    val name = extra.getString("name", "")
+                    val accountId = extra.getInt("accountId")
+                    createMoveMoneyDialog(name, accountId)
+                }
             }
-        } else if (item.itemId == R.id.add_invoice_menu) {
-            intent.extras?.let { extra ->
-                val name = extra.getString("name", "")
-                val accountId = extra.getInt("accountId")
-                Intent(this, AccountOutcomeRegisterActivity::class.java).apply {
-                    this.putExtra("accountId", accountId)
-                    this.putExtra("accountName", name)
-                }.let {
-                    ContextCompat.startActivity(this, it, null)
+
+            R.id.add_invoice_menu -> {
+                intent.extras?.let { extra ->
+                    val name = extra.getString("name", "")
+                    val accountId = extra.getInt("accountId")
+                    Intent(this, AccountOutcomeRegisterActivity::class.java).apply {
+                        this.putExtra("accountId", accountId)
+                        this.putExtra("accountName", name)
+                    }.let {
+                        ContextCompat.startActivity(this, it, null)
+                    }
                 }
             }
         }
@@ -180,6 +195,7 @@ class AccountDetailsActivity : AppCompatActivity(), OnItemClickedListener {
                         binding.root,
                         "Provided value: $income - is not parsable to number"
                     )
+
                     else -> this.transferMoney(
                         accountId,
                         value,
@@ -205,13 +221,13 @@ class AccountDetailsActivity : AppCompatActivity(), OnItemClickedListener {
 
 
     private fun createIncomeAddDialog(name: String, accountId: Int) {
-        accountViewModel.getIncomeTypes().observe(this, {
+        accountViewModel.getIncomeTypes().observe(this) {
             when (it.status) {
                 Status.SUCCESS -> loadOnSuccessIncome(it.data, name, accountId)
                 Status.ERROR -> errorSnackBar(binding.root, FAILED_TO_GET_INCOME_TYPE)
                 Status.LOADING -> {}
             }
-        })
+        }
         incomeBinding.root.parent?.let {
             (it as ViewGroup).removeView(incomeBinding.root)
         }
@@ -239,6 +255,7 @@ class AccountDetailsActivity : AppCompatActivity(), OnItemClickedListener {
                             "AccountDetails",
                             "Income value is not parsable to BigDecimal"
                         )
+
                         else -> this.addIncome(
                             accountId,
                             v,
