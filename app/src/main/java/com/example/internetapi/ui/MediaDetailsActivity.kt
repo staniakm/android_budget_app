@@ -51,7 +51,7 @@ class MediaDetailsActivity : AppCompatActivity() {
 
         intent.extras?.let { extra ->
             val mediaTypeId = extra.getInt("mediaId")
-            val name = extra.getString("name")
+            extra.getString("name")
             loadData(mediaTypeId)
             binding.fab.setOnClickListener {
                 loadDialog(mediaTypeId)

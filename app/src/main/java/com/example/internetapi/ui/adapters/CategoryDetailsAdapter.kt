@@ -129,7 +129,7 @@ class CategoryDetailsAdapter(
             alert.setTitle("Change category")
                 .setMessage(categoryDetails.name)
                 .setView(spinner)
-                .setPositiveButton("OK") { _, i ->
+                .setPositiveButton("OK") { _, _ ->
                     Log.i(
                         TAG,
                         "processSuccess: OK clicked: ${(spinner.selectedItem as Category).id}"

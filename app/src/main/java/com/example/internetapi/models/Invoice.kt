@@ -13,7 +13,7 @@ class Invoice(val accountId: Int) {
 
     fun setShop(text: String) {
         if (shop == null && text.isNotBlank()) {
-            shop = Shop(-1, text.toUpperCase(Locale.ROOT))
+            shop = Shop(-1, text.uppercase(Locale.ROOT))
         }
     }
 

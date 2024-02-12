@@ -259,7 +259,7 @@ class AccountDetailsActivity : AppCompatActivity() {
             alert.setTitle("Add account income")
                 .setMessage(name)
                 .setView(incomeBinding.root)
-                .setPositiveButton(getString(R.string.ok)) { _, i ->
+                .setPositiveButton(getString(R.string.ok)) { _, _ ->
                     val income = incomeBinding.value.text.toString()
                     when (val v = income.toBigDecimalOrNull()) {
                         null -> Log.w(

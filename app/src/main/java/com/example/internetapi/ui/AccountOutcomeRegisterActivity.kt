@@ -198,7 +198,7 @@ class AccountOutcomeRegisterActivity : AppCompatActivity() {
             invoiceBinding.shop.setAdapter(shopAdapter)
             invoiceBinding.shop.setSelection(0)
 
-            invoiceBinding.shop.setOnItemClickListener { parent, view, position, id ->
+            invoiceBinding.shop.setOnItemClickListener { parent, _, position, id ->
                 Log.i("TAG", "loadOnSuccess: $id, $position, ${parent.getItemAtPosition(position)}")
                 invoice?.shop = parent.getItemAtPosition(position) as Shop
             }
@@ -206,7 +206,7 @@ class AccountOutcomeRegisterActivity : AppCompatActivity() {
             alert.setTitle("Add invoice for")
                 .setMessage(accountName)
                 .setView(invoiceBinding.root)
-                .setPositiveButton("OK") { _, i ->
+                .setPositiveButton("OK") { _, _ ->
                     invoice?.apply {
                         this.date = invoiceBinding.date.toLocalDate()
                         this.setShop(invoiceBinding.shop.text.toString())
@@ -264,13 +264,13 @@ class AccountOutcomeRegisterActivity : AppCompatActivity() {
         invoiceItemBinding.product.setAdapter(product)
         invoiceItemBinding.product.setSelection(0)
 
-        invoiceItemBinding.product.setOnItemClickListener { parent, view, position, id ->
+        invoiceItemBinding.product.setOnItemClickListener { parent, _, position, _ ->
             currentShopItem = parent.getItemAtPosition(position) as ShopItem
         }
         val alert: AlertDialog.Builder = AlertDialog.Builder(this)
         alert.setTitle("Add product for")
             .setView(invoiceItemBinding.root)
-            .setPositiveButton("OK") { _, i ->
+            .setPositiveButton("OK") { _, _ ->
                 if (currentShopItem == null) {
                     currentShopItem = ShopItem(-1, invoiceItemBinding.product.text.toString())
                 }
@@ -298,7 +298,7 @@ class AccountOutcomeRegisterActivity : AppCompatActivity() {
                     discount.text.clear()
                 }
             }
-            .setNegativeButton("Cancel") { _, _ -> {} }
+            .setNegativeButton("Cancel") { _, _ -> run {} }
         alert.show()
     }
 

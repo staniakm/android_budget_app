@@ -33,7 +33,7 @@ class CategoryDetailsActivity : AppCompatActivity() {
 
         intent.extras?.let { extra ->
             val categoryId = extra.getInt("categoryId")
-            val name = extra.getString("name")
+            extra.getString("name")
             loadData(categoryId)
         }
     }
