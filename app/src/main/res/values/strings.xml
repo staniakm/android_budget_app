@@ -50,4 +50,6 @@
     <string name="last_month_outcome">Ostani miesiąc %1$s</string>
     <string name="change_item_category">Zmień kategorię przedmiotu</string>
     <string name="show_assortment_expenses">Pokaż szczegóły miesiąca</string>
+    <string name="account_name">Nazwa konta</string>
+    <string name="account_money">Kwota</string>
 </resources>
