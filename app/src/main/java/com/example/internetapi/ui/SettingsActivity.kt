@@ -79,7 +79,8 @@ private fun SettingsScreen(
         Spacer(modifier = Modifier.weight(1f))
         Button(
             onClick = { onSave(hostAddress) },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
         ) {
             Text(text = stringResource(id = R.string.save))
         }
