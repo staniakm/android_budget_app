@@ -1,267 +1,584 @@
 package com.example.internetapi.ui
 
-import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.Menu
-import android.view.MenuItem
-import android.view.ViewGroup
-import android.widget.ArrayAdapter
+import android.widget.DatePicker
+import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.view.menu.MenuBuilder
-import androidx.core.content.ContextCompat
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.AlertDialog
+import androidx.compose.material.Button
+import androidx.compose.material.Card
+import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.OutlinedTextField
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
+import androidx.compose.material.TextButton
+import androidx.compose.material.rememberScaffoldState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import com.example.internetapi.R
-import com.example.internetapi.api.Resource
 import com.example.internetapi.config.AccountHolder
 import com.example.internetapi.config.DateFormatter.yyyymm
-import com.example.internetapi.databinding.ActivityAccountDetailsBinding
-import com.example.internetapi.databinding.IncomeViewBinding
-import com.example.internetapi.databinding.TransferViewBinding
-import com.example.internetapi.functions.errorSnackBar
-import com.example.internetapi.functions.toLocalDate
+import com.example.internetapi.config.MoneyFormatter
 import com.example.internetapi.global.MonthSelector
-import com.example.internetapi.models.*
-import com.example.internetapi.ui.adapters.AccountOperationAdapter
-import com.example.internetapi.ui.adapters.OnItemClickedListener
+import com.example.internetapi.models.AccountIncomeRequest
+import com.example.internetapi.models.AccountOperation
+import com.example.internetapi.models.IncomeType
+import com.example.internetapi.models.Status
+import com.example.internetapi.models.TransferMoneyRequest
 import com.example.internetapi.ui.viewModel.AccountViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import kotlin.properties.Delegates
-
 
 @AndroidEntryPoint
-class AccountDetailsActivity : AppCompatActivity(), OnItemClickedListener {
+class AccountDetailsActivity : AppCompatActivity() {
 
-    private val TAG: String = "AccountDetailsActivity"
-    private val FAILED_TO_GET_INCOME_TYPE = "Failed to load income type"
+    private val tag: String = "AccountDetailsActivity"
+    private val failedToGetIncomeType = "Failed to load income type"
+    private val failedToLoadOperations = "Failed to load account operations"
 
     private val accountViewModel: AccountViewModel by viewModels()
-    private lateinit var binding: ActivityAccountDetailsBinding
-    private lateinit var incomeBinding: IncomeViewBinding
-    private lateinit var transferBinding: TransferViewBinding
-    private lateinit var adapter: AccountOperationAdapter
-    private var accountId by Delegates.notNull<Int>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityAccountDetailsBinding.inflate(layoutInflater)
-        incomeBinding = IncomeViewBinding.inflate(layoutInflater)
-        transferBinding = TransferViewBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-        adapter = AccountOperationAdapter(this)
-        binding.rvOperations.layoutManager = LinearLayoutManager(this)
-        binding.rvOperations.adapter = adapter
 
-        intent.extras?.let { extra ->
-            val name = extra.getString("name", "")
-            val income = extra.getString("income", "0.0").toString()
-            val outcome = extra.getString("outcome", "0.0").toString()
-            accountId = extra.getInt("accountId")
-            binding.name.text =
-                "$name - ${LocalDate.now().plusMonths(MonthSelector.month.toLong()).format(yyyymm)}"
-            binding.incomeSum.text = income
-            binding.outcomeSum.text = outcome
+        val extras = intent.extras
+        val name = extras?.getString("name", "") ?: ""
+        val income = extras?.getString("income", "0.0").toString()
+        val outcome = extras?.getString("outcome", "0.0").toString()
+        val accountId = extras?.getInt("accountId") ?: -1
 
-            binding.incomeLay.setOnClickListener {
-                Intent(this, AccountIncomeDetails::class.java).apply {
-                    this.putExtra("name", name)
-                    this.putExtra("accountId", extra.getInt("accountId"))
-                    this.putExtra("income", income)
-                }.let {
-                    ContextCompat.startActivity(this, it, null)
-                }
-            }
-            binding.outcomeLay.setOnClickListener {
-                Intent(this, AccountOutcomeDetails::class.java).apply {
-                    this.putExtra("name", name)
-                    this.putExtra("accountId", accountId)
-                    this.putExtra("outcome", outcome)
-                }.let {
-                    ContextCompat.startActivity(this, it, null)
-                }
-            }
-            loadData(accountId)
-        }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        loadData(accountId)
-    }
-
-    private fun loadData(accountId: Int) {
-        accountViewModel.getOperations(accountId).observe(this, {
-            when (it.status) {
-                Status.SUCCESS -> loadOperations(it)
-                Status.ERROR -> errorSnackBar(binding.root, FAILED_TO_GET_INCOME_TYPE)
-                Status.LOADING -> {}
-            }
-        })
-    }
-
-    override fun onClick(position: Int, element: String) {
-        val item = adapter.getItem(position)
-        when (element) {
-            "outcome" -> Intent(this, InvoiceDetailsActivity::class.java).apply {
-                this.putExtra("invoiceId", item.id)
-            }.let {
-                ContextCompat.startActivity(this, it, null)
-            }
-            "income" -> Log.i(TAG, "onClick: Not implemented")
-        }
-    }
-
-    private fun loadOperations(operations: Resource<List<AccountOperation>>) {
-        operations.data?.let {
-            adapter.submitList(it)
-        }
-
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        if (menu is MenuBuilder) {
-            menu.setOptionalIconsVisible(true)
-        }
-        menuInflater.inflate(R.menu.menu_activity, menu)
-        return super.onCreateOptionsMenu(menu)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.add_income_menu) {
-            intent.extras?.let { extra ->
-                val name = extra.getString("name", "")
-                val accountId = extra.getInt("accountId")
-                createIncomeAddDialog(name, accountId)
-            }
-        } else if (item.itemId == R.id.transfer_money_menu) {
-            intent.extras?.let { extra ->
-                val name = extra.getString("name", "")
-                val accountId = extra.getInt("accountId")
-                createMoveMoneyDialog(name, accountId)
-            }
-        } else if (item.itemId == R.id.add_invoice_menu) {
-            intent.extras?.let { extra ->
-                val name = extra.getString("name", "")
-                val accountId = extra.getInt("accountId")
-                Intent(this, AccountOutcomeRegisterActivity::class.java).apply {
-                    this.putExtra("accountId", accountId)
-                    this.putExtra("accountName", name)
-                }.let {
-                    ContextCompat.startActivity(this, it, null)
-                }
-            }
-        }
-        return super.onOptionsItemSelected(item)
-    }
-
-    private fun createMoveMoneyDialog(name: String, accountId: Int) {
-        transferBinding.root.parent?.let {
-            (it as ViewGroup).removeView(transferBinding.root)
-        }
-        transferBinding.targetAccount.adapter = ArrayAdapter(
-            this,
-            android.R.layout.simple_spinner_dropdown_item,
-            AccountHolder.accounts
-        )
-        val alert: AlertDialog.Builder = AlertDialog.Builder(this)
-        alert.setTitle("Transfer money")
-            .setMessage(name)
-            .setView(transferBinding.root)
-            .setPositiveButton(getString(R.string.ok)) { _, _ ->
-                val income = transferBinding.value.text.toString()
-                val targetAccount = (transferBinding.targetAccount.selectedItem as SimpleAccount).id
-                when (val value = income.toBigDecimalOrNull()) {
-                    null -> errorSnackBar(
-                        binding.root,
-                        "Provided value: $income - is not parsable to number"
-                    )
-                    else -> this.transferMoney(
-                        accountId,
-                        value,
-                        targetAccount
+        setContent {
+            MaterialTheme {
+                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colors.background) {
+                    AccountDetailsScreen(
+                        viewModel = accountViewModel,
+                        accountId = accountId,
+                        accountName = name,
+                        incomeSum = income,
+                        outcomeSum = outcome,
+                        failedIncomeTypeMessage = failedToGetIncomeType,
+                        failedOperationsMessage = failedToLoadOperations,
+                        onOpenIncomeDetails = {
+                            Intent(this, AccountIncomeDetails::class.java).apply {
+                                putExtra("name", name)
+                                putExtra("accountId", accountId)
+                                putExtra("income", income)
+                            }.also { startActivity(it) }
+                        },
+                        onOpenOutcomeDetails = {
+                            Intent(this, AccountOutcomeDetails::class.java).apply {
+                                putExtra("name", name)
+                                putExtra("accountId", accountId)
+                                putExtra("outcome", outcome)
+                            }.also { startActivity(it) }
+                        },
+                        onOpenOutcomeRegister = {
+                            Intent(this, AccountOutcomeRegisterActivity::class.java).apply {
+                                putExtra("accountId", accountId)
+                                putExtra("accountName", name)
+                            }.also { startActivity(it) }
+                        },
+                        onOpenInvoiceDetails = { invoiceId ->
+                            Intent(this, InvoiceDetailsActivity::class.java).apply {
+                                putExtra("invoiceId", invoiceId)
+                            }.also { startActivity(it) }
+                        },
+                        logTag = tag,
+                        onTransferMoney = { value, targetAccount ->
+                            transferMoney(accountId, value, targetAccount)
+                        },
+                        onAddIncome = { value, date, description ->
+                            addIncome(accountId, value, date, description)
+                        }
                     )
                 }
             }
-            .setNegativeButton(getString(R.string.cancel)) { _, _ -> }
-        alert.show()
+        }
     }
 
     private fun transferMoney(accountId: Int, value: BigDecimal, targetAccount: Int) {
         if (value > BigDecimal.ZERO && accountId != targetAccount) {
-            TransferMoneyRequest(
-                accountId,
-                value,
-                targetAccount
-            ).let {
-                accountViewModel.transferMoney(it)
-            }
-        }
-    }
-
-
-    private fun createIncomeAddDialog(name: String, accountId: Int) {
-        accountViewModel.getIncomeTypes().observe(this, {
-            when (it.status) {
-                Status.SUCCESS -> loadOnSuccessIncome(it.data, name, accountId)
-                Status.ERROR -> errorSnackBar(binding.root, FAILED_TO_GET_INCOME_TYPE)
-                Status.LOADING -> {}
-            }
-        })
-        incomeBinding.root.parent?.let {
-            (it as ViewGroup).removeView(incomeBinding.root)
-        }
-    }
-
-    private fun loadOnSuccessIncome(
-        descriptions: List<IncomeType>?,
-        name: String,
-        accountId: Int
-    ) {
-        if (descriptions != null) {
-            incomeBinding.description.adapter = ArrayAdapter(
-                this,
-                android.R.layout.simple_spinner_dropdown_item,
-                descriptions.map { it.name }.toMutableList()
-            )
-            val alert: AlertDialog.Builder = AlertDialog.Builder(this)
-            alert.setTitle("Add account income")
-                .setMessage(name)
-                .setView(incomeBinding.root)
-                .setPositiveButton(getString(R.string.ok)) { _, i ->
-                    val income = incomeBinding.value.text.toString()
-                    when (val v = income.toBigDecimalOrNull()) {
-                        null -> Log.w(
-                            "AccountDetails",
-                            "Income value is not parsable to BigDecimal"
-                        )
-                        else -> this.addIncome(
-                            accountId,
-                            v,
-                            incomeBinding.date.toLocalDate(),
-                            incomeBinding.description.selectedItem as String
-                        )
-                    }
-                }
-                .setNegativeButton(getString(R.string.cancel)) { _, _ -> }
-            alert.show()
+            accountViewModel.transferMoney(TransferMoneyRequest(accountId, value, targetAccount))
         }
     }
 
     private fun addIncome(accountId: Int, value: BigDecimal, date: LocalDate, description: String) {
         if (value > BigDecimal.ZERO) {
-            AccountIncomeRequest(
-                accountId,
-                value,
-                date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),
-                description
-            ).let {
-                accountViewModel.addIncome(it)
+            accountViewModel.addIncome(
+                AccountIncomeRequest(
+                    accountId,
+                    value,
+                    date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),
+                    description
+                )
+            )
+        }
+    }
+}
+
+@Composable
+private fun AccountDetailsScreen(
+    viewModel: AccountViewModel,
+    accountId: Int,
+    accountName: String,
+    incomeSum: String,
+    outcomeSum: String,
+    failedIncomeTypeMessage: String,
+    failedOperationsMessage: String,
+    onOpenIncomeDetails: () -> Unit,
+    onOpenOutcomeDetails: () -> Unit,
+    onOpenOutcomeRegister: () -> Unit,
+    onOpenInvoiceDetails: (Long) -> Unit,
+    logTag: String,
+    onTransferMoney: (BigDecimal, Int) -> Unit,
+    onAddIncome: (BigDecimal, LocalDate, String) -> Unit,
+) {
+    val scaffoldState = rememberScaffoldState()
+    val scope = rememberCoroutineScope()
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    fun showMessage(message: String) {
+        scope.launch { scaffoldState.snackbarHostState.showSnackbar(message) }
+    }
+
+    var refreshKey by rememberSaveable(accountId) { mutableStateOf(0) }
+    DisposableEffect(lifecycleOwner, accountId) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME && accountId > 0) {
+                refreshKey += 1
             }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
+    val operationsLiveData = remember(accountId, refreshKey) {
+        if (accountId <= 0) null else viewModel.getOperations(accountId)
+    }
+    var operationsResource by remember {
+        mutableStateOf<com.example.internetapi.api.Resource<List<AccountOperation>>?>(null)
+    }
+    DisposableEffect(operationsLiveData, lifecycleOwner) {
+        val liveData = operationsLiveData
+        if (liveData == null) {
+            operationsResource = null
+            onDispose { }
+        } else {
+            val observer = androidx.lifecycle.Observer<com.example.internetapi.api.Resource<List<AccountOperation>>> {
+                operationsResource = it
+            }
+            liveData.observe(lifecycleOwner, observer)
+            onDispose { liveData.removeObserver(observer) }
+        }
+    }
+
+    var showIncomeDialog by rememberSaveable(accountId) { mutableStateOf(false) }
+    var incomeTypesKey by rememberSaveable(accountId) { mutableStateOf(0) }
+    val incomeTypesLiveData = remember(incomeTypesKey) {
+        if (incomeTypesKey == 0) null else viewModel.getIncomeTypes()
+    }
+    var incomeTypesResource by remember {
+        mutableStateOf<com.example.internetapi.api.Resource<List<IncomeType>>?>(null)
+    }
+    DisposableEffect(incomeTypesLiveData, lifecycleOwner) {
+        val liveData = incomeTypesLiveData
+        if (liveData == null) {
+            incomeTypesResource = null
+            onDispose { }
+        } else {
+            val observer = androidx.lifecycle.Observer<com.example.internetapi.api.Resource<List<IncomeType>>> {
+                incomeTypesResource = it
+            }
+            liveData.observe(lifecycleOwner, observer)
+            onDispose { liveData.removeObserver(observer) }
+        }
+    }
+
+    LaunchedEffect(operationsResource?.status, accountId) {
+        if (accountId <= 0) {
+            showMessage("Missing accountId")
+        }
+        if (operationsResource?.status == Status.ERROR) {
+            showMessage(failedOperationsMessage)
+        }
+    }
+
+    LaunchedEffect(incomeTypesResource?.status) {
+        if (incomeTypesResource?.status == Status.ERROR) {
+            showMessage(failedIncomeTypeMessage)
+        }
+    }
+
+    var showTransferDialog by rememberSaveable(accountId) { mutableStateOf(false) }
+    val accountMonth = remember(accountName) {
+        "$accountName - ${LocalDate.now().plusMonths(MonthSelector.month.toLong()).format(yyyymm)}"
+    }
+    val operations = operationsResource?.data ?: emptyList()
+    val isLoading = operationsResource?.status == Status.LOADING || incomeTypesResource?.status == Status.LOADING
+
+    Scaffold(scaffoldState = scaffoldState) { innerPadding ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(12.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                item {
+                    Text(
+                        text = accountMonth,
+                        style = MaterialTheme.typography.h5,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+                item {
+                    Card(modifier = Modifier.fillMaxWidth(), elevation = 6.dp) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            SumRow(
+                                label = stringResource(id = R.string.income),
+                                value = incomeSum,
+                                onClick = onOpenIncomeDetails
+                            )
+                            SumRow(
+                                label = stringResource(id = R.string.outcome),
+                                value = outcomeSum,
+                                onClick = onOpenOutcomeDetails
+                            )
+                        }
+                    }
+                }
+
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Button(
+                            onClick = {
+                                showIncomeDialog = true
+                                incomeTypesKey += 1
+                            },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(text = stringResource(id = R.string.add_income))
+                        }
+                        Button(
+                            onClick = { showTransferDialog = true },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(text = stringResource(id = R.string.transfer_money))
+                        }
+                    }
+                }
+
+                item {
+                    Button(onClick = onOpenOutcomeRegister, modifier = Modifier.fillMaxWidth()) {
+                        Text(text = stringResource(id = R.string.add_invoice))
+                    }
+                }
+
+                items(operations, key = { "${it.id}-${it.type}" }) { operation ->
+                    AccountOperationCard(
+                        operation = operation,
+                        onOpenInvoiceDetails = onOpenInvoiceDetails,
+                        onIncomeClick = {
+                            Log.i(logTag, "onClick: Not implemented")
+                        }
+                    )
+                }
+            }
+
+            if (isLoading) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            }
+        }
+    }
+
+    if (showIncomeDialog) {
+        val descriptions = incomeTypesResource?.data ?: emptyList()
+        var valueText by rememberSaveable { mutableStateOf("0") }
+        var selectedYear by rememberSaveable { mutableStateOf(LocalDate.now().year) }
+        var selectedMonth by rememberSaveable { mutableStateOf(LocalDate.now().monthValue) }
+        var selectedDay by rememberSaveable { mutableStateOf(LocalDate.now().dayOfMonth) }
+        var selectedDescription by rememberSaveable(descriptions) {
+            mutableStateOf(descriptions.firstOrNull()?.name ?: "")
+        }
+        var expanded by rememberSaveable { mutableStateOf(false) }
+
+        AlertDialog(
+            onDismissRequest = { showIncomeDialog = false },
+            title = { Text(text = "Add account income") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(text = accountName, style = MaterialTheme.typography.body1)
+                    AndroidView(
+                        modifier = Modifier.fillMaxWidth(),
+                        factory = { context ->
+                            DatePicker(context).apply {
+                                init(selectedYear, selectedMonth - 1, selectedDay) { _, y, m, d ->
+                                    selectedYear = y
+                                    selectedMonth = m + 1
+                                    selectedDay = d
+                                }
+                            }
+                        },
+                        update = { picker ->
+                            if (picker.year != selectedYear || picker.month != selectedMonth - 1 || picker.dayOfMonth != selectedDay) {
+                                picker.updateDate(selectedYear, selectedMonth - 1, selectedDay)
+                            }
+                        }
+                    )
+
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        OutlinedTextField(
+                            value = selectedDescription,
+                            onValueChange = {},
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { expanded = true },
+                            label = { Text("Description") },
+                            readOnly = true,
+                            singleLine = true
+                        )
+                        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                            descriptions.forEach { incomeType ->
+                                DropdownMenuItem(onClick = {
+                                    selectedDescription = incomeType.name
+                                    expanded = false
+                                }) {
+                                    Text(text = incomeType.name)
+                                }
+                            }
+                        }
+                    }
+
+                    OutlinedTextField(
+                        value = valueText,
+                        onValueChange = { valueText = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text("Value") },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val raw = valueText.trim()
+                        val parsedValue = raw.replace(',', '.').toBigDecimalOrNull()
+                        if (parsedValue == null) {
+                            Log.w(logTag, "Income value is not parsable to BigDecimal")
+                            showMessage("Provided value: $raw - is not parsable to number")
+                            return@TextButton
+                        }
+
+                        onAddIncome(
+                            parsedValue,
+                            LocalDate.of(selectedYear, selectedMonth, selectedDay),
+                            selectedDescription
+                        )
+                        refreshKey += 1
+                        showIncomeDialog = false
+                    }
+                ) {
+                    Text(text = stringResource(id = R.string.ok))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showIncomeDialog = false }) {
+                    Text(text = stringResource(id = R.string.cancel))
+                }
+            }
+        )
+    }
+
+    if (showTransferDialog) {
+        var valueText by rememberSaveable { mutableStateOf("0") }
+        var selectedTarget by remember { mutableStateOf(AccountHolder.accounts.firstOrNull()) }
+        var expanded by rememberSaveable { mutableStateOf(false) }
+
+        AlertDialog(
+            onDismissRequest = { showTransferDialog = false },
+            title = { Text(text = "Transfer money") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(text = accountName, style = MaterialTheme.typography.body1)
+                    OutlinedTextField(
+                        value = valueText,
+                        onValueChange = { valueText = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text("Value") },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
+                    )
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        OutlinedTextField(
+                            value = selectedTarget?.name ?: "",
+                            onValueChange = {},
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { expanded = true },
+                            label = { Text("Target account") },
+                            readOnly = true,
+                            singleLine = true
+                        )
+                        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                            AccountHolder.accounts.forEach { account ->
+                                DropdownMenuItem(onClick = {
+                                    selectedTarget = account
+                                    expanded = false
+                                }) {
+                                    Text(text = account.name)
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val raw = valueText.trim()
+                        val target = selectedTarget
+                        val parsedValue = raw.replace(',', '.').toBigDecimalOrNull()
+                        if (parsedValue == null) {
+                            showMessage("Provided value: $raw - is not parsable to number")
+                            return@TextButton
+                        }
+                        if (target == null) {
+                            showMessage("No target account selected")
+                            return@TextButton
+                        }
+                        onTransferMoney(parsedValue, target.id)
+                        refreshKey += 1
+                        showTransferDialog = false
+                    }
+                ) {
+                    Text(text = stringResource(id = R.string.ok))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showTransferDialog = false }) {
+                    Text(text = stringResource(id = R.string.cancel))
+                }
+            }
+        )
+    }
+}
+
+@Composable
+private fun SumRow(
+    label: String,
+    value: String,
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(text = label, modifier = Modifier.weight(0.35f), style = MaterialTheme.typography.h6)
+        Text(text = value, modifier = Modifier.weight(0.65f), style = MaterialTheme.typography.h6)
+    }
+}
+
+@Composable
+private fun AccountOperationCard(
+    operation: AccountOperation,
+    onOpenInvoiceDetails: (Long) -> Unit,
+    onIncomeClick: () -> Unit,
+) {
+    val isOutcome = operation.type == "OUTCOME"
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                if (isOutcome) {
+                    onOpenInvoiceDetails(operation.id)
+                } else {
+                    onIncomeClick()
+                }
+            },
+        elevation = 3.dp
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = operation.date,
+                modifier = Modifier.weight(0.45f),
+                style = MaterialTheme.typography.body1
+            )
+            Text(
+                text = MoneyFormatter.df.format(operation.value),
+                modifier = Modifier.weight(0.4f),
+                style = MaterialTheme.typography.body1
+            )
+            Image(
+                painter = painterResource(id = if (isOutcome) R.drawable.outcome else R.drawable.income),
+                contentDescription = operation.type,
+                modifier = Modifier.weight(0.15f)
+            )
         }
     }
 }
