@@ -1,255 +1,253 @@
-# Propozycja zmian - zadania gotowe do implementacji przez agenta AI
+# Proposed Changes - AI-Ready Implementation Tasks
 
-Data: 2026-02-15
-Powiazanie: `docs/TECH_DEBT_REVIEW.md`
+Date: 2026-02-15
+Related: `docs/TECH_DEBT_REVIEW.md`
 
-## Jak czytac ten dokument
+## How to Use This Document
 
-Kazde zadanie zawiera:
-- **Cel** (co i po co),
-- **Zakres** (co wolno zmieniac),
-- **Kroki implementacyjne** (kolejnosc prac),
-- **Kryteria akceptacji** (warunki done),
-- **Ryzyka i uwagi** (na co uwazac).
+Each task includes:
+- **Goal** (what and why),
+- **Scope** (what can be changed),
+- **Implementation steps** (recommended order),
+- **Acceptance criteria** (definition of done),
+- **Risks and notes** (important constraints).
 
-To jest format "AI-ready": agent powinien byc w stanie wykonac zadanie bez doprecyzowan biznesowych.
+This format is AI-ready so an agent can execute tasks without extra business clarification.
 
 ---
 
-## TASK-01: Uporzadkowanie zaleznosci i duplikatow Gradle (P1)
+## TASK-01: Clean up Gradle dependencies and duplicates (P1)
 
 **Status:** DONE
 
-### Cel
-Ujednolicic zaleznosci i usunac duplikaty, aby zmniejszyc ryzyko konfliktow i ulatwic aktualizacje.
+### Goal
+Unify dependencies and remove duplicates to reduce conflicts and simplify upgrades.
 
-### Zakres
+### Scope
 - `app/build.gradle`
-- opcjonalnie `build.gradle` (jezeli konieczne dla spojnosci wersji)
+- optionally `build.gradle` (if needed for version consistency)
 
-### Kroki implementacyjne
-1. Zinwentaryzuj zaleznosci zdublowane i niespojne wersje.
-2. Usun duplikaty (`material`, `lifecycle-viewmodel-ktx` itp.).
-3. Ujednolic wersje bibliotek AndroidX/Material/Lifecycle/Coroutines do wzajemnie kompatybilnych.
-4. Zachowaj zgodnosc z obecnym AGP/Kotlin (bez duzej migracji toolchain w tym tasku).
-5. Uruchom kompilacje: `./gradlew :app:compileDebugKotlin`.
+### Implementation steps
+1. Inventory duplicated and inconsistent dependencies.
+2. Remove duplicates (for example, repeated `material`, `lifecycle-viewmodel-ktx`).
+3. Align AndroidX/Material/Lifecycle/Coroutines versions to compatible sets.
+4. Keep compatibility with current AGP/Kotlin (no major toolchain migration in this task).
+5. Run compile validation: `./gradlew :app:compileDebugKotlin`.
 
-### Status realizacji (iteracyjnie)
-- [x] Krok 1: zinwentaryzowano duplikaty i zaleznosci potencjalnie nieuzywane.
-- [x] Krok 2 (iteracja 1): usunieto duplikaty `material` i `lifecycle-viewmodel-ktx`, usunieto `android.arch.lifecycle:extensions`.
-- [x] Krok 2 (iteracja 2): usunieto nieuzywane zaleznosci `navigation-*` oraz `fragment-ktx`; usunieto tez martwy zasob `res/navigation/nav_graph.xml` (stary szablon First/SecondFragment).
-- [x] Krok 3: wykonano bezpieczne ujednolicenie wersji (Coroutines/Activity/Lifecycle) bez migracji AGP/Kotlin.
-- [x] Krok 4: zachowano zgodnosc z obecnym AGP/Kotlin (bez migracji toolchain).
-- [x] Krok 5: kompilacja `:app:compileDebugKotlin` przechodzi po kazdej iteracji.
+### Iterative progress
+- [x] Step 1: duplicated and potentially unused dependencies identified.
+- [x] Step 2 (iteration 1): removed duplicate `material` and `lifecycle-viewmodel-ktx`; removed legacy `android.arch.lifecycle:extensions`.
+- [x] Step 2 (iteration 2): removed unused `navigation-*` and `fragment-ktx`; removed dead `res/navigation/nav_graph.xml` template resource.
+- [x] Step 3: completed safe version alignment (Coroutines/Activity/Lifecycle) without AGP/Kotlin migration.
+- [x] Step 4: compatibility with current AGP/Kotlin preserved.
+- [x] Step 5: `:app:compileDebugKotlin` passes after each iteration.
 
-### Kryteria akceptacji
-- Brak duplikatow dependencies w `app/build.gradle`.
-- Build `:app:compileDebugKotlin` przechodzi.
-- Nie pogorszono funkcjonalnosci aplikacji (brak nowych bledow kompilacji/runtime wynikajacych ze zmian wersji).
+### Acceptance criteria
+- No duplicate dependencies in `app/build.gradle`.
+- `:app:compileDebugKotlin` succeeds.
+- No functional regression introduced by version/dependency changes.
 
-### Ryzyka i uwagi
-- Nie wykonywac duzej aktualizacji AGP/Kotlin w tym zadaniu.
-- Jesli zmiana jednej biblioteki wymaga aktualizacji innej, zanotowac to w komentarzu PR.
-
----
-
-## TASK-02: Standaryzacja JDK 17 w projekcie (P1)
-
-### Cel
-Wyeliminowac niestabilnosc builda wynikajaca z uruchamiania Gradle na niewspieranym JDK.
-
-### Zakres
-- dokumentacja projektu (README lub `docs/`)
-- konfiguracja build (tylko jesli konieczne i bezpieczne)
-
-### Kroki implementacyjne
-1. Dodaj sekcje "Wymagania srodowiskowe" z jednoznacznym wskazaniem JDK 17.
-2. Opisz szybka procedure weryfikacji (`java -version`, `./gradlew -version`).
-3. Jesli repo posiada workflow CI, ustaw Java 17 i zweryfikuj syntax workflow.
-4. Sprawdz kompilacje lokalnie na JDK 17: `./gradlew :app:compileDebugKotlin`.
-
-### Kryteria akceptacji
-- W dokumentacji jest jasna informacja: build wspiera JDK 17.
-- Agent jest w stanie odtworzyc build zgodnie z instrukcja.
-
-### Ryzyka i uwagi
-- Nie usuwac na sile workaroundow `kapt.jvmargs`, jesli to destabilizuje build.
+### Risks and notes
+- Avoid AGP/Kotlin major upgrades in this task.
+- If one dependency upgrade requires another, document it in task notes/PR comment.
 
 ---
 
-## TASK-03: Migracja namespace z manifestu do Gradle (P3)
+## TASK-02: Standardize JDK 17 for the project (P1)
 
-### Cel
-Usunac ostrzezenie AGP dot. `package` w AndroidManifest i dostosowac projekt do nowoczesnej konfiguracji.
+### Goal
+Remove build instability caused by running Gradle on unsupported JDK versions.
 
-### Zakres
+### Scope
+- project documentation (README or `docs/`)
+- build configuration only when necessary and safe
+
+### Implementation steps
+1. Add an "Environment requirements" section with explicit JDK 17 guidance.
+2. Add quick verification commands (`java -version`, `./gradlew -version`).
+3. If CI exists, pin Java 17 and validate workflow syntax.
+4. Verify local compile on JDK 17: `./gradlew :app:compileDebugKotlin`.
+
+### Acceptance criteria
+- Documentation clearly states JDK 17 support requirement.
+- Build is reproducible using documented setup.
+
+### Risks and notes
+- Do not remove `kapt.jvmargs` workarounds if that would destabilize builds.
+
+---
+
+## TASK-03: Move namespace from manifest to Gradle (P3)
+
+### Goal
+Remove AGP warning about `package` in AndroidManifest and align with modern configuration.
+
+### Scope
 - `app/build.gradle`
 - `app/src/main/AndroidManifest.xml`
 
-### Kroki implementacyjne
-1. Dodaj `namespace "com.example.internetapi"` w module `app`.
-2. Zweryfikuj czy `applicationId` pozostaje bez zmian.
-3. Usun/zmodyfikuj `package` w manifeście zgodnie z wymaganiami AGP.
-4. Uruchom: `./gradlew :app:processDebugMainManifest :app:compileDebugKotlin`.
+### Implementation steps
+1. Add `namespace "com.example.internetapi"` in app module.
+2. Verify `applicationId` remains unchanged.
+3. Remove/adjust manifest `package` according to AGP requirements.
+4. Run: `./gradlew :app:processDebugMainManifest :app:compileDebugKotlin`.
 
-### Kryteria akceptacji
-- Ostrzezenie o namespace znika lub jest istotnie ograniczone.
-- Build przechodzi.
+### Acceptance criteria
+- Namespace warning is removed or significantly reduced.
+- Build passes.
 
-### Ryzyka i uwagi
-- Nie zmieniac package names w kodzie Kotlin/Java.
+### Risks and notes
+- Do not rename Kotlin/Java package declarations.
 
 ---
 
-## TASK-04: Minimalny pakiet testow regresyjnych (P1)
+## TASK-04: Add a minimal regression test baseline (P1)
 
-### Cel
-Zbudowac podstawowa siatke bezpieczenstwa przed regresjami po migracjach Compose.
+### Goal
+Create a basic safety net against regressions after Compose migrations.
 
-### Zakres
+### Scope
 - `app/src/test/...`
-- `app/src/androidTest/...` (minimalnie)
+- `app/src/androidTest/...` (minimal but meaningful)
 
-### Kroki implementacyjne
-1. Dodaj testy jednostkowe dla formatterow i transformacji requestow:
-   - Money/Amount formatting,
-   - mapowanie danych wejscia do requestow (np. invoice request).
-2. Dodaj testy ViewModel z mockami repozytoriow (minimum 3 krytyczne przypadki sukces/error).
-3. Dodaj 1-2 testy UI/instrumentacyjne dla krytycznego flow (np. zapis faktury).
-4. Dodaj instrukcje uruchomienia testow do dokumentacji.
+### Implementation steps
+1. Add unit tests for formatters and request mapping helpers.
+2. Add ViewModel tests with mocked repositories (at least 3 critical success/error cases).
+3. Add 1-2 critical UI/instrumented tests (for example invoice save flow).
+4. Add test execution instructions to docs.
 
-### Kryteria akceptacji
-- Testy uruchamiaja sie lokalnie.
-- Pokryte sa minimum: happy path + error path dla 2 najwazniejszych flow.
+### Acceptance criteria
+- Tests run locally.
+- Coverage includes at least happy and error paths for critical flows.
 
-### Ryzyka i uwagi
-- Nie celowac w wysokie pokrycie procentowe w tym kroku - to ma byc "MVP safety net".
+### Risks and notes
+- Do not target high coverage percentage yet; this is an MVP safety net.
 
 ---
 
-## TASK-05: Ujednolicenie wzorca stanu UI w Compose (P2)
+## TASK-05: Standardize Compose UI state pattern (P2)
 
-### Cel
-Ograniczyc boilerplate i niespojnosci w ekranach Compose obserwujacych LiveData.
+### Goal
+Reduce boilerplate and inconsistent side-effect handling across Compose screens using LiveData.
 
-### Zakres
-- wybrane ekrany w `app/src/main/java/com/example/internetapi/ui`
-- nowy pomocniczy modul/plik z konwencja stanu (jezeli potrzebny)
+### Scope
+- selected screens in `app/src/main/java/com/example/internetapi/ui`
+- optional helper module/file for shared UI state conventions
 
-### Kroki implementacyjne
-1. Zdefiniuj jednolity wzorzec (`UiState` + `UiEvent` lub inny spójny pattern).
-2. Wybierz 1 ekran pilotażowy (np. `AccountOutcomeDetails`) i wdroz wzorzec.
-3. Upewnij sie, ze loading/error/success sa obslugiwane identycznie.
-4. Rozszerz wzorzec na kolejne 2-3 ekrany o podobnym charakterze.
-5. Dodaj krotka dokumentacje konwencji w `docs/`.
+### Implementation steps
+1. Define one consistent pattern (`UiState + UiEvent` or equivalent).
+2. Apply it on one pilot screen (for example `AccountOutcomeDetails`).
+3. Ensure loading/error/success handling is uniform.
+4. Extend to 2-3 additional similar screens.
+5. Add a short convention guide in `docs/`.
 
-### Kryteria akceptacji
-- Na min. 3 ekranach nie ma rozproszonych, ad-hoc wzorcow side-effect.
-- Kod jest krotszy lub czytelniejszy bez utraty funkcjonalnosci.
+### Acceptance criteria
+- At least 3 screens no longer use ad-hoc side-effect patterns.
+- Code is clearer and/or shorter without losing functionality.
 
-### Ryzyka i uwagi
-- Nie robic "big bang" na wszystkie ekrany naraz.
-
----
-
-## TASK-06: Ujednolicenie obslugi operacji mutujacych (P2)
-
-### Cel
-Zapewnic przewidywalny feedback dla operacji add/update/delete.
-
-### Zakres
-- ViewModel + UI dla flow mutujacych (konto, faktury, media, budzety)
-
-### Kroki implementacyjne
-1. Zinwentaryzuj metody fire-and-forget (np. metody zwracajace `Unit`).
-2. Zmien kontrakty tak, aby operacje zwracaly obserwowalny wynik (`Resource`/status).
-3. W UI kazdego flow dodaj jawna obsluge: loading, success, error.
-4. Ujednolic komunikaty snackbara i moment ich pokazywania.
-
-### Kryteria akceptacji
-- Kazda operacja mutujaca ma widoczny wynik dla uzytkownika.
-- Brak "cichych" bledow bez feedbacku.
-
-### Ryzyka i uwagi
-- Zmiany kontraktow moga wymusic edycje wielu ekranow - robic etapami.
+### Risks and notes
+- Avoid a big-bang refactor across all screens at once.
 
 ---
 
-## TASK-07: Migracja kontraktow Intenta z Serializable (P2)
+## TASK-06: Standardize mutating operation handling (P2)
 
-### Cel
-Usunac deprecated API i zmniejszyc ryzyko runtime cast errors.
+### Goal
+Provide predictable user feedback for add/update/delete operations.
 
-### Zakres
-- Activity kontrakty (`Intent extras`) w `ui/*`
-- modele przekazywane miedzy ekranami
+### Scope
+- ViewModel + UI for mutating flows (accounts, invoices, media, budgets)
 
-### Kroki implementacyjne
-1. Zlokalizuj wszystkie `getSerializable()` i `getSerializableExtra()`.
-2. Zdecyduj strategia: `Parcelable` lub przekazywanie ID + dociaganie danych.
-3. Zmigruj najpierw krytyczne flow:
-   - Account update,
-   - Budget update,
-   - inne miejsca z warningami.
-4. Dodaj helpery/extension functions dla bezpiecznego odczytu extras.
-5. Zweryfikuj build i recznie przetestuj nawigacje.
+### Implementation steps
+1. Inventory fire-and-forget methods (for example methods returning `Unit`).
+2. Update contracts to expose observable result (`Resource`/status).
+3. Add consistent loading/success/error handling in UI.
+4. Normalize snackbar messages and trigger points.
 
-### Kryteria akceptacji
-- Brak uzyc deprecated `getSerializable*` w krytycznych flow.
-- Nawigacja dziala bez cast warningow.
+### Acceptance criteria
+- Every mutating operation has visible user feedback.
+- No silent failures.
 
-### Ryzyka i uwagi
-- Parcelable moze wymagac zmian modeli i potencjalnie kompatybilnosci wstecz.
+### Risks and notes
+- Contract changes may affect multiple screens; implement incrementally.
 
 ---
 
-## TASK-08: Cleanup deprecated API i warningow kompilacji (P3)
+## TASK-07: Migrate Intent contracts away from Serializable (P2)
 
-### Cel
-Zredukowac liczbe warningow i przygotowac kod pod dalsze aktualizacje.
+### Goal
+Remove deprecated API usage and reduce runtime cast risks.
 
-### Zakres
-- pliki raportowane przez kompilator
+### Scope
+- Activity intent contracts (`Intent extras`) in `ui/*`
+- models passed between screens
 
-### Kroki implementacyjne
-1. Zamien `toUpperCase(Locale.ROOT)` na `uppercase(Locale.ROOT)`.
-2. Zmien deprecated uzycia API UI (`adapterPosition`, `setColorFilter`, inne wskazane warningi).
-3. Przejrzyj warningi po kompilacji i usuń te o niskim ryzyku.
+### Implementation steps
+1. Locate all `getSerializable()` and `getSerializableExtra()` usages.
+2. Choose strategy: `Parcelable` or ID-based fetching.
+3. Migrate critical flows first:
+   - account update,
+   - budget update,
+   - other warning-producing paths.
+4. Add helper/extension functions for safe extras reading.
+5. Validate build and manually test navigation.
 
-### Kryteria akceptacji
-- Istotna redukcja warningow kompilatora.
-- Brak regresji funkcjonalnej.
+### Acceptance criteria
+- No deprecated `getSerializable*` in critical flows.
+- Navigation works without cast warnings.
 
-### Ryzyka i uwagi
-- Nie wszystkie warningi trzeba zamykac w jednym PR - dopuszczalny rollout etapowy.
+### Risks and notes
+- Parcelable migration may require model changes and compatibility checks.
 
 ---
 
-## TASK-09: Ujednolicenie tekstow i poprawa literowek (P3)
+## TASK-08: Deprecated API and warning cleanup (P3)
 
-### Cel
-Poprawic jakosc UX i przygotowac grunt pod internacjonalizacje.
+### Goal
+Reduce compiler warnings and prepare for future upgrades.
 
-### Zakres
+### Scope
+- files reported by compiler warnings
+
+### Implementation steps
+1. Replace `toUpperCase(Locale.ROOT)` with `uppercase(Locale.ROOT)`.
+2. Update deprecated UI APIs (`adapterPosition`, `setColorFilter`, others from warnings).
+3. Re-run compile and close low-risk warnings.
+
+### Acceptance criteria
+- Meaningful warning reduction.
+- No functional regressions.
+
+### Risks and notes
+- Warnings can be fixed incrementally across multiple PRs.
+
+---
+
+## TASK-09: Message consistency and typo cleanup (P3)
+
+### Goal
+Improve UX quality and prepare for internationalization.
+
+### Scope
 - `strings.xml`
-- hardcoded stringi w ekranach Compose
+- hardcoded strings in Compose screens
 
-### Kroki implementacyjne
-1. Znajdz hardcoded teksty w `ui/*.kt`.
-2. Przenies je do `strings.xml`.
-3. Popraw literowki i niespojne komunikaty (PL/EN).
-4. Sprawdz, czy nowe string resources sa uzyte wszedzie zamiast literalow.
+### Implementation steps
+1. Find hardcoded strings in `ui/*.kt`.
+2. Move them to `strings.xml`.
+3. Fix typos and mixed language inconsistencies.
+4. Verify new string resources are used instead of literals.
 
-### Kryteria akceptacji
-- Brak nowych hardcoded stringow w modyfikowanych ekranach.
-- Poprawione literowki i spojny jezyk komunikatow.
+### Acceptance criteria
+- No new hardcoded strings in modified screens.
+- Typos fixed and language usage consistent.
 
-### Ryzyka i uwagi
-- Jesli finalnie app ma byc dwujezyczna, zaplanowac osobne taski na `values-pl` / `values-en`.
+### Risks and notes
+- If bilingual support is required, create separate follow-up tasks for `values-pl` / `values-en`.
 
 ---
 
-## Sugestia kolejnosci realizacji
+## Suggested Execution Order
 
 1. TASK-01
 2. TASK-02
@@ -261,4 +259,4 @@ Poprawic jakosc UX i przygotowac grunt pod internacjonalizacje.
 8. TASK-03
 9. TASK-05
 
-Uwaga: TASK-03 i TASK-05 moga byc przesuniete zaleznie od tempa prac nad stabilizacja i testami.
+Note: TASK-03 and TASK-05 can be moved depending on stabilization/testing priorities.

@@ -1,160 +1,160 @@
-# Trello Agent Skill - Przyklady end-to-end
+# Trello Agent Skill - End-to-End Examples
 
-Data: 2026-02-15
-Powiazanie:
+Date: 2026-02-15
+Related:
 - `docs/TRELLO_AGENT_SKILL.md`
 - `docs/AI_IMPLEMENTATION_TASKS.md`
 
-## Przyklad 1: TASK-01 od utworzenia karty do DONE
+## Example 1: TASK-01 from card creation to DONE
 
-### Wejscie
-- Zadanie: `TASK-01: Uporzadkowanie zaleznosci i duplikatow Gradle`
-- Lista startowa: `Backlog`
+### Input
+- Task: `TASK-01: Clean up Gradle dependencies and duplicates`
+- Start list: `TODO`
 
-### Krok A: Utworzenie karty
+### Step A: Create card
 
 ```bash
 curl --request POST \
   --url "https://api.trello.com/1/cards" \
   --data-urlencode "key=${TRELLO_API_KEY}" \
   --data-urlencode "token=${TRELLO_TOKEN}" \
-  --data-urlencode "idList=<ID_LISTY_BACKLOG>" \
-  --data-urlencode "name=[P1] Uporzadkowac zaleznosci Gradle" \
-  --data-urlencode "desc=Cel:\nUjednolicic zaleznosci i usunac duplikaty...\n\nZakres:\napp/build.gradle\n\nKryteria akceptacji:\n- brak duplikatow\n- compile przechodzi"
+  --data-urlencode "idList=<TODO_LIST_ID>" \
+  --data-urlencode "name=[P1] Clean up Gradle dependencies" \
+  --data-urlencode "desc=Goal:\nUnify dependencies and remove duplicates...\n\nScope:\napp/build.gradle\n\nAcceptance Criteria:\n- no duplicates\n- compile passes"
 ```
 
-### Krok B: Dodanie checklisty
+### Step B: Add checklist
 
 ```bash
 curl --request POST \
   --url "https://api.trello.com/1/checklists" \
   --data-urlencode "key=${TRELLO_API_KEY}" \
   --data-urlencode "token=${TRELLO_TOKEN}" \
-  --data-urlencode "idCard=<ID_KARTY>" \
-  --data-urlencode "name=Implementacja TASK-01"
+  --data-urlencode "idCard=<CARD_ID>" \
+  --data-urlencode "name=TASK-01 Implementation"
 ```
 
-Elementy checklisty (dodawane osobnymi requestami):
-- Zinwentaryzowac duplikaty dependencies
-- Usunac duplikaty i legacy dependencies
-- Zweryfikowac nieuzywane dependencies
-- Uruchomic `:app:compileDebugKotlin`
-- Zaktualizowac status w `docs/AI_IMPLEMENTATION_TASKS.md`
+Checklist items (add as separate requests):
+- Inventory duplicate dependencies
+- Remove duplicates and legacy dependencies
+- Verify unused dependencies
+- Run `:app:compileDebugKotlin`
+- Update status in `docs/AI_IMPLEMENTATION_TASKS.md`
 
-### Krok C: Start pracy (przeniesienie do In Progress)
+### Step C: Start work (move to In Progress)
 
 ```bash
 curl --request PUT \
-  --url "https://api.trello.com/1/cards/<ID_KARTY>" \
+  --url "https://api.trello.com/1/cards/<CARD_ID>" \
   --data-urlencode "key=${TRELLO_API_KEY}" \
   --data-urlencode "token=${TRELLO_TOKEN}" \
-  --data-urlencode "idList=<ID_LISTY_IN_PROGRESS>"
+  --data-urlencode "idList=<IN_PROGRESS_LIST_ID>"
 ```
 
-Komentarz statusowy:
+Status comment:
 
 ```text
-STATUS: IN_PROGRESS | TASK: TASK-01 | NEXT: usunac duplikaty material/lifecycle
+STATUS: IN_PROGRESS | TASK: TASK-01 | NEXT: remove duplicate material/lifecycle dependencies
 ```
 
-### Krok D: Iteracyjne odhaczanie
+### Step D: Iterative updates
 
-Po kazdej zmianie:
-1. odhacz odpowiedni check item,
-2. dodaj komentarz `STATUS: IN_PROGRESS ...`.
+After each code iteration:
+1. mark relevant checklist item complete,
+2. add `STATUS: IN_PROGRESS ...` comment.
 
-### Krok E: Domkniecie
+### Step E: Close task
 
-Komentarz koncowy:
+Final comment:
 
 ```text
-STATUS: DONE | TASK: TASK-01 | RESULT: Usunieto duplikaty i martwe zaleznosci, build przechodzi. | VERIFY: ./gradlew :app:compileDebugKotlin
+STATUS: DONE | TASK: TASK-01 | RESULT: Removed duplicates and dead dependencies; compile passes. | VERIFY: ./gradlew :app:compileDebugKotlin
 ```
 
-Przeniesienie karty do `Done`.
+Move card to `Done`.
 
 ---
 
-## Przyklad 2: TASK-02 z przejsciem przez Review
+## Example 2: TASK-02 with TESTING stage
 
-### Wejscie
-- Zadanie: `TASK-02: Standaryzacja JDK 17`
-- Strategia: `Ready -> In Progress -> Review -> Done`
+### Input
+- Task: `TASK-02: Standardize JDK 17`
+- Workflow: `TODO -> IN PROGRESS -> TESTING -> DONE`
 
-### Krok A: Przeniesienie do In Progress i komentarz
-
-```text
-STATUS: IN_PROGRESS | TASK: TASK-02 | NEXT: dodac sekcje wymagania srodowiskowe i instrukcje weryfikacji JDK
-```
-
-### Krok B: Implementacja
-- dodanie dokumentacji JDK 17,
-- opis komend: `java -version`, `./gradlew -version`,
-- (opcjonalnie) aktualizacja workflow CI.
-
-### Krok C: Przeniesienie do Review
+### Step A: Move to In Progress + comment
 
 ```text
-STATUS: IN_PROGRESS | TASK: TASK-02 | NEXT: review dokumentacji i potwierdzenie build na JDK 17
+STATUS: IN_PROGRESS | TASK: TASK-02 | NEXT: add environment requirements and JDK verification instructions
 ```
 
-Po ukonczeniu implementacji: karta trafia do `Review`.
+### Step B: Implement
+- add JDK 17 requirement to documentation,
+- add commands: `java -version`, `./gradlew -version`,
+- optionally update CI workflow.
 
-### Krok D: Akceptacja i Done
-
-Komentarz koncowy:
+### Step C: Move to TESTING
 
 ```text
-STATUS: DONE | TASK: TASK-02 | RESULT: Udokumentowano JDK 17 i procedure weryfikacji. | VERIFY: java -version && ./gradlew -version
+STATUS: IN_PROGRESS | TASK: TASK-02 | NEXT: move to TESTING and validate JDK 17 setup
 ```
 
-Przeniesienie `Review -> Done`.
+When implementation is complete, move card to `TESTING`.
+
+### Step D: Accept and finish
+
+Final comment:
+
+```text
+STATUS: DONE | TASK: TASK-02 | RESULT: JDK 17 setup and verification steps documented. | VERIFY: java -version && ./gradlew -version
+```
+
+Move `TESTING -> DONE`.
 
 ---
 
-## Przyklad 3: Blokada (BLOCKED) i kontynuacja
+## Example 3: BLOCKED case and resume flow
 
-### Sytuacja
-Podczas `TASK-07` agent nie moze dokonczyc migracji `Serializable`, bo wymaga to decyzji architektonicznej (`Parcelable` vs przekazywanie ID).
+### Situation
+During `TASK-07`, migration away from `Serializable` is blocked by architectural decision (`Parcelable` vs ID-based contracts).
 
-### Krok A: Komentarz BLOCKED
-
-```text
-STATUS: BLOCKED | TASK: TASK-07 | NEXT: potrzebna decyzja: Parcelable czy kontrakt oparty o ID
-```
-
-### Krok B: Organizacja pracy
-- karta zostaje w `In Progress` lub trafia do dedykowanej listy `Blocked` (jesli istnieje),
-- odhacz tylko wykonane podpunkty checklisty,
-- dodaj notatke co jest gotowe i co czeka na decyzje.
-
-### Krok C: Wznowienie
-Po decyzji architektonicznej:
+### Step A: Add BLOCKED comment
 
 ```text
-STATUS: IN_PROGRESS | TASK: TASK-07 | NEXT: wdrozyc wybrana strategie i uruchomic compile
+STATUS: BLOCKED | TASK: TASK-07 | NEXT: decision required: Parcelable or ID-based contract
 ```
 
-Po wdrozeniu i weryfikacji przejscie do `Review`/`Done`.
+### Step B: Organize blocked work
+- keep card in `IN PROGRESS` (board currently has no dedicated `BLOCKED` list),
+- check only completed checklist items,
+- add note with completed scope and pending decision.
+
+### Step C: Resume
+After decision is made:
+
+```text
+STATUS: IN_PROGRESS | TASK: TASK-07 | NEXT: implement selected contract strategy and run compile
+```
+
+Then proceed to `TESTING`/`DONE` as usual.
 
 ---
 
-## Gotowe mini-prompty
+## Ready-to-Use Mini Prompts
 
-### Prompt A: Utworz wszystkie karty z dokumentu
+### Prompt A: Create all cards from task document
 
 ```text
-Uzyj docs/TRELLO_AGENT_SKILL.md. Wczytaj docs/AI_IMPLEMENTATION_TASKS.md i utworz karty dla TASK-01..TASK-09 na liscie Backlog. Dodaj opisy i checklisty 1:1 do krokow implementacyjnych.
+Use docs/TRELLO_AGENT_SKILL.md. Read docs/AI_IMPLEMENTATION_TASKS.md and create cards for TASK-01..TASK-09 in TODO. Add descriptions and checklists mapped 1:1 to implementation steps.
 ```
 
-### Prompt B: Prowadz iteracyjna aktualizacje statusu
+### Prompt B: Perform iterative status updates
 
 ```text
-Uzyj docs/TRELLO_AGENT_SKILL.md. Dla TASK-01 aktualizuj Trello po kazdej zmianie: odhaczaj checklisty, dodawaj komentarz STATUS i przenos karte miedzy listami zgodnie z workflow.
+Use docs/TRELLO_AGENT_SKILL.md. For TASK-01, update Trello after every change: check checklist items, add STATUS comments, and move card through workflow lists.
 ```
 
-### Prompt C: Domknij zadanie po weryfikacji
+### Prompt C: Close task after verification
 
 ```text
-Uzyj docs/TRELLO_AGENT_SKILL.md. Sprawdz kryteria akceptacji TASK-02, dodaj komentarz koncowy STATUS: DONE z komenda VERIFY i przenies karte do Done.
+Use docs/TRELLO_AGENT_SKILL.md. Validate TASK-02 acceptance criteria, add final STATUS: DONE comment with VERIFY command, and move card to Done.
 ```

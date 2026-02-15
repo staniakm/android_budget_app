@@ -1,265 +1,266 @@
 # Trello Agent Skill
 
-## Cel
+## Goal
 
-Ten skill definiuje standard pracy agenta AI z tablica Trello dla projektu `InternetApi`.
+This skill defines how an AI agent should operate a Trello board for the `InternetApi` project.
 
-## Zakres odpowiedzialnosci agenta
+## Agent Responsibilities
 
-Agent moze:
-- tworzyc karty z zadan technicznych,
-- aktualizowac opisy i checklisty,
-- przenosic karty miedzy listami workflow,
-- dodawac komentarze statusowe,
-- oznaczac zadania jako done po spelnieniu kryteriow akceptacji.
+The agent may:
+- create cards from technical tasks,
+- update descriptions and checklists,
+- move cards across workflow lists,
+- add status comments,
+- mark tasks as done when acceptance criteria are met.
 
-Agent nie powinien:
-- usuwac kart bez wyraznego polecenia,
-- zamykac/archiwizowac tablicy,
-- zmieniac uprawnien czlonkow tablicy.
+The agent must not:
+- delete cards without explicit instruction,
+- close/archive the board,
+- change board member permissions.
 
-## Wymagane dane konfiguracyjne
+## Required Configuration
 
-Przed praca agent musi miec dostep do:
+Before working, the agent must have access to:
 - `TRELLO_API_KEY`
 - `TRELLO_TOKEN`
 - `TRELLO_BOARD_ID`
 
-Opcjonalnie:
+Optional:
 - `TRELLO_DEFAULT_LABEL_TECH_DEBT`
 - `TRELLO_DEFAULT_LABEL_BUG`
 - `TRELLO_DEFAULT_LABEL_FEATURE`
 
-## Workflow tablicy
+## Board Workflow
 
-Rekomendowane listy:
-1. `Backlog`
-2. `Ready`
-3. `In Progress`
-4. `Review`
-5. `Done`
+Current board (`Projekty`) lists used by this project:
+1. `TODO`
+2. `IN PROGRESS`
+3. `TESTING`
+4. `DONE`
 
-Zasady przejsc:
-- nowa karta trafia do `Backlog` albo `Ready` (wg polecenia),
-- rozpoczecie prac: `Ready -> In Progress`,
-- po implementacji: `In Progress -> Review`,
-- po akceptacji: `Review -> Done`.
+Transition rules for current board:
+- new card goes to `TODO`,
+- work started: move `TODO -> IN PROGRESS`,
+- implemented and ready for validation: move `IN PROGRESS -> TESTING`,
+- accepted: move `TESTING -> DONE`.
 
-## Format karty zadania
+Canonical workflow:
+- `TODO -> IN PROGRESS -> TESTING -> DONE`.
 
-### Tytul
+## Task Card Format
 
-`[PRIORYTET] Krotki czasownik + obiekt`
+### Title
 
-Przyklad:
-- `[P1] Uporzadkowac zaleznosci Gradle`
+`[PRIORITY] Short verb + object`
 
-### Opis
+Example:
+- `[P1] Clean up Gradle dependencies`
 
-Kazdy opis powinien zawierac sekcje:
-1. `Cel`
-2. `Zakres`
-3. `Kroki implementacyjne`
-4. `Kryteria akceptacji`
-5. `Ryzyka`
+### Description
+
+Each card description should include:
+1. `Goal`
+2. `Scope`
+3. `Implementation Steps`
+4. `Acceptance Criteria`
+5. `Risks`
 
 ### Checklist
 
-Checklista musi mapowac sie 1:1 do krokow implementacyjnych.
+Checklist must map 1:1 to implementation steps.
 
-Przyklad:
-- [ ] Zinwentaryzowac duplikaty dependencies
-- [ ] Usunac duplikaty
-- [ ] Uruchomic compile
-- [ ] Zaktualizowac dokumentacje statusu
+Example:
+- [ ] Inventory duplicate dependencies
+- [ ] Remove duplicates
+- [ ] Run compile
+- [ ] Update progress documentation
 
-## Standard komentarzy statusowych
+## Status Comment Standard
 
-Format komentarza:
+Comment format:
 
-`STATUS: <IN_PROGRESS|BLOCKED|DONE> | TASK: <id/nazwa> | NEXT: <kolejny krok>`
+`STATUS: <IN_PROGRESS|BLOCKED|DONE> | TASK: <id/name> | NEXT: <next step>`
 
-Przyklad:
+Example:
 
-`STATUS: IN_PROGRESS | TASK: TASK-01 | NEXT: usunac nieuzywane navigation dependencies`
+`STATUS: IN_PROGRESS | TASK: TASK-01 | NEXT: remove unused navigation dependencies`
 
-## Reguly aktualizacji statusu
+## Status Update Rules
 
-Agent po kazdej istotnej zmianie powinien:
-1. zaktualizowac checkliste na karcie,
-2. dodac komentarz statusowy,
-3. jezeli spelnione kryteria akceptacji - przeniesc karte do `Review` lub `Done`.
+After each meaningful change, the agent should:
+1. update checklist item states,
+2. add a status comment,
+3. move the card according to current board flow (`TODO`/`TESTING`/`DONE` if available).
 
-## Definicja DONE
+## Definition of DONE
 
-Karta jest `DONE`, gdy:
-- wszystkie punkty checklisty sa odhaczone,
-- kryteria akceptacji z opisu sa spelnione,
-- build/testy wymagane przez zadanie przeszly,
-- status jest odnotowany komentarzem koncowym.
+A card is `DONE` when:
+- all checklist items are complete,
+- acceptance criteria are satisfied,
+- required build/tests passed,
+- final status comment is added.
 
-## Szablon komentarza koncowego
+## Final Comment Template
 
-`STATUS: DONE | TASK: <id/nazwa> | RESULT: <1-2 zdania o wyniku> | VERIFY: <komenda lub sposob weryfikacji>`
+`STATUS: DONE | TASK: <id/name> | RESULT: <1-2 sentences> | VERIFY: <command or verification method>`
 
-## Minimalny zestaw operacji API (referencyjnie)
+## Minimal API Operation Set (Reference)
 
-Agent powinien wspierac operacje:
-- utworzenie karty,
-- pobranie kart z listy,
-- aktualizacje opisu,
-- dodanie checklisty i elementow,
-- odhaczenie elementu checklisty,
-- przeniesienie karty miedzy listami,
-- dodanie komentarza.
+The agent should support:
+- create card,
+- list cards from list,
+- update card description,
+- add checklist and checklist items,
+- mark checklist item complete,
+- move card across lists,
+- add card comment.
 
-## Przykladowe operacje API Trello (REST)
+## Example Trello REST API Operations
 
-Poniższe przyklady zakladaja, ze agent korzysta z Trello REST API v1.
+These examples assume Trello REST API v1.
 
-### 1) Pobranie list na tablicy
+### 1) Get board lists
 
 ```bash
-curl "https://api.trello.com/1/boards/${TRELLO_BOARD_ID}/lists?key=${TRELLO_API_KEY}&token=${TRELLO_TOKEN}"
+curl "https://api.trello.com/1/boards/{boardId}/lists?key={TRELLO_API_KEY}&token={TRELLO_TOKEN}"
 ```
 
-Cel: odczyt `id` list `Backlog`, `Ready`, `In Progress`, `Review`, `Done`.
+Purpose: read list IDs for `TODO`, `IN PROGRESS`, `TESTING`, and `DONE`.
 
-### 2) Utworzenie karty
+### 2) Create a card
 
 ```bash
 curl --request POST \
   --url "https://api.trello.com/1/cards" \
   --data-urlencode "key=${TRELLO_API_KEY}" \
   --data-urlencode "token=${TRELLO_TOKEN}" \
-  --data-urlencode "idList=<ID_LISTY_BACKLOG>" \
-  --data-urlencode "name=[P1] Uporzadkowac zaleznosci Gradle" \
-  --data-urlencode "desc=Cel:\n...\n\nZakres:\n...\n\nKryteria akceptacji:\n..."
+  --data-urlencode "idList=<TODO_LIST_ID>" \
+  --data-urlencode "name=[P1] Clean up Gradle dependencies" \
+  --data-urlencode "desc=Goal:\n...\n\nScope:\n...\n\nAcceptance Criteria:\n..."
 ```
 
-### 3) Dodanie checklisty do karty
+### 3) Add checklist to card
 
 ```bash
 curl --request POST \
   --url "https://api.trello.com/1/checklists" \
   --data-urlencode "key=${TRELLO_API_KEY}" \
   --data-urlencode "token=${TRELLO_TOKEN}" \
-  --data-urlencode "idCard=<ID_KARTY>" \
-  --data-urlencode "name=Implementacja"
+  --data-urlencode "idCard=<CARD_ID>" \
+  --data-urlencode "name=Implementation"
 ```
 
-### 4) Dodanie elementu checklisty
+### 4) Add checklist item
 
 ```bash
 curl --request POST \
-  --url "https://api.trello.com/1/checklists/<ID_CHECKLISTY>/checkItems" \
+  --url "https://api.trello.com/1/checklists/<CHECKLIST_ID>/checkItems" \
   --data-urlencode "key=${TRELLO_API_KEY}" \
   --data-urlencode "token=${TRELLO_TOKEN}" \
-  --data-urlencode "name=Uruchomic :app:compileDebugKotlin"
+  --data-urlencode "name=Run :app:compileDebugKotlin"
 ```
 
-### 5) Oznaczenie elementu checklisty jako done
+### 5) Mark checklist item done
 
 ```bash
 curl --request PUT \
-  --url "https://api.trello.com/1/cards/<ID_KARTY>/checkItem/<ID_CHECKITEM>?key=${TRELLO_API_KEY}&token=${TRELLO_TOKEN}&state=complete"
+  --url "https://api.trello.com/1/cards/<CARD_ID>/checkItem/<CHECKITEM_ID>?key=${TRELLO_API_KEY}&token=${TRELLO_TOKEN}&state=complete"
 ```
 
-### 6) Dodanie komentarza statusowego
+### 6) Add status comment
 
 ```bash
 curl --request POST \
-  --url "https://api.trello.com/1/cards/<ID_KARTY>/actions/comments" \
+  --url "https://api.trello.com/1/cards/<CARD_ID>/actions/comments" \
   --data-urlencode "key=${TRELLO_API_KEY}" \
   --data-urlencode "token=${TRELLO_TOKEN}" \
-  --data-urlencode "text=STATUS: IN_PROGRESS | TASK: TASK-01 | NEXT: uruchomic compile"
+  --data-urlencode "text=STATUS: IN_PROGRESS | TASK: TASK-01 | NEXT: run compile"
 ```
 
-### 7) Przeniesienie karty miedzy listami
+### 7) Move card across lists
 
 ```bash
 curl --request PUT \
-  --url "https://api.trello.com/1/cards/<ID_KARTY>" \
+  --url "https://api.trello.com/1/cards/<CARD_ID>" \
   --data-urlencode "key=${TRELLO_API_KEY}" \
   --data-urlencode "token=${TRELLO_TOKEN}" \
-  --data-urlencode "idList=<ID_LISTY_REVIEW>"
+  --data-urlencode "idList=<TESTING_LIST_ID>"
 ```
 
-## Konfiguracja agenta (krok po kroku)
+## Agent Setup (Step by Step)
 
-### Krok 1: Wygeneruj klucze Trello
+### Step 1: Generate Trello credentials
 
-1. Wejdz na stronę deweloperska Trello i wygeneruj `API Key`.
-2. Wygeneruj `Token` z uprawnieniami do odczytu i zapisu kart.
-3. Zanotuj `Board ID` tablicy projektu.
+1. Open Trello developer page and create an `API Key`.
+2. Generate a `Token` with read/write permissions for cards.
+3. Get the target `Board ID`.
 
-### Krok 2: Ustaw zmienne srodowiskowe
+### Step 2: Set environment variables
 
-Przyklad (PowerShell):
+PowerShell example:
 
 ```powershell
-$env:TRELLO_API_KEY="<twoj_api_key>"
-$env:TRELLO_TOKEN="<twoj_token>"
-$env:TRELLO_BOARD_ID="<twoj_board_id>"
+$env:TRELLO_API_KEY="<your_api_key>"
+$env:TRELLO_TOKEN="<your_token>"
+$env:TRELLO_BOARD_ID="<your_board_id>"
 ```
 
-Przyklad (bash):
+Bash example:
 
 ```bash
-export TRELLO_API_KEY="<twoj_api_key>"
-export TRELLO_TOKEN="<twoj_token>"
-export TRELLO_BOARD_ID="<twoj_board_id>"
+export TRELLO_API_KEY="<your_api_key>"
+export TRELLO_TOKEN="<your_token>"
+export TRELLO_BOARD_ID="<your_board_id>"
 ```
 
-### Krok 3: Zweryfikuj dostep
+### Step 3: Verify access
 
 ```bash
 curl "https://api.trello.com/1/members/me?key=${TRELLO_API_KEY}&token=${TRELLO_TOKEN}"
 ```
 
-Jesli odpowiedz zawiera dane uzytkownika, agent jest poprawnie skonfigurowany.
+If response includes member data, setup is valid.
 
-### Krok 4: Skonfiguruj workflow list
+### Step 4: Validate workflow lists
 
-Upewnij sie, ze tablica ma listy:
-- `Backlog`
-- `Ready`
-- `In Progress`
-- `Review`
-- `Done`
+Ensure the board contains:
+- `TODO`
+- `IN PROGRESS`
+- `TESTING`
+- `DONE`
 
-## Jak uzywac skilla w praktyce
+## How to Use This Skill in Practice
 
-### Scenariusz A: Utworzenie kart z dokumentu taskow
+### Scenario A: Create cards from task document
 
-1. Agent czyta `docs/AI_IMPLEMENTATION_TASKS.md`.
-2. Dla kazdego `TASK-*` tworzy 1 karte w `Backlog`.
-3. W opisie przenosi: `Cel`, `Zakres`, `Kroki`, `Kryteria akceptacji`, `Ryzyka`.
-4. Tworzy checkliste mapujaca kroki implementacyjne 1:1.
+1. Agent reads `docs/AI_IMPLEMENTATION_TASKS.md`.
+2. Agent creates one card per `TASK-*` in `TODO`.
+3. Agent copies `Goal`, `Scope`, `Steps`, `Acceptance Criteria`, `Risks` into description.
+4. Agent adds checklist with a 1:1 mapping to implementation steps.
 
-### Scenariusz B: Aktualizacja statusu po iteracji
+### Scenario B: Update status after each iteration
 
-Po kazdej iteracji agent:
-1. Odhacza wykonane elementy checklisty.
-2. Dodaje komentarz w formacie `STATUS: ...`.
-3. Jesli kryteria spelnione - przenosi karte do `Review` lub `Done`.
+After each implementation iteration, the agent:
+1. checks completed checklist items,
+2. posts a `STATUS: ...` comment,
+3. moves card according to workflow if criteria are met.
 
-### Scenariusz C: Domkniecie zadania
+### Scenario C: Close task
 
-1. Agent potwierdza, ze wszystkie punkty checklisty sa complete.
-2. Dodaje komentarz koncowy `STATUS: DONE ...` z informacja jak zweryfikowac efekt.
-3. Przenosi karte do `Done`.
+1. Agent verifies all checklist items are complete.
+2. Agent posts final `STATUS: DONE ...` comment with verification command.
+3. Agent moves card to `DONE`.
 
-## Szybki prompt dla agenta
+## Quick Prompt for the Agent
 
-Uzyj tego polecenia, aby agent pracowal wg skilla:
+Use this command to force skill-based behavior:
 
 ```text
-Uzyj wytycznych z docs/TRELLO_AGENT_SKILL.md. Wczytaj taski z docs/AI_IMPLEMENTATION_TASKS.md, utworz/uzupelnij karty na Trello, dodaj checklisty i aktualizuj status po kazdym kroku implementacji.
+Use guidelines from docs/TRELLO_AGENT_SKILL.md. Read tasks from docs/AI_IMPLEMENTATION_TASKS.md, create/update Trello cards, add checklists, and update status after every implementation step.
 ```
 
-## Uwagi praktyczne
+## Practical Notes
 
-- Nie duplikowac kart dla tego samego zadania.
-- Jeden task techniczny = jedna karta.
-- Jezeli task jest duzy, tworz karty podrzedne przez prefiks, np. `TASK-05.1`, `TASK-05.2`.
+- Do not duplicate cards for the same task.
+- One technical task = one card.
+- If a task is large, create sub-cards using prefixes, e.g., `TASK-05.1`, `TASK-05.2`.

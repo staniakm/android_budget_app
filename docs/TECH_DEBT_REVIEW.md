@@ -1,70 +1,70 @@
-# Przeglad dlugu technologicznego
+# Technical Debt Review
 
-Data: 2026-02-15
+Date: 2026-02-15
 
-## Zakres
+## Scope
 
-Przeglad obejmuje:
-- warstwe build/dependency (`build.gradle`, `app/build.gradle`, `gradle.properties`),
-- warstwe UI po migracjach Compose (`app/src/main/java/com/example/internetapi/ui`),
-- sygnaly jakosciowe (ostrzezenia kompilacji, TODO, testy).
+This review covers:
+- build and dependency layer (`build.gradle`, `app/build.gradle`, `gradle.properties`),
+- UI layer after Compose migrations (`app/src/main/java/com/example/internetapi/ui`),
+- quality signals (compiler warnings, TODOs, tests).
 
 ## TL;DR
 
-Najwiekszy dlug jest w 4 obszarach:
-1. **Toolchain i zaleznosci sa przestarzale i kruche** (JDK/AGP/Kotlin/Compose + kapt workaround).
-2. **Niska testowalnosc i brak testow regresyjnych** (w praktyce brak realnych testow).
-3. **Niespojne wzorce stanu i side-effectow w Compose + LiveData** (duzo boilerplate i ryzyko bledow).
-4. **Nawigacja i kontrakty Intenta oparte o stringi + Serializable (deprecated)**.
+The largest debt is in 4 areas:
+1. **Outdated and fragile toolchain/dependencies** (JDK/AGP/Kotlin/Compose plus kapt workaround).
+2. **Low testability and lack of regression tests** (effectively no real coverage).
+3. **Inconsistent Compose + LiveData state/side-effect patterns** (boilerplate and error-prone code).
+4. **Navigation contracts based on string extras + deprecated Serializable APIs**.
 
-## Wnioski szczegolowe
+## Detailed Findings
 
-| Priorytet | Obszar | Problem | Dowody | Wplyw | Pracochlonnosc | Zlozonosc |
+| Priority | Area | Problem | Evidence | Impact | Effort | Complexity |
 |---|---|---|---|---|---|---|
-| P1 | Build/toolchain | Niezgodnosc JDK 21 i stary stack AGP/Kotlin; wymuszone `kapt` exports | `gradle.properties:10-14`, `build.gradle:3-6`, `app/build.gradle:10,47-53` | Niestabilny build, koszt utrzymania rosnacy przy kazdej aktualizacji srodowiska | 2-4 dni | Srednia |
-| P1 | Zaleznosci | Duplikaty i niespojne wersje bibliotek (np. Material dodany wielokrotnie, stare lifecycle/coroutines) | `app/build.gradle:58,72,75,82,78-79,92` | Trudniejsze debugowanie, konflikty, wolniejsze aktualizacje | 1-2 dni | Niska/Srednia |
-| P1 | Testy | Praktyczny brak testow (tylko szablony) | `app/src/test/.../ExampleUnitTest.kt`, `app/src/androidTest/.../ExampleInstrumentedTest.kt` | Wysokie ryzyko regresji przy dalszych migracjach | 3-6 dni (MVP) | Srednia |
-| P2 | Stan UI/Compose | Powtarzalny boilerplate `LiveData.observe + DisposableEffect` i reczne klucze refresh | liczne ekrany w `ui/*.kt` (np. `AccountOutcomeRegisterActivity.kt`, `AccountDetailsActivity.kt`) | Wysoki koszt zmian, latwo o niespojne zachowania | 3-5 dni | Srednia/Wysoka |
-| P2 | Side effects | Czesci operacji mutujacych bez spójnej obserwacji wyniku (fire-and-forget / brak jednolitego feedbacku) | np. `AccountViewModel.addIncome()` zwraca `Unit` (`AccountViewModel.kt:41-44`) | Ryzyko "cichych" bledow i niespojnego UX | 2-4 dni | Srednia |
-| P2 | Kontrakty nawigacji | `Intent` extras po stringach i `Serializable` (deprecated) | `AccountActivity.kt:129`, `BudgetActivity.kt:137`, `AccountUpdateActivity.kt:55`, `UpdateBudgetActivity.kt:63` | Krucha komunikacja miedzy ekranami, ryzyko runtime cast error | 2-3 dni | Srednia |
-| P3 | Deprecated API | Uzycie API oznaczonych jako deprecated | warningi: `Invoice.kt:16`, `ChartActivity.kt:72-73`, adaptery (`adapterPosition`, `setColorFilter`) | Nieblokujace teraz, ale podnosi koszt aktualizacji | 1-2 dni | Niska |
-| P3 | Jakosc kodu | Literowki i niespojne komunikaty/jezyki (PL/EN) | np. "Faile to revmoce", "Invaliad" w UI | Gorszy UX i utrudniona internacjonalizacja | 0.5-1 dnia | Niska |
-| P3 | Konfiguracja Android | Namespace nadal z `AndroidManifest package` (ostrzezenie AGP) | warning przy build + `AndroidManifest.xml:3` | Niewielki dzis, ale wymagany przy modernizacji AGP | 0.5 dnia | Niska |
+| P1 | Build/toolchain | JDK 21 incompatibility with old AGP/Kotlin stack; forced `kapt` exports | `gradle.properties:10-14`, `build.gradle:3-6`, `app/build.gradle:10,47-53` | Build instability and growing maintenance cost on environment updates | 2-4 days | Medium |
+| P1 | Dependencies | Duplicate/inconsistent library versions (e.g., duplicate Material, old lifecycle/coroutines) | `app/build.gradle:58,72,75,82,78-79,92` | Harder debugging, possible conflicts, slower upgrades | 1-2 days | Low/Medium |
+| P1 | Testing | Nearly no tests (template-only) | `app/src/test/.../ExampleUnitTest.kt`, `app/src/androidTest/.../ExampleInstrumentedTest.kt` | High regression risk during further migrations | 3-6 days (MVP) | Medium |
+| P2 | Compose state | Repeated `LiveData.observe + DisposableEffect` boilerplate and manual refresh keys | multiple screens in `ui/*.kt` (e.g. `AccountOutcomeRegisterActivity.kt`, `AccountDetailsActivity.kt`) | Higher change cost, inconsistent behavior risk | 3-5 days | Medium/High |
+| P2 | Side effects | Mutating operations without consistent result observation (fire-and-forget in places) | e.g., `AccountViewModel.addIncome()` returns `Unit` (`AccountViewModel.kt:41-44`) | Risk of silent failures and inconsistent UX | 2-4 days | Medium |
+| P2 | Navigation contracts | Intent extras by string keys + deprecated `Serializable` usage | `AccountActivity.kt:129`, `BudgetActivity.kt:137`, `AccountUpdateActivity.kt:55`, `UpdateBudgetActivity.kt:63` | Fragile screen contracts, runtime cast error risk | 2-3 days | Medium |
+| P3 | Deprecated APIs | Multiple deprecated API usages | warnings: `Invoice.kt:16`, `ChartActivity.kt:72-73`, adapters (`adapterPosition`, `setColorFilter`) | Not blocking now, but increases upgrade cost | 1-2 days | Low |
+| P3 | Code quality | Typos and mixed language messages (PL/EN) | e.g., "Faile to revmoce", "Invaliad" in UI messages | Worse UX and harder internationalization | 0.5-1 day | Low |
+| P3 | Android config | Namespace still sourced from `AndroidManifest package` (AGP warning) | build warning + `AndroidManifest.xml:3` | Small current impact, but required for AGP modernization | 0.5 day | Low |
 
-## Proponowany plan redukcji dlugu
+## Proposed Debt Reduction Plan
 
-### Etap 1 (najwiekszy zwrot, niski/umiarkowany koszt)
-1. Uporzadkowac zaleznosci i wersje w `app/build.gradle` (usunac duplikaty, ujednolicic Material/Lifecycle/Coroutines).
-2. Ustalic wspierana wersje JDK (17) i zaktualizowac dokumentacje + konfiguracje CI/IDE.
-3. Wprowadzic namespace w gradle i docelowo usunac zaleznosc od `package` w manifeście.
+### Phase 1 (highest ROI, low/moderate effort)
+1. Clean up dependencies and versions in `app/build.gradle` (remove duplicates; align Material/Lifecycle/Coroutines).
+2. Standardize supported JDK version (17) and update docs + CI/IDE config.
+3. Add `namespace` in Gradle and remove reliance on manifest `package`.
 
-**Szacowany koszt:** 2-4 dni, **zlozonosc:** srednia.
+**Estimated effort:** 2-4 days, **complexity:** medium.
 
-### Etap 2 (stabilnosc funkcjonalna)
-1. Wprowadzic minimalny pakiet testow:
-   - 5-10 testow jednostkowych dla formatterow/mapowan/request builderow,
-   - 3-5 testow integracyjnych ViewModel (mock repo),
-   - 1-2 krytyczne testy UI (happy path) dla ekranow po migracji.
+### Phase 2 (functional stability)
+1. Add a minimal test package:
+   - 5-10 unit tests for formatters/mappers/request builders,
+   - 3-5 ViewModel integration tests (mock repository),
+   - 1-2 critical UI tests (happy paths) for migrated screens.
 
-**Szacowany koszt:** 3-6 dni, **zlozonosc:** srednia.
+**Estimated effort:** 3-6 days, **complexity:** medium.
 
-### Etap 3 (architektura UI)
-1. Ujednolicic wzorzec stanu (np. `UiState + UiEvent`) i ograniczyc reczne `observe` w Composable.
-2. Dla operacji zapisu/przenoszenia/usuwania zwracac jawny wynik i obslugiwac statusy w jednym miejscu.
-3. Stopniowo zastapic `Serializable` bezpieczniejszym kontraktem (Parcelable/typed arguments).
+### Phase 3 (UI architecture)
+1. Standardize state pattern (e.g., `UiState + UiEvent`) and reduce manual `observe` usage in composables.
+2. Return explicit results for mutating operations and handle statuses consistently.
+3. Gradually replace `Serializable` with safer contracts (Parcelable/typed arguments).
 
-**Szacowany koszt:** 5-10 dni (iteracyjnie), **zlozonosc:** srednia/wysoka.
+**Estimated effort:** 5-10 days (iterative), **complexity:** medium/high.
 
-## Rekomendowana kolejnosc prac
+## Recommended Order
 
-1. **Build/dependencies cleanup** (szybki zysk, odblokowuje dalsze zmiany).
-2. **Pakiet testow regresyjnych** dla krytycznych flow.
-3. **Refaktoryzacja wzorcow stanu i efektow ubocznych** w Compose.
-4. **Migracja kontraktow Intenta** z `Serializable` na bezpieczniejsze rozwiazania.
+1. **Build/dependency cleanup** (quick win, unblocks future work).
+2. **Regression test baseline** for critical flows.
+3. **Compose state/side-effect refactor**.
+4. **Intent contract migration** away from `Serializable`.
 
-## Ocena ogolna
+## Overall Assessment
 
-- **Poziom dlugu technologicznego:** sredni-wysoki.
-- **Ryzyko krótkoterminowe:** srednie (aplikacja sie buduje, ale jest krucha przy zmianach).
-- **Ryzyko srednioterminowe:** wysokie bez testow i porzadkow w toolchainie.
-- **Priorytet biznesowy:** wysoki dla stabilizacji, zanim dojdzie wiecej funkcji.
+- **Technical debt level:** medium-high.
+- **Short-term risk:** medium (project builds, but is fragile during changes).
+- **Mid-term risk:** high without tests and toolchain cleanup.
+- **Business priority:** high for stabilization before adding more features.
