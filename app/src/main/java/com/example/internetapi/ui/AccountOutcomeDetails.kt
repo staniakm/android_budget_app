@@ -44,6 +44,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
@@ -356,8 +357,8 @@ private fun AccountInvoiceCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+                .padding(10.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -372,6 +373,15 @@ private fun AccountInvoiceCard(
                     modifier = Modifier.weight(1f),
                     fontWeight = FontWeight.SemiBold
                 )
+                TextButton(
+                    onClick = onChangeAccount,
+                    modifier = Modifier.padding(start = 4.dp, end = 0.dp)
+                ) {
+                    Text(
+                        text = stringResource(id = com.example.internetapi.R.string.change_account),
+                        textAlign = TextAlign.End
+                    )
+                }
             }
 
             Row(
@@ -388,12 +398,6 @@ private fun AccountInvoiceCard(
                     style = MaterialTheme.typography.body1,
                     modifier = Modifier.weight(0.45f)
                 )
-            }
-
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                TextButton(onClick = onChangeAccount) {
-                    Text(text = stringResource(id = com.example.internetapi.R.string.change_account))
-                }
             }
         }
     }
