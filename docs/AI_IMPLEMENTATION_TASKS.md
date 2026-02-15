@@ -32,6 +32,14 @@ Ujednolicic zaleznosci i usunac duplikaty, aby zmniejszyc ryzyko konfliktow i ul
 4. Zachowaj zgodnosc z obecnym AGP/Kotlin (bez duzej migracji toolchain w tym tasku).
 5. Uruchom kompilacje: `./gradlew :app:compileDebugKotlin`.
 
+### Status realizacji (iteracyjnie)
+- [x] Krok 1: zinwentaryzowano duplikaty i zaleznosci potencjalnie nieuzywane.
+- [x] Krok 2 (iteracja 1): usunieto duplikaty `material` i `lifecycle-viewmodel-ktx`, usunieto `android.arch.lifecycle:extensions`.
+- [x] Krok 2 (iteracja 2): usunieto nieuzywane zaleznosci `navigation-*` oraz `fragment-ktx`; usunieto tez martwy zasob `res/navigation/nav_graph.xml` (stary szablon First/SecondFragment).
+- [x] Krok 3: wykonano bezpieczne ujednolicenie wersji (Coroutines/Activity/Lifecycle) bez migracji AGP/Kotlin.
+- [x] Krok 4: zachowano zgodnosc z obecnym AGP/Kotlin (bez migracji toolchain).
+- [x] Krok 5: kompilacja `:app:compileDebugKotlin` przechodzi po kazdej iteracji.
+
 ### Kryteria akceptacji
 - Brak duplikatow dependencies w `app/build.gradle`.
 - Build `:app:compileDebugKotlin` przechodzi.
