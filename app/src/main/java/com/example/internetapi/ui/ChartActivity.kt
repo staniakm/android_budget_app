@@ -7,11 +7,10 @@ import android.util.Log
 import android.view.WindowManager
 import android.widget.SeekBar
 import androidx.activity.viewModels
+import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import com.example.internetapi.api.Resource
 import com.example.internetapi.config.DateFormatter
-import com.example.internetapi.databinding.ActivityChartBinding
-import com.example.internetapi.functions.errorSnackBar
 import com.example.internetapi.global.MonthSelector
 import com.example.internetapi.models.Budget
 import com.example.internetapi.models.Status
@@ -27,6 +26,37 @@ import com.github.mikephil.charting.highlight.Highlight
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener
 import com.github.mikephil.charting.utils.MPPointF
 import dagger.hilt.android.AndroidEntryPoint
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Card
+import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
+import androidx.compose.material.TextButton
+import androidx.compose.material.rememberScaffoldState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
+import kotlinx.coroutines.launch
 import java.math.BigDecimal
 import java.time.LocalDate
 
@@ -35,9 +65,6 @@ import java.time.LocalDate
 class ChartActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener,
     OnChartValueSelectedListener {
     private val viewModel: BudgetViewModel by viewModels()
-    private lateinit var binding: ActivityChartBinding
-
-    private lateinit var chart: PieChart
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,118 +72,256 @@ class ChartActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener,
             WindowManager.LayoutParams.FLAG_FULLSCREEN,
             WindowManager.LayoutParams.FLAG_FULLSCREEN
         );
-        binding = ActivityChartBinding.inflate(layoutInflater)
-        setContentView(binding.root)
 
-        binding.monthManipulator.previous.setOnClickListener {
-            MonthSelector.previous()
-            loadData()
-        }
+        setTitle("PieChartActivity")
 
-        binding.monthManipulator.next.setOnClickListener {
-            if (MonthSelector.month < 0) {
-                MonthSelector.next()
-                loadData()
+        setContent {
+            MaterialTheme {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colors.background
+                ) {
+                    ChartScreen(
+                        viewModel = viewModel,
+                        onValueSelected = { _, _ -> Unit },
+                        onNothingSelected = { Unit }
+                    )
+                }
             }
         }
-
-        binding.monthManipulator.date.setOnClickListener {
-            if (MonthSelector.month != 0) {
-                MonthSelector.current()
-                loadData()
-            }
-        }
-        setTitle("PieChartActivity");
-
-        chart = binding.chart1
-        chart.apply {
-            setUsePercentValues(true);
-            getDescription().setEnabled(false);
-            setExtraOffsets(5F, 10F, 5F, 5F);
-
-            setDragDecelerationFrictionCoef(0.95f);
-
-            setDrawHoleEnabled(true);
-            setHoleColor(Color.WHITE);
-
-            setTransparentCircleColor(Color.WHITE);
-            setTransparentCircleAlpha(110);
-
-            setHoleRadius(30f);
-            setTransparentCircleRadius(33f);
-
-            setRotationAngle(0.0F);
-            // enable rotation of the chart by touch
-            setRotationEnabled(true);
-            setHighlightPerTapEnabled(true);
-
-            setOnChartValueSelectedListener(this@ChartActivity);
-
-            animateY(1400, Easing.EaseInOutQuad);
-            setEntryLabelColor(Color.WHITE);
-            setEntryLabelTypeface(Typeface.DEFAULT_BOLD);
-            setEntryLabelTextSize(12f);
-
-            legend.apply {
-                isEnabled = false
-            }
-
-        }
-        loadData()
-    }
-
-    fun loadData() {
-        val date = LocalDate.now().withDayOfMonth(1)
-        binding.monthManipulator.date.text = date.plusMonths(MonthSelector.month.toLong())
-            .format(DateFormatter.yyyymm)
-        binding.monthManipulator.previous.text = date.plusMonths(MonthSelector.month.toLong() - 1)
-            .format(DateFormatter.yyyymm)
-        binding.monthManipulator.next.text = date.plusMonths(MonthSelector.month.toLong() + 1)
-            .format(DateFormatter.yyyymm)
-        viewModel.getBudgets().observe(this, {
-            when (it.status) {
-                Status.SUCCESS -> processSuccess(it)
-                Status.ERROR -> errorSnackBar(binding.root, "failed fetched data")
-                Status.LOADING -> Log.println(Log.DEBUG, "InvoiceDetails", "Loading.....")
-            }
-        })
     }
 
     private fun processSuccess(it: Resource<Budget>) {
         it.data.let { res ->
             if (res != null) {
                 res.let { data ->
-                    setData(data)
+                    // No-op in Compose version; handled in ChartScreen
                 }
             } else {
-                errorSnackBar(binding.root, "Status = false")
+                // No-op in Compose version; handled in ChartScreen
             }
         }
     }
 
-    private fun setData(budgetData: Budget) {
+    override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+        TODO("Not yet implemented")
+    }
 
-        val other =
-            budgetData.budgets.filter { it.spent > BigDecimal.ZERO && it.spent <= BigDecimal(40) }
-                .sumOf { it.spent }.toFloat()
 
-        val dataSet = budgetData.budgets.filter { it.spent > BigDecimal(40) }
-            .map {
-                PieEntry(it.spent.toFloat(), it.category)
-            }.plus(PieEntry(other, "Reszta"))
-            .sortedByDescending { it.value }
-            .let {
-                PieDataSet(it, "Categories")
-                    .apply {
-                        setDrawIcons(false);
-                        setSliceSpace(3f);
-                        setIconsOffset(MPPointF(0F, 40F));
-                        setSelectionShift(5f);
+    override fun onStartTrackingTouch(seekBar: SeekBar?) {
+    }
+
+    override fun onStopTrackingTouch(seekBar: SeekBar?) {
+    }
+
+    override fun onValueSelected(e: Entry?, h: Highlight) {
+        // handled inside Compose via chart listener
+    }
+
+    override fun onNothingSelected() {
+        // handled inside Compose via chart listener
+    }
+}
+
+private object ChartDefaults {
+    const val ScreenPadding = 12
+    const val CardPadding = 12
+}
+
+@Composable
+private fun ChartScreen(
+    viewModel: BudgetViewModel,
+    onValueSelected: (label: String, value: Float) -> Unit,
+    onNothingSelected: () -> Unit,
+) {
+    val scaffoldState = rememberScaffoldState()
+    val scope = rememberCoroutineScope()
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    fun showMessage(message: String) {
+        scope.launch { scaffoldState.snackbarHostState.showSnackbar(message) }
+    }
+
+    var refreshKey by rememberSaveable { mutableStateOf(0) }
+    val budgetsLiveData = remember(refreshKey) { viewModel.getBudgets() }
+    var budgetsResource by remember { mutableStateOf<com.example.internetapi.api.Resource<Budget>?>(null) }
+    DisposableEffect(budgetsLiveData, lifecycleOwner) {
+        val observer = androidx.lifecycle.Observer<com.example.internetapi.api.Resource<Budget>> { budgetsResource = it }
+        budgetsLiveData.observe(lifecycleOwner, observer)
+        onDispose { budgetsLiveData.removeObserver(observer) }
+    }
+
+    LaunchedEffect(budgetsResource?.status) {
+        if (budgetsResource?.status == Status.ERROR) showMessage("failed fetched data")
+    }
+
+    val date = remember(MonthSelector.month) { LocalDate.now().withDayOfMonth(1).plusMonths(MonthSelector.month.toLong()) }
+    val previousDate = remember(MonthSelector.month) { LocalDate.now().withDayOfMonth(1).plusMonths(MonthSelector.month.toLong() - 1) }
+    val nextDate = remember(MonthSelector.month) { LocalDate.now().withDayOfMonth(1).plusMonths(MonthSelector.month.toLong() + 1) }
+
+    var infoText by rememberSaveable { mutableStateOf("") }
+    var chartData by remember { mutableStateOf<PieData?>(null) }
+
+    LaunchedEffect(budgetsResource?.data) {
+        val budget = budgetsResource?.data ?: return@LaunchedEffect
+        chartData = buildPieData(budget)
+        infoText = ""
+        onNothingSelected()
+    }
+
+    Scaffold(scaffoldState = scaffoldState) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(ChartDefaults.ScreenPadding.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            ChartMonthManipulator(
+                previous = previousDate.format(DateFormatter.yyyymm),
+                current = date.format(DateFormatter.yyyymm),
+                next = nextDate.format(DateFormatter.yyyymm),
+                onPrevious = {
+                    MonthSelector.previous()
+                    refreshKey += 1
+                },
+                onCurrent = {
+                    if (MonthSelector.month != 0) {
+                        MonthSelector.current()
+                        refreshKey += 1
                     }
+                },
+                onNext = {
+                    if (MonthSelector.month < 0) {
+                        MonthSelector.next()
+                        refreshKey += 1
+                    }
+                }
+            )
+
+            Card(modifier = Modifier.fillMaxWidth(), elevation = 6.dp) {
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    AndroidView(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        factory = { context ->
+                            PieChart(context).apply {
+                                setUsePercentValues(true)
+                                description.isEnabled = false
+                                setExtraOffsets(5F, 10F, 5F, 5F)
+                                dragDecelerationFrictionCoef = 0.95f
+
+                                isDrawHoleEnabled = true
+                                setHoleColor(Color.WHITE)
+                                setTransparentCircleColor(Color.WHITE)
+                                setTransparentCircleAlpha(110)
+                                holeRadius = 30f
+                                transparentCircleRadius = 33f
+
+                                rotationAngle = 0.0F
+                                isRotationEnabled = true
+                                isHighlightPerTapEnabled = true
+
+                                setOnChartValueSelectedListener(object : OnChartValueSelectedListener {
+                                    override fun onValueSelected(e: Entry?, h: Highlight?) {
+                                        val pe = e as? PieEntry ?: return
+                                        val label = pe.label
+                                        val value = pe.y
+                                        infoText = "$label  -  $value zl"
+                                        onValueSelected(label, value)
+                                    }
+
+                                    override fun onNothingSelected() {
+                                        infoText = ""
+                                        onNothingSelected()
+                                    }
+                                })
+
+                                animateY(1400, Easing.EaseInOutQuad)
+                                setEntryLabelColor(Color.WHITE)
+                                setEntryLabelTypeface(Typeface.DEFAULT_BOLD)
+                                setEntryLabelTextSize(12f)
+
+                                legend.isEnabled = false
+                            }
+                        },
+                        update = { chart ->
+                            val data = chartData
+                            if (data != null) {
+                                chart.data = data
+                                chart.highlightValues(null)
+                                chart.invalidate()
+                            }
+                        }
+                    )
+
+                    if (budgetsResource?.status == Status.LOADING) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(24.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
+                        }
+                    }
+                }
             }
 
-        // add a lot of colors
-        val colors = listOf<Int>(
+            Text(
+                text = infoText,
+                style = MaterialTheme.typography.h6,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 4.dp)
+            )
+        }
+    }
+}
+
+@Composable
+private fun ChartMonthManipulator(
+    previous: String,
+    current: String,
+    next: String,
+    onPrevious: () -> Unit,
+    onCurrent: () -> Unit,
+    onNext: () -> Unit,
+) {
+    Card(modifier = Modifier.fillMaxWidth(), elevation = 4.dp) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            TextButton(onClick = onPrevious) { Text(text = previous) }
+            TextButton(onClick = onCurrent) { Text(text = current, fontWeight = FontWeight.Bold) }
+            TextButton(onClick = onNext) { Text(text = next) }
+        }
+    }
+}
+
+private fun buildPieData(budgetData: Budget): PieData {
+    val other = budgetData.budgets
+        .filter { it.spent > BigDecimal.ZERO && it.spent <= BigDecimal(40) }
+        .sumOf { it.spent }
+        .toFloat()
+
+    val entries = budgetData.budgets
+        .filter { it.spent > BigDecimal(40) }
+        .map { PieEntry(it.spent.toFloat(), it.category) }
+        .plus(PieEntry(other, "Reszta"))
+        .sortedByDescending { it.value }
+
+    val dataSet = PieDataSet(entries, "Categories").apply {
+        setDrawIcons(false)
+        sliceSpace = 3f
+        iconsOffset = MPPointF(0F, 40F)
+        selectionShift = 0f
+        colors = listOf(
             Color.BLUE,
             Color.CYAN,
             Color.DKGRAY,
@@ -172,43 +337,12 @@ class ChartActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener,
             Color.rgb(85, 188, 54),
             Color.rgb(188, 170, 54)
         )
-
-        dataSet.setColors(colors);
-        dataSet.setSelectionShift(0f);
-
-        val data: PieData = PieData(dataSet);
-        data.setValueFormatter(PercentFormatter());
-        data.setValueTextSize(11f);
-        data.setValueTextColor(Color.WHITE);
-        data.setValueTypeface(Typeface.DEFAULT_BOLD);
-
-        chart.setData(data);
-
-        // undo all highlights
-        chart.highlightValues(null);
-
-        chart.invalidate();
     }
 
-    override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-        TODO("Not yet implemented")
-    }
-
-
-    override fun onStartTrackingTouch(seekBar: SeekBar?) {
-    }
-
-    override fun onStopTrackingTouch(seekBar: SeekBar?) {
-    }
-
-    override fun onValueSelected(e: Entry?, h: Highlight) {
-        if (e == null)
-            return;
-
-        binding.info.text = (e as PieEntry).label + "  -  ${e.y} zł"
-    }
-
-    override fun onNothingSelected() {
-        binding.info.text = ""
+    return PieData(dataSet).apply {
+        setValueFormatter(PercentFormatter())
+        setValueTextSize(11f)
+        setValueTextColor(Color.WHITE)
+        setValueTypeface(Typeface.DEFAULT_BOLD)
     }
 }
