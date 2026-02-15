@@ -55,6 +55,8 @@ Unify dependencies and remove duplicates to reduce conflicts and simplify upgrad
 
 ## TASK-02: Standardize JDK 17 for the project (P1)
 
+**Status:** DONE
+
 ### Goal
 Remove build instability caused by running Gradle on unsupported JDK versions.
 
@@ -67,6 +69,13 @@ Remove build instability caused by running Gradle on unsupported JDK versions.
 2. Add quick verification commands (`java -version`, `./gradlew -version`).
 3. If CI exists, pin Java 17 and validate workflow syntax.
 4. Verify local compile on JDK 17: `./gradlew :app:compileDebugKotlin`.
+
+### Iterative progress
+- [x] Step 1 (iteration 1): added JDK 17 requirements in `README.md`.
+- [x] Step 2 (iteration 1): added setup verification commands in `README.md`.
+- [x] Step 3: repository has no CI workflow files (`.github/workflows` is empty), so no CI update was required.
+- [x] Step 4: local compile validated on JDK 17 (`C:\Users\Mariusz\.jdks\corretto-17.0.11`, `:app:compileDebugKotlin`).
+- [x] Additional validation: compile still passes on JDK 11 (`JAVA_HOME=/c/Program Files/Java/jdk-11`, `:app:compileDebugKotlin`).
 
 ### Acceptance criteria
 - Documentation clearly states JDK 17 support requirement.
