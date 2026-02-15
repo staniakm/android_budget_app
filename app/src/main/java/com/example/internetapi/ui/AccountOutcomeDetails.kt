@@ -1,151 +1,400 @@
 package com.example.internetapi.ui
 
-import android.R
-import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
-import android.view.View
-import android.widget.ArrayAdapter
-import android.widget.Spinner
+import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
-import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.internetapi.api.Resource
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.AlertDialog
+import androidx.compose.material.Card
+import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
+import androidx.compose.material.TextButton
+import androidx.compose.material.rememberScaffoldState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.stringResource
 import com.example.internetapi.config.AccountHolder
-import com.example.internetapi.databinding.ActivityAccountOutcomeDetailsBinding
-import com.example.internetapi.functions.errorSnackBar
-import com.example.internetapi.functions.successSnackBar
+import com.example.internetapi.config.MoneyFormatter
 import com.example.internetapi.models.AccountInvoice
-import com.example.internetapi.models.SimpleAccount
 import com.example.internetapi.models.Status
 import com.example.internetapi.models.UpdateInvoiceAccountRequest
-import com.example.internetapi.ui.adapters.AccountExpensesAdapter
-import com.example.internetapi.ui.adapters.OnItemClickedListener
 import com.example.internetapi.ui.viewModel.AccountViewModel
 import com.example.internetapi.ui.viewModel.InvoiceViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlin.properties.Delegates
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
-class AccountOutcomeDetails : AppCompatActivity(), OnItemClickedListener {
-    private val INVOICE_REMOVED: String = "Selected invoice removed"
-    private val FAILED_TO_REMOVE_INVOICE: String = "Faile to revmoce selected invoice"
-    private val TAG = "AccountOutcomeDetails"
-    private val FAILED_TO_LOAD_ACCOUNT_INVOICES = "Failed to load account invoices"
+class AccountOutcomeDetails : AppCompatActivity() {
+    private val invoiceRemoved: String = "Selected invoice removed"
+    private val failedToRemoveInvoice: String = "Faile to revmoce selected invoice"
+    private val failedToLoadAccountInvoices = "Failed to load account invoices"
 
     private val accountViewModel: AccountViewModel by viewModels()
     private val invoiceViewModel: InvoiceViewModel by viewModels()
-    private lateinit var binding: ActivityAccountOutcomeDetailsBinding
-    private lateinit var adapter: AccountExpensesAdapter
-    private var accountId by Delegates.notNull<Int>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityAccountOutcomeDetailsBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-        adapter = AccountExpensesAdapter(this)
-        binding.rvInvoices.layoutManager = LinearLayoutManager(this)
-        binding.rvInvoices.adapter = adapter
 
-        intent.extras?.let { extra ->
-            binding.name.text = extra.getString("name", "")
-            binding.outcomeSum.text = extra.getString("outcome", "0.0")
-            extra.getInt("accountId").let { accountId ->
-                this.accountId = accountId
-                accountViewModel.accountInvoices(accountId).observe(this) {
-                    when (it.status) {
-                        Status.SUCCESS -> loadOnSuccess(it)
-                        Status.ERROR -> errorSnackBar(binding.root, FAILED_TO_LOAD_ACCOUNT_INVOICES)
-                        Status.LOADING -> {}
-                    }
-                }
-            }
-        }
-    }
+        val extras = intent.extras
+        val name = extras?.getString("name", "") ?: ""
+        val outcome = extras?.getString("outcome", "0.0") ?: "0.0"
+        val accountId = extras?.getInt("accountId") ?: -1
 
-    private fun updateInvoiceAccount(invoiceId: Long, oldAccount: Int, accountId: Int) {
-        invoiceViewModel.updateInvoiceAccount(
-            UpdateInvoiceAccountRequest(
-                invoiceId,
-                oldAccount,
-                accountId
-            )
-        )
-        if (oldAccount != accountId) {
-            adapter.removeInvoice(invoiceId)
-        }
-    }
-
-    private fun loadOnSuccess(it: Resource<List<AccountInvoice>>) {
-        binding.progress.visibility = View.GONE
-        binding.rvInvoices.visibility = View.VISIBLE
-        it.data?.let {
-            adapter.submitList(it)
-        }
-    }
-
-    override fun onClick(position: Int, element: String) {
-        val item = adapter.getItem(position)
-        when (element) {
-            "layout" -> Intent(this, InvoiceDetailsActivity::class.java).apply {
-                this.putExtra("invoiceId", item.listId)
-            }.let {
-                ContextCompat.startActivity(this, it, null)
-            }
-            "layoutLong" -> createSpinner(item)
-            "deleteInvoice" -> removeItemPopup(item)
-        }
-    }
-
-    private fun removeItemPopup(item: AccountInvoice) {
-        Log.i(TAG, "removeItemPopup: $item")
-        val alert: AlertDialog.Builder = AlertDialog.Builder(this)
-        alert.setTitle("Invoice removal")
-            .setMessage("Do you want to remove selected invoice?")
-            .setPositiveButton(getString(R.string.ok)) { _, _ ->
-                invoiceViewModel.deleteInvoice(item.listId).observe(this) {
-                    when (it.status) {
-                        Status.SUCCESS -> {
-                            successSnackBar(binding.root, INVOICE_REMOVED)
-                            adapter.removeInvoice(item.listId)
+        setContent {
+            MaterialTheme {
+                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colors.background) {
+                    AccountOutcomeDetailsScreen(
+                        accountId = accountId,
+                        name = name,
+                        outcome = outcome,
+                        accountViewModel = accountViewModel,
+                        invoiceViewModel = invoiceViewModel,
+                        invoiceRemoved = invoiceRemoved,
+                        failedToRemoveInvoice = failedToRemoveInvoice,
+                        failedToLoadAccountInvoices = failedToLoadAccountInvoices,
+                        onOpenInvoiceDetails = { invoiceId ->
+                            Intent(this, InvoiceDetailsActivity::class.java).apply {
+                                putExtra("invoiceId", invoiceId)
+                            }.also { startActivity(it) }
                         }
-                        Status.ERROR -> errorSnackBar(binding.root, FAILED_TO_REMOVE_INVOICE)
-                        Status.LOADING -> {}
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AccountOutcomeDetailsScreen(
+    accountId: Int,
+    name: String,
+    outcome: String,
+    accountViewModel: AccountViewModel,
+    invoiceViewModel: InvoiceViewModel,
+    invoiceRemoved: String,
+    failedToRemoveInvoice: String,
+    failedToLoadAccountInvoices: String,
+    onOpenInvoiceDetails: (Long) -> Unit,
+) {
+    val scaffoldState = rememberScaffoldState()
+    val scope = rememberCoroutineScope()
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    fun showMessage(message: String) {
+        scope.launch { scaffoldState.snackbarHostState.showSnackbar(message) }
+    }
+
+    val invoicesLiveData = remember(accountId) {
+        if (accountId <= 0) null else accountViewModel.accountInvoices(accountId)
+    }
+    var invoicesResource by remember {
+        mutableStateOf<com.example.internetapi.api.Resource<List<AccountInvoice>>?>(null)
+    }
+    DisposableEffect(invoicesLiveData, lifecycleOwner) {
+        val liveData = invoicesLiveData
+        if (liveData == null) {
+            invoicesResource = null
+            onDispose { }
+        } else {
+            val observer = androidx.lifecycle.Observer<com.example.internetapi.api.Resource<List<AccountInvoice>>> {
+                invoicesResource = it
+            }
+            liveData.observe(lifecycleOwner, observer)
+            onDispose { liveData.removeObserver(observer) }
+        }
+    }
+
+    var invoices by remember { mutableStateOf<List<AccountInvoice>>(emptyList()) }
+    LaunchedEffect(invoicesResource?.data) {
+        invoicesResource?.data?.let { invoices = it }
+    }
+
+    LaunchedEffect(invoicesResource?.status, accountId) {
+        if (accountId <= 0) {
+            showMessage("Missing accountId")
+        }
+        if (invoicesResource?.status == Status.ERROR) {
+            showMessage(failedToLoadAccountInvoices)
+        }
+    }
+
+    var pendingDelete by remember { mutableStateOf<AccountInvoice?>(null) }
+    var deleteLiveData by remember { mutableStateOf<androidx.lifecycle.LiveData<com.example.internetapi.api.Resource<Void>>?>(null) }
+    var deleteResource by remember { mutableStateOf<com.example.internetapi.api.Resource<Void>?>(null) }
+    DisposableEffect(deleteLiveData, lifecycleOwner) {
+        val liveData = deleteLiveData
+        if (liveData == null) {
+            deleteResource = null
+            onDispose { }
+        } else {
+            val observer = androidx.lifecycle.Observer<com.example.internetapi.api.Resource<Void>> {
+                deleteResource = it
+            }
+            liveData.observe(lifecycleOwner, observer)
+            onDispose { liveData.removeObserver(observer) }
+        }
+    }
+
+    LaunchedEffect(deleteResource?.status) {
+        when (deleteResource?.status) {
+            Status.SUCCESS -> {
+                pendingDelete?.let { invoice ->
+                    invoices = invoices.filter { it.listId != invoice.listId }
+                }
+                showMessage(invoiceRemoved)
+                pendingDelete = null
+                deleteLiveData = null
+            }
+            Status.ERROR -> {
+                showMessage(failedToRemoveInvoice)
+                pendingDelete = null
+                deleteLiveData = null
+            }
+            else -> Unit
+        }
+    }
+
+    var accountToChange by remember { mutableStateOf<AccountInvoice?>(null) }
+    val isLoading = invoicesResource?.status == Status.LOADING || deleteResource?.status == Status.LOADING
+
+    Scaffold(scaffoldState = scaffoldState) { innerPadding ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(12.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                item {
+                    Text(
+                        text = name,
+                        style = MaterialTheme.typography.h5,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+                item {
+                    Card(modifier = Modifier.fillMaxWidth(), elevation = 6.dp) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "WYDATKI:",
+                                modifier = Modifier.weight(0.35f),
+                                style = MaterialTheme.typography.h6
+                            )
+                            Text(
+                                text = outcome,
+                                modifier = Modifier.weight(0.65f),
+                                style = MaterialTheme.typography.h6
+                            )
+                        }
                     }
                 }
 
+                items(invoices, key = { it.listId }) { invoice ->
+                    AccountInvoiceCard(
+                        invoice = invoice,
+                        onClick = { onOpenInvoiceDetails(invoice.listId) },
+                        onChangeAccount = { accountToChange = invoice },
+                        onDelete = { pendingDelete = invoice }
+                    )
+                }
             }
-            .setNegativeButton(getString(R.string.cancel)) { _, _ -> }
-        alert.show()
 
+            if (isLoading) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            }
+        }
     }
 
-    private fun createSpinner(
-        item: AccountInvoice
-    ) {
-        val accounts = AccountHolder.accounts
-        val spinner = Spinner(this)
-        spinner.adapter = ArrayAdapter(
-            this,
-            R.layout.simple_spinner_dropdown_item,
-            accounts
+    if (pendingDelete != null) {
+        val invoice = pendingDelete
+        AlertDialog(
+            onDismissRequest = { pendingDelete = null },
+            title = { Text(text = "Invoice removal") },
+            text = { Text(text = "Do you want to remove selected invoice?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    if (invoice != null) {
+                        deleteLiveData = invoiceViewModel.deleteInvoice(invoice.listId)
+                    }
+                }) {
+                    Text(text = "OK")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { pendingDelete = null }) {
+                    Text(text = "Cancel")
+                }
+            }
         )
-        spinner.setSelection(accounts.indexOfFirst { it.id == accountId })
-        val alert: AlertDialog.Builder = AlertDialog.Builder(this)
-        alert.setTitle("Change account for selected invoice")
-            .setMessage("${item.listId}")
-            .setView(spinner)
-            .setPositiveButton(getString(R.string.ok)) { _, _ ->
-                this.updateInvoiceAccount(
-                    item.listId,
-                    accountId,
-                    (spinner.selectedItem as SimpleAccount).id
+    }
+
+    if (accountToChange != null) {
+        val item = accountToChange
+        var selected by remember(item, accountId) {
+            mutableStateOf(AccountHolder.accounts.firstOrNull { it.id == accountId })
+        }
+        var expanded by remember(item) { mutableStateOf(false) }
+
+        AlertDialog(
+            onDismissRequest = { accountToChange = null },
+            title = { Text(text = "Change account for selected invoice") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(text = item?.listId?.toString().orEmpty())
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { expanded = true },
+                            elevation = 2.dp
+                        ) {
+                            Text(
+                                text = selected?.name.orEmpty(),
+                                modifier = Modifier.padding(12.dp),
+                                style = MaterialTheme.typography.body1
+                            )
+                        }
+                        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                            AccountHolder.accounts.forEach { account ->
+                                DropdownMenuItem(onClick = {
+                                    selected = account
+                                    expanded = false
+                                }) {
+                                    Text(text = account.name)
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    val invoice = item
+                    val selectedAccount = selected
+                    if (invoice != null && selectedAccount != null) {
+                        invoiceViewModel.updateInvoiceAccount(
+                            UpdateInvoiceAccountRequest(invoice.listId, accountId, selectedAccount.id)
+                        )
+                        if (accountId != selectedAccount.id) {
+                            invoices = invoices.filter { it.listId != invoice.listId }
+                        }
+                    }
+                    accountToChange = null
+                }) {
+                    Text(text = "OK")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { accountToChange = null }) {
+                    Text(text = "Cancel")
+                }
+            }
+        )
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun AccountInvoiceCard(
+    invoice: AccountInvoice,
+    onClick: () -> Unit,
+    onChangeAccount: () -> Unit,
+    onDelete: () -> Unit,
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .combinedClickable(onClick = onClick, onLongClick = onChangeAccount),
+        elevation = 4.dp
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = onDelete) {
+                    Icon(imageVector = Icons.Default.Delete, contentDescription = "delete")
+                }
+                Text(
+                    text = invoice.name,
+                    style = MaterialTheme.typography.h6,
+                    modifier = Modifier.weight(1f),
+                    fontWeight = FontWeight.SemiBold
                 )
             }
-            .setNegativeButton(getString(R.string.cancel)) { _, _ -> }
-        alert.show()
-    }
 
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = invoice.date,
+                    style = MaterialTheme.typography.body1,
+                    modifier = Modifier.weight(0.55f)
+                )
+                Text(
+                    text = MoneyFormatter.df.format(invoice.price),
+                    style = MaterialTheme.typography.body1,
+                    modifier = Modifier.weight(0.45f)
+                )
+            }
+
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                TextButton(onClick = onChangeAccount) {
+                    Text(text = stringResource(id = com.example.internetapi.R.string.change_account))
+                }
+            }
+        }
+    }
 }

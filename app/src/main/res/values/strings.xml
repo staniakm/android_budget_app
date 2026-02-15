@@ -53,4 +53,5 @@
     <string name="account_name">Nazwa konta</string>
     <string name="account_money">Kwota</string>
     <string name="invoice_details_title">Szczegóły paragonu</string>
+    <string name="change_account">Zmień konto</string>
 </resources>

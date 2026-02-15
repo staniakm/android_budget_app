@@ -174,8 +174,7 @@ private fun ChartScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(ChartDefaults.ScreenPadding.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+                .padding(horizontal = ChartDefaults.ScreenPadding.dp)
         ) {
             ChartMonthManipulator(
                 previous = previousDate.format(DateFormatter.yyyymm),
@@ -199,72 +198,72 @@ private fun ChartScreen(
                 }
             )
 
-            Card(modifier = Modifier.fillMaxWidth(), elevation = 6.dp) {
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    AndroidView(
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+            ) {
+                AndroidView(
+                    modifier = Modifier.fillMaxSize(),
+                    factory = { context ->
+                        PieChart(context).apply {
+                            setUsePercentValues(true)
+                            description.isEnabled = false
+                            setExtraOffsets(5F, 10F, 5F, 5F)
+                            dragDecelerationFrictionCoef = 0.95f
+
+                            isDrawHoleEnabled = true
+                            setHoleColor(Color.WHITE)
+                            setTransparentCircleColor(Color.WHITE)
+                            setTransparentCircleAlpha(110)
+                            holeRadius = 30f
+                            transparentCircleRadius = 33f
+
+                            rotationAngle = 0.0F
+                            isRotationEnabled = true
+                            isHighlightPerTapEnabled = true
+
+                            setOnChartValueSelectedListener(object : OnChartValueSelectedListener {
+                                override fun onValueSelected(e: Entry?, h: Highlight?) {
+                                    val pe = e as? PieEntry ?: return
+                                    val label = pe.label
+                                    val value = pe.y
+                                    infoText = "$label  -  $value zl"
+                                    onValueSelected(label, value)
+                                }
+
+                                override fun onNothingSelected() {
+                                    infoText = ""
+                                    onNothingSelected()
+                                }
+                            })
+
+                            animateY(1400, Easing.EaseInOutQuad)
+                            setEntryLabelColor(Color.WHITE)
+                            setEntryLabelTypeface(Typeface.DEFAULT_BOLD)
+                            setEntryLabelTextSize(12f)
+
+                            legend.isEnabled = false
+                        }
+                    },
+                    update = { chart ->
+                        val data = chartData
+                        if (data != null) {
+                            chart.data = data
+                            chart.highlightValues(null)
+                            chart.invalidate()
+                        }
+                    }
+                )
+
+                if (budgetsResource?.status == Status.LOADING) {
+                    Box(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp),
-                        factory = { context ->
-                            PieChart(context).apply {
-                                setUsePercentValues(true)
-                                description.isEnabled = false
-                                setExtraOffsets(5F, 10F, 5F, 5F)
-                                dragDecelerationFrictionCoef = 0.95f
-
-                                isDrawHoleEnabled = true
-                                setHoleColor(Color.WHITE)
-                                setTransparentCircleColor(Color.WHITE)
-                                setTransparentCircleAlpha(110)
-                                holeRadius = 30f
-                                transparentCircleRadius = 33f
-
-                                rotationAngle = 0.0F
-                                isRotationEnabled = true
-                                isHighlightPerTapEnabled = true
-
-                                setOnChartValueSelectedListener(object : OnChartValueSelectedListener {
-                                    override fun onValueSelected(e: Entry?, h: Highlight?) {
-                                        val pe = e as? PieEntry ?: return
-                                        val label = pe.label
-                                        val value = pe.y
-                                        infoText = "$label  -  $value zl"
-                                        onValueSelected(label, value)
-                                    }
-
-                                    override fun onNothingSelected() {
-                                        infoText = ""
-                                        onNothingSelected()
-                                    }
-                                })
-
-                                animateY(1400, Easing.EaseInOutQuad)
-                                setEntryLabelColor(Color.WHITE)
-                                setEntryLabelTypeface(Typeface.DEFAULT_BOLD)
-                                setEntryLabelTextSize(12f)
-
-                                legend.isEnabled = false
-                            }
-                        },
-                        update = { chart ->
-                            val data = chartData
-                            if (data != null) {
-                                chart.data = data
-                                chart.highlightValues(null)
-                                chart.invalidate()
-                            }
-                        }
-                    )
-
-                    if (budgetsResource?.status == Status.LOADING) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(24.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator()
-                        }
+                            .fillMaxSize()
+                            .padding(24.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
                     }
                 }
             }

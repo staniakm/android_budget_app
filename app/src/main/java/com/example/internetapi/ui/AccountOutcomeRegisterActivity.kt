@@ -1,333 +1,781 @@
 package com.example.internetapi.ui
 
-import android.R
-import android.app.AlertDialog
 import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.util.Log
-import android.view.View
-import android.view.ViewGroup
-import android.widget.ArrayAdapter
+import android.widget.DatePicker
+import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.internetapi.api.Resource
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.AlertDialog
+import androidx.compose.material.Button
+import androidx.compose.material.Card
+import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.DismissDirection
+import androidx.compose.material.DismissValue
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.FloatingActionButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.OutlinedTextField
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Surface
+import androidx.compose.material.SwipeToDismiss
+import androidx.compose.material.Text
+import androidx.compose.material.TextButton
+import androidx.compose.material.rememberDismissState
+import androidx.compose.material.rememberScaffoldState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
+import com.example.internetapi.R
+import com.example.internetapi.config.AmountFormatter
 import com.example.internetapi.config.MoneyFormatter
-import com.example.internetapi.databinding.ActivityAccountOutcomeRegisterBinding
-import com.example.internetapi.databinding.CreateInvoiceItemViewBinding
-import com.example.internetapi.databinding.CreateInvoiceViewBinding
-import com.example.internetapi.functions.errorSnackBar
-import com.example.internetapi.functions.removeRecycleViewItemOnSwipe
-import com.example.internetapi.functions.toLocalDate
-import com.example.internetapi.models.*
-import com.example.internetapi.ui.adapters.InvoiceItemsAdapter
+import com.example.internetapi.models.CreateInvoiceResponse
+import com.example.internetapi.models.Invoice
+import com.example.internetapi.models.InvoiceItem
+import com.example.internetapi.models.NewInvoiceRequest
+import com.example.internetapi.models.Shop
+import com.example.internetapi.models.ShopItem
+import com.example.internetapi.models.Status
 import com.example.internetapi.ui.viewModel.AccountOutcomeViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
+import java.math.BigDecimal
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-
 
 @AndroidEntryPoint
 class AccountOutcomeRegisterActivity : AppCompatActivity() {
 
-    private val FAILED_TO_LOAD_SHOPS: String = "Failed to load shops"
-    private val FAILED_TO_CREATE_SHOP: String = "Failed to create shop"
+    private val failedToLoadShops: String = "Failed to load shops"
+    private val failedToCreateShop: String = "Failed to create shop"
     private val viewModel: AccountOutcomeViewModel by viewModels()
-    private lateinit var binding: ActivityAccountOutcomeRegisterBinding
-    private lateinit var invoiceBinding: CreateInvoiceViewBinding
-    private lateinit var invoiceItemBinding: CreateInvoiceItemViewBinding
-
-    private lateinit var adapter: InvoiceItemsAdapter
-
-    private val shopItems: MutableList<ShopItem> = mutableListOf()
-    private var invoice: Invoice? = null
-    private var currentShopItem: ShopItem? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        binding = ActivityAccountOutcomeRegisterBinding.inflate(layoutInflater)
-        invoiceBinding = CreateInvoiceViewBinding.inflate(layoutInflater)
-        invoiceItemBinding = CreateInvoiceItemViewBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-        adapter = InvoiceItemsAdapter()
-        binding.items.adapter = adapter
-        binding.items.layoutManager = LinearLayoutManager(this)
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
-        removeRecycleViewItemOnSwipe(binding.items) { pos -> removeItem(pos) }
+        val extras = intent.extras
+        val accountId = extras?.getInt("accountId") ?: -1
+        val accountName = extras?.getString("accountName")
 
-        binding.addInvoice.setOnClickListener {
-            createinvoiceMetadata()
-        }
-
-        binding.cancelInvoice.setOnClickListener {
-            hideElements()
-        }
-
-        binding.saveInvoice.setOnClickListener {
-            saveInvoice()
-        }
-
-        binding.fab.setOnClickListener {
-            addInvoiceItemDialog()
-        }
-        createinvoiceMetadata()
-    }
-
-    private fun createinvoiceMetadata() {
-        intent.extras?.let { extra ->
-            val accountId = extra.getInt("accountId")
-            val accountName = extra.getString("accountName")
-            invoice = Invoice(accountId)
-            loadData(accountName)
-        }
-    }
-
-    private fun removeItem(absoluteAdapterPosition: Int) {
-        adapter.removeAt(absoluteAdapterPosition).let {
-            binding.total.text = MoneyFormatter.df.format(it)
-        }
-    }
-
-    private fun saveInvoice() {
-        if (adapter.getItems().isEmpty()) {
-            errorSnackBar(binding.root, "Empty invoice item list.\n Unable to save invoice")
-            return
-        }
-        invoice?.let { inv ->
-            adapter.getItems()
-                .map {
-                    it.toNewInvoiceItemRequest()
-                }.let {
-                    NewInvoiceRequest(
-                        inv.accountId,
-                        inv.shop!!.shopId,
-                        inv.date!!.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),
-                        it,
-                        number = inv.number,
-                        description = inv.description
+        setContent {
+            MaterialTheme {
+                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colors.background) {
+                    AccountOutcomeRegisterScreen(
+                        viewModel = viewModel,
+                        accountId = accountId,
+                        accountName = accountName,
+                        failedToLoadShops = failedToLoadShops,
+                        failedToCreateShop = failedToCreateShop
                     )
-                }.let {
-                    createInvoiceRequest(it)
                 }
-        }
-    }
-
-    private fun hideElements() {
-        binding.addInvoice.visibility = View.VISIBLE
-        binding.saveInvoice.visibility = View.GONE
-        binding.items.visibility = View.GONE
-        binding.data1.visibility = View.GONE
-        binding.fab.visibility = View.GONE
-        invoice = null
-        shopItems.clear()
-        adapter.clear()
-        binding.shop.text = ""
-        binding.date.text = ""
-    }
-
-    private fun loadData(accountName: String?) {
-        viewModel.getShops().observe(this, {
-            when (it.status) {
-                Status.SUCCESS -> loadOnSuccess(it, accountName)
-                Status.ERROR -> errorSnackBar(binding.root, FAILED_TO_LOAD_SHOPS)
-                Status.LOADING -> {}
-            }
-        })
-    }
-
-    private fun createInvoiceRequest(newInvoiceRequest: NewInvoiceRequest) {
-        viewModel.createNewInvoice(newInvoiceRequest).observe(this, {
-            when (it.status) {
-                Status.SUCCESS -> loadOnSuccess(it)
-                Status.ERROR -> errorSnackBar(binding.root, FAILED_TO_LOAD_SHOPS)
-                Status.LOADING -> {}
-            }
-        })
-    }
-
-    private fun loadOnSuccess(it: Resource<CreateInvoiceResponse>) {
-        it.data?.let {
-            hideElements()
-            errorSnackBar(binding.root, "New invoice created for total sum: ${it.sum}")
-        }
-    }
-
-    private fun loadShopItems() {
-        invoice?.shop?.let { shop ->
-            if (invoice?.shop?.shopId == -1) {
-                viewModel.createShop(shop.name).observe(this, {
-                    when (it.status) {
-                        Status.SUCCESS -> successCreateShop(it)
-                        Status.ERROR -> errorSnackBar(binding.root, FAILED_TO_CREATE_SHOP)
-                        Status.LOADING -> {}
-                    }
-                })
-            } else {
-                viewModel.getShopItems(shop.shopId).observe(this, {
-                    when (it.status) {
-                        Status.SUCCESS -> loadShopItemsOnSuccess(it)
-                        Status.ERROR -> errorSnackBar(binding.root, FAILED_TO_LOAD_SHOPS)
-                        Status.LOADING -> {}
-                    }
-                })
             }
         }
     }
+}
 
-    private fun successCreateShop(it: Resource<Shop>) {
-        it.data?.let {
-            invoice?.shop = it
-        }
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+private fun AccountOutcomeRegisterScreen(
+    viewModel: AccountOutcomeViewModel,
+    accountId: Int,
+    accountName: String?,
+    failedToLoadShops: String,
+    failedToCreateShop: String,
+) {
+    val scaffoldState = rememberScaffoldState()
+    val scope = rememberCoroutineScope()
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    fun showMessage(message: String) {
+        scope.launch { scaffoldState.snackbarHostState.showSnackbar(message) }
     }
 
+    var invoice by rememberSaveable { mutableStateOf<Invoice?>(null) }
+    var invoiceItems by remember { mutableStateOf<List<InvoiceItem>>(emptyList()) }
+    var shopItems by remember { mutableStateOf<List<ShopItem>>(emptyList()) }
 
-    private fun loadShopItemsOnSuccess(it: Resource<List<ShopItem>>) {
-        it.data?.let {
-            shopItems.addAll(it)
-        }
+    var showCreateInvoiceDialog by rememberSaveable { mutableStateOf(false) }
+    var showAddItemDialog by rememberSaveable { mutableStateOf(false) }
+
+    var shopsKey by rememberSaveable { mutableStateOf(0) }
+    val shopsLiveData = remember(shopsKey) {
+        if (shopsKey == 0) null else viewModel.getShops()
     }
-
-    private fun loadOnSuccess(it: Resource<List<Shop>>, accountName: String?) {
-        invoiceBinding.root.parent?.let {
-            (it as ViewGroup).removeView(invoiceBinding.root)
-        }
-        val shopAdapter = ArrayAdapter<Shop>(this, R.layout.simple_spinner_dropdown_item)
-        shopAdapter.notifyDataSetChanged()
-        it.data?.let { shops ->
-            shopAdapter.addAll(shops)
-            invoiceBinding.shop.setAdapter(shopAdapter)
-            invoiceBinding.shop.setSelection(0)
-
-            invoiceBinding.shop.setOnItemClickListener { parent, view, position, id ->
-                Log.i("TAG", "loadOnSuccess: $id, $position, ${parent.getItemAtPosition(position)}")
-                invoice?.shop = parent.getItemAtPosition(position) as Shop
+    var shopsResource by remember {
+        mutableStateOf<com.example.internetapi.api.Resource<List<Shop>>?>(null)
+    }
+    DisposableEffect(shopsLiveData, lifecycleOwner) {
+        val liveData = shopsLiveData
+        if (liveData == null) {
+            shopsResource = null
+            onDispose { }
+        } else {
+            val observer = androidx.lifecycle.Observer<com.example.internetapi.api.Resource<List<Shop>>> {
+                shopsResource = it
             }
-            val alert: AlertDialog.Builder = AlertDialog.Builder(this)
-            alert.setTitle("Add invoice for")
-                .setMessage(accountName)
-                .setView(invoiceBinding.root)
-                .setPositiveButton("OK") { _, i ->
-                    invoice?.apply {
-                        this.date = invoiceBinding.date.toLocalDate()
-                        this.setShop(invoiceBinding.shop.text.toString())
-                        this.number = invoiceBinding.number.text.toString()
+            liveData.observe(lifecycleOwner, observer)
+            onDispose { liveData.removeObserver(observer) }
+        }
+    }
+
+    var createShopKey by rememberSaveable { mutableStateOf(0) }
+    var createShopName by remember { mutableStateOf<String?>(null) }
+    val createShopLiveData = remember(createShopKey) {
+        val name = createShopName
+        if (createShopKey == 0 || name.isNullOrBlank()) null else viewModel.createShop(name)
+    }
+    var createShopResource by remember {
+        mutableStateOf<com.example.internetapi.api.Resource<Shop>?>(null)
+    }
+    DisposableEffect(createShopLiveData, lifecycleOwner) {
+        val liveData = createShopLiveData
+        if (liveData == null) {
+            createShopResource = null
+            onDispose { }
+        } else {
+            val observer = androidx.lifecycle.Observer<com.example.internetapi.api.Resource<Shop>> {
+                createShopResource = it
+            }
+            liveData.observe(lifecycleOwner, observer)
+            onDispose { liveData.removeObserver(observer) }
+        }
+    }
+
+    var shopItemsKey by rememberSaveable { mutableStateOf(0) }
+    var selectedShopIdForItems by remember { mutableStateOf<Int?>(null) }
+    val shopItemsLiveData = remember(shopItemsKey) {
+        val shopId = selectedShopIdForItems
+        if (shopItemsKey == 0 || shopId == null) null else viewModel.getShopItems(shopId)
+    }
+    var shopItemsResource by remember {
+        mutableStateOf<com.example.internetapi.api.Resource<List<ShopItem>>?>(null)
+    }
+    DisposableEffect(shopItemsLiveData, lifecycleOwner) {
+        val liveData = shopItemsLiveData
+        if (liveData == null) {
+            shopItemsResource = null
+            onDispose { }
+        } else {
+            val observer = androidx.lifecycle.Observer<com.example.internetapi.api.Resource<List<ShopItem>>> {
+                shopItemsResource = it
+            }
+            liveData.observe(lifecycleOwner, observer)
+            onDispose { liveData.removeObserver(observer) }
+        }
+    }
+
+    var createShopItemKey by rememberSaveable { mutableStateOf(0) }
+    var createShopItemName by remember { mutableStateOf<String?>(null) }
+    var pendingInvoiceItem by remember { mutableStateOf<InvoiceItem?>(null) }
+    val createShopItemLiveData = remember(createShopItemKey) {
+        val shopId = invoice?.shop?.shopId
+        val name = createShopItemName
+        if (createShopItemKey == 0 || shopId == null || name.isNullOrBlank()) {
+            null
+        } else {
+            viewModel.createNewShopItem(shopId, name)
+        }
+    }
+    var createShopItemResource by remember {
+        mutableStateOf<com.example.internetapi.api.Resource<ShopItem>?>(null)
+    }
+    DisposableEffect(createShopItemLiveData, lifecycleOwner) {
+        val liveData = createShopItemLiveData
+        if (liveData == null) {
+            createShopItemResource = null
+            onDispose { }
+        } else {
+            val observer = androidx.lifecycle.Observer<com.example.internetapi.api.Resource<ShopItem>> {
+                createShopItemResource = it
+            }
+            liveData.observe(lifecycleOwner, observer)
+            onDispose { liveData.removeObserver(observer) }
+        }
+    }
+
+    var createInvoiceKey by rememberSaveable { mutableStateOf(0) }
+    var invoiceRequest by remember { mutableStateOf<NewInvoiceRequest?>(null) }
+    val createInvoiceLiveData = remember(createInvoiceKey) {
+        val request = invoiceRequest
+        if (createInvoiceKey == 0 || request == null) null else viewModel.createNewInvoice(request)
+    }
+    var createInvoiceResource by remember {
+        mutableStateOf<com.example.internetapi.api.Resource<CreateInvoiceResponse>?>(null)
+    }
+    DisposableEffect(createInvoiceLiveData, lifecycleOwner) {
+        val liveData = createInvoiceLiveData
+        if (liveData == null) {
+            createInvoiceResource = null
+            onDispose { }
+        } else {
+            val observer = androidx.lifecycle.Observer<com.example.internetapi.api.Resource<CreateInvoiceResponse>> {
+                createInvoiceResource = it
+            }
+            liveData.observe(lifecycleOwner, observer)
+            onDispose { liveData.removeObserver(observer) }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        showCreateInvoiceDialog = true
+        shopsKey += 1
+    }
+
+    LaunchedEffect(shopsResource?.status) {
+        if (shopsResource?.status == Status.ERROR) {
+            showMessage(failedToLoadShops)
+        }
+    }
+
+    LaunchedEffect(shopItemsResource?.status, shopItemsResource?.data) {
+        when (shopItemsResource?.status) {
+            Status.SUCCESS -> shopItems = shopItemsResource?.data ?: emptyList()
+            Status.ERROR -> showMessage(failedToLoadShops)
+            else -> Unit
+        }
+    }
+
+    LaunchedEffect(createShopResource?.status, createShopResource?.data) {
+        when (createShopResource?.status) {
+            Status.SUCCESS -> {
+                val shop = createShopResource?.data
+                if (shop != null) {
+                    invoice?.shop = shop
+                }
+                createShopName = null
+            }
+            Status.ERROR -> {
+                showMessage(failedToCreateShop)
+                createShopName = null
+            }
+            else -> Unit
+        }
+    }
+
+    LaunchedEffect(createShopItemResource?.status, createShopItemResource?.data) {
+        when (createShopItemResource?.status) {
+            Status.SUCCESS -> {
+                val created = createShopItemResource?.data
+                val pending = pendingInvoiceItem
+                if (created != null && pending != null) {
+                    invoiceItems = invoiceItems + pending.copy(shopItem = created)
+                    if (shopItems.none { it.itemId == created.itemId }) {
+                        shopItems = shopItems + created
                     }
-                    if (invoice!!.isBasicDataNotFilled()) {
-                        errorSnackBar(binding.root, "Fill required data")
-                        this.hideElements()
-                    } else {
-                        invoiceCreated()
+                }
+                pendingInvoiceItem = null
+                createShopItemName = null
+            }
+            Status.ERROR -> {
+                showMessage(failedToLoadShops)
+                pendingInvoiceItem = null
+                createShopItemName = null
+            }
+            else -> Unit
+        }
+    }
 
+    LaunchedEffect(createInvoiceResource?.status, createInvoiceResource?.data) {
+        when (createInvoiceResource?.status) {
+            Status.SUCCESS -> {
+                val data = createInvoiceResource?.data
+                if (data != null) {
+                    hideElements(
+                        onUpdateInvoice = { invoice = it },
+                        onUpdateInvoiceItems = { invoiceItems = it },
+                        onUpdateShopItems = { shopItems = it },
+                        onUpdateShowAddItemDialog = { showAddItemDialog = it }
+                    )
+                    showMessage("New invoice created for total sum: ${data.sum}")
+                }
+            }
+            Status.ERROR -> showMessage(failedToLoadShops)
+            else -> Unit
+        }
+    }
+
+    val isLoading = shopsResource?.status == Status.LOADING ||
+        createShopResource?.status == Status.LOADING ||
+        shopItemsResource?.status == Status.LOADING ||
+        createShopItemResource?.status == Status.LOADING ||
+        createInvoiceResource?.status == Status.LOADING
+
+    val total = remember(invoiceItems) {
+        invoiceItems.fold(BigDecimal.ZERO) { acc, item -> acc.add(item.totalPrice()) }
+    }
+
+    Scaffold(
+        scaffoldState = scaffoldState,
+        floatingActionButton = {
+            if (invoice != null) {
+                FloatingActionButton(onClick = { showAddItemDialog = true }) {
+                    Text(text = "+")
+                }
+            }
+        }
+    ) { innerPadding ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Button(
+                    onClick = {
+                        hideElements(
+                            onUpdateInvoice = { invoice = it },
+                            onUpdateInvoiceItems = { invoiceItems = it },
+                            onUpdateShopItems = { shopItems = it },
+                            onUpdateShowAddItemDialog = { showAddItemDialog = it }
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(text = stringResource(id = R.string.cancel_outcome))
+                }
+
+                if (invoice == null) {
+                    Button(
+                        onClick = {
+                            showCreateInvoiceDialog = true
+                            shopsKey += 1
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(text = stringResource(id = R.string.create_outcome))
                     }
-                    Log.i("TAG", "loadOnSuccess: $invoice")
-                    invoiceBinding.shop.text.clear()
-                    invoiceBinding.number.text.clear()
-                }
-                .setNegativeButton("Cancel") { _, _ -> this.hideElements() }
-                .setOnCancelListener {
-                    this.hideElements()
-                }
-            alert.show()
-        }
-    }
+                } else {
+                    HeaderRow(
+                        date = invoice?.date.toString(),
+                        shop = invoice?.shop?.name.orEmpty(),
+                        total = MoneyFormatter.df.format(total)
+                    )
 
-    fun invoiceCreated() {
-        shopItems.clear()
-        binding.addInvoice.visibility = View.GONE
-        binding.saveInvoice.visibility = View.VISIBLE
-        binding.items.visibility = View.VISIBLE
-        binding.data1.visibility = View.VISIBLE
-        binding.fab.visibility = View.VISIBLE
-        this.updateInvoiceData()
-        this.loadShopItems()
-    }
+                    LazyColumn(
+                        modifier = Modifier.weight(1f),
+                        contentPadding = PaddingValues(vertical = 2.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        itemsIndexed(invoiceItems, key = { _, item -> item.timestamp }) { index, item ->
+                            val dismissState = rememberDismissState(
+                                confirmStateChange = { state ->
+                                    if (state == DismissValue.DismissedToStart) {
+                                        invoiceItems = invoiceItems.filterIndexed { i, _ -> i != index }
+                                        true
+                                    } else {
+                                        false
+                                    }
+                                }
+                            )
 
-    private fun updateInvoiceData() {
-        binding.shop.text = invoice?.shop?.name
-        binding.date.text = invoice?.date.toString()
-    }
-
-    private fun addInvoiceItemDialog() {
-        invoiceItemBinding.root.parent?.let {
-            (it as ViewGroup).removeView(invoiceItemBinding.root)
-        }
-        with(invoiceItemBinding) {
-            this.product.text.clear()
-            price.text.clear()
-            amount.text.clear()
-            discount.text.clear()
-        }
-        currentShopItem = null
-        val product = ArrayAdapter<ShopItem>(this, R.layout.simple_spinner_dropdown_item)
-        product.notifyDataSetChanged()
-        product.addAll(shopItems)
-        invoiceItemBinding.product.setAdapter(product)
-        invoiceItemBinding.product.setSelection(0)
-
-        invoiceItemBinding.product.setOnItemClickListener { parent, view, position, id ->
-            currentShopItem = parent.getItemAtPosition(position) as ShopItem
-        }
-        val alert: AlertDialog.Builder = AlertDialog.Builder(this)
-        alert.setTitle("Add product for")
-            .setView(invoiceItemBinding.root)
-            .setPositiveButton("OK") { _, i ->
-                if (currentShopItem == null) {
-                    currentShopItem = ShopItem(-1, invoiceItemBinding.product.text.toString())
-                }
-                with(invoiceItemBinding) {
-                    if (price.text.toString().isBlank() || amount.text.toString().isBlank()) {
-                        errorSnackBar(binding.root, "Invaliad value for price or amount")
-                    } else {
-                        InvoiceItem(
-                            currentShopItem!!,
-                            price.text.toString()
-                                .toBigDecimal(),
-                            amount.text.toString()
-                                .toBigDecimal(),
-                            discount.text.toString().ifBlank { "0.0" }
-                                .toBigDecimal()
-                        ).let {
-                            addNewItem(it)
+                            SwipeToDismiss(
+                                state = dismissState,
+                                directions = setOf(DismissDirection.EndToStart),
+                                background = {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .padding(8.dp),
+                                        contentAlignment = Alignment.CenterEnd
+                                    ) {
+                                        Text(text = "Delete", color = Color(0xFFB00020), fontWeight = FontWeight.Bold)
+                                    }
+                                },
+                                dismissContent = {
+                                    InvoiceItemCard(item = item)
+                                }
+                            )
                         }
                     }
-                }
-                with(invoiceItemBinding) {
-                    this.product.text.clear()
-                    price.text.clear()
-                    amount.text.clear()
-                    discount.text.clear()
+
+                    Button(
+                        onClick = {
+                            if (invoiceItems.isEmpty()) {
+                                showMessage("Empty invoice item list.\n Unable to save invoice")
+                                return@Button
+                            }
+
+                            val currentInvoice = invoice
+                            if (currentInvoice?.shop == null || currentInvoice.date == null) {
+                                showMessage("Fill required data")
+                                return@Button
+                            }
+
+                            invoiceRequest = NewInvoiceRequest(
+                                currentInvoice.accountId,
+                                currentInvoice.shop!!.shopId,
+                                currentInvoice.date!!.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),
+                                invoiceItems.map { it.toNewInvoiceItemRequest() },
+                                number = currentInvoice.number,
+                                description = currentInvoice.description
+                            )
+                            createInvoiceKey += 1
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(text = stringResource(id = R.string.save_outcome))
+                    }
                 }
             }
-            .setNegativeButton("Cancel") { _, _ -> {} }
-        alert.show()
-    }
 
-    private fun addNewItem(invoiceItem: InvoiceItem) {
-        if (invoiceItem.shopItem.itemId == -1) {
-            addItemToShop(invoiceItem)
-            return
-        }
-        adapter.addItem(invoiceItem).let {
-            binding.total.text = MoneyFormatter.df.format(it)
-        }
-
-    }
-
-    private fun addItemToShop(item: InvoiceItem) {
-
-        viewModel.createNewShopItem(invoice!!.shop!!.shopId, item.shopItem.name).observe(this, {
-            when (it.status) {
-                Status.SUCCESS -> loadShopItemsAdded(it, item)
-                Status.ERROR -> errorSnackBar(binding.root, FAILED_TO_LOAD_SHOPS)
-                Status.LOADING -> {}
+            if (isLoading) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
             }
-        })
+        }
     }
 
-    private fun loadShopItemsAdded(response: Resource<ShopItem>, item: InvoiceItem) {
-        response.data?.let {
-            adapter.addItem(item.copy(shopItem = it)).let {
-                binding.total.text = MoneyFormatter.df.format(it)
+    if (showCreateInvoiceDialog) {
+        val shops = shopsResource?.data ?: emptyList()
+        var selectedYear by rememberSaveable { mutableStateOf(LocalDate.now().year) }
+        var selectedMonth by rememberSaveable { mutableStateOf(LocalDate.now().monthValue) }
+        var selectedDay by rememberSaveable { mutableStateOf(LocalDate.now().dayOfMonth) }
+        var shopText by rememberSaveable { mutableStateOf("") }
+        var invoiceNumber by rememberSaveable { mutableStateOf("") }
+        var selectedShop by remember { mutableStateOf<Shop?>(null) }
+        var expanded by rememberSaveable { mutableStateOf(false) }
+
+        AlertDialog(
+            onDismissRequest = {
+                showCreateInvoiceDialog = false
+                hideElements(
+                    onUpdateInvoice = { invoice = it },
+                    onUpdateInvoiceItems = { invoiceItems = it },
+                    onUpdateShopItems = { shopItems = it },
+                    onUpdateShowAddItemDialog = { showAddItemDialog = it }
+                )
+            },
+            title = { Text(text = "Add invoice for") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(text = accountName.orEmpty())
+                    AndroidView(
+                        modifier = Modifier.fillMaxWidth(),
+                        factory = { context ->
+                            DatePicker(context).apply {
+                                init(selectedYear, selectedMonth - 1, selectedDay) { _, y, m, d ->
+                                    selectedYear = y
+                                    selectedMonth = m + 1
+                                    selectedDay = d
+                                }
+                            }
+                        },
+                        update = { picker ->
+                            if (picker.year != selectedYear || picker.month != selectedMonth - 1 || picker.dayOfMonth != selectedDay) {
+                                picker.updateDate(selectedYear, selectedMonth - 1, selectedDay)
+                            }
+                        }
+                    )
+
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        OutlinedTextField(
+                            value = shopText,
+                            onValueChange = {
+                                shopText = it
+                                selectedShop = shops.firstOrNull { s -> s.name.equals(it, ignoreCase = true) }
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { expanded = true },
+                            label = { Text(stringResource(id = R.string.shop)) },
+                            singleLine = true
+                        )
+                        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                            shops.forEach { shop ->
+                                DropdownMenuItem(onClick = {
+                                    selectedShop = shop
+                                    shopText = shop.name
+                                    expanded = false
+                                }) {
+                                    Text(text = shop.name)
+                                }
+                            }
+                        }
+                    }
+
+                    OutlinedTextField(
+                        value = invoiceNumber,
+                        onValueChange = { invoiceNumber = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        label = { Text(stringResource(id = R.string.invoice_number)) }
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    val newInvoice = Invoice(accountId)
+                    newInvoice.date = LocalDate.of(selectedYear, selectedMonth, selectedDay)
+                    newInvoice.shop = selectedShop
+                    newInvoice.setShop(shopText)
+                    newInvoice.number = invoiceNumber
+
+                    if (newInvoice.isBasicDataNotFilled()) {
+                        showMessage("Fill required data")
+                        hideElements(
+                            onUpdateInvoice = { invoice = it },
+                            onUpdateInvoiceItems = { invoiceItems = it },
+                            onUpdateShopItems = { shopItems = it },
+                            onUpdateShowAddItemDialog = { showAddItemDialog = it }
+                        )
+                    } else {
+                        invoice = newInvoice
+                        invoiceItems = emptyList()
+                        shopItems = emptyList()
+                        val shop = newInvoice.shop
+                        if (shop != null) {
+                            if (shop.shopId == -1) {
+                                createShopName = shop.name
+                                createShopKey += 1
+                            } else {
+                                selectedShopIdForItems = shop.shopId
+                                shopItemsKey += 1
+                            }
+                        }
+                    }
+
+                    showCreateInvoiceDialog = false
+                }) {
+                    Text(text = stringResource(id = R.string.ok))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showCreateInvoiceDialog = false
+                    hideElements(
+                        onUpdateInvoice = { invoice = it },
+                        onUpdateInvoiceItems = { invoiceItems = it },
+                        onUpdateShopItems = { shopItems = it },
+                        onUpdateShowAddItemDialog = { showAddItemDialog = it }
+                    )
+                }) {
+                    Text(text = stringResource(id = R.string.cancel))
+                }
+            }
+        )
+    }
+
+    if (showAddItemDialog) {
+        var productText by rememberSaveable { mutableStateOf("") }
+        var selectedItem by remember { mutableStateOf<ShopItem?>(null) }
+        var priceText by rememberSaveable { mutableStateOf("") }
+        var amountText by rememberSaveable { mutableStateOf("") }
+        var discountText by rememberSaveable { mutableStateOf("") }
+        var expanded by rememberSaveable { mutableStateOf(false) }
+
+        AlertDialog(
+            onDismissRequest = { showAddItemDialog = false },
+            title = { Text(text = "Add product for") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        OutlinedTextField(
+                            value = productText,
+                            onValueChange = {
+                                productText = it
+                                selectedItem = shopItems.firstOrNull { s -> s.name.equals(it, ignoreCase = true) }
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { expanded = true },
+                            label = { Text(stringResource(id = R.string.product)) },
+                            singleLine = true
+                        )
+                        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                            shopItems.forEach { item ->
+                                DropdownMenuItem(onClick = {
+                                    selectedItem = item
+                                    productText = item.name
+                                    expanded = false
+                                }) {
+                                    Text(text = item.name)
+                                }
+                            }
+                        }
+                    }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        OutlinedTextField(
+                            value = priceText,
+                            onValueChange = { priceText = it },
+                            modifier = Modifier.weight(1f),
+                            label = { Text(stringResource(id = R.string.price)) },
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
+                        )
+                        OutlinedTextField(
+                            value = amountText,
+                            onValueChange = { amountText = it },
+                            modifier = Modifier.weight(1f),
+                            label = { Text(stringResource(id = R.string.amount)) },
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
+                        )
+                        OutlinedTextField(
+                            value = discountText,
+                            onValueChange = { discountText = it },
+                            modifier = Modifier.weight(1f),
+                            label = { Text(stringResource(id = R.string.discount)) },
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    if (priceText.isBlank() || amountText.isBlank()) {
+                        showMessage("Invaliad value for price or amount")
+                        return@TextButton
+                    }
+
+                    val price = priceText.trim().replace(',', '.').toBigDecimalOrNull()
+                    val amount = amountText.trim().replace(',', '.').toBigDecimalOrNull()
+                    val discount = discountText.trim().ifBlank { "0.0" }.replace(',', '.').toBigDecimalOrNull()
+
+                    if (price == null || amount == null || discount == null) {
+                        showMessage("Invaliad value for price or amount")
+                        return@TextButton
+                    }
+
+                    val current = selectedItem ?: ShopItem(-1, productText)
+                    val item = InvoiceItem(current, price, amount, discount)
+
+                    if (item.shopItem.itemId == -1) {
+                        val shopId = invoice?.shop?.shopId
+                        if (shopId == null || shopId <= 0) {
+                            showMessage(failedToLoadShops)
+                            return@TextButton
+                        }
+                        pendingInvoiceItem = item
+                        createShopItemName = item.shopItem.name
+                        createShopItemKey += 1
+                    } else {
+                        invoiceItems = invoiceItems + item
+                    }
+
+                    showAddItemDialog = false
+                }) {
+                    Text(text = stringResource(id = R.string.ok))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showAddItemDialog = false }) {
+                    Text(text = stringResource(id = R.string.cancel))
+                }
+            }
+        )
+    }
+}
+
+private fun hideElements(
+    onUpdateInvoice: (Invoice?) -> Unit,
+    onUpdateInvoiceItems: (List<InvoiceItem>) -> Unit,
+    onUpdateShopItems: (List<ShopItem>) -> Unit,
+    onUpdateShowAddItemDialog: (Boolean) -> Unit,
+) {
+    onUpdateInvoice(null)
+    onUpdateInvoiceItems(emptyList())
+    onUpdateShopItems(emptyList())
+    onUpdateShowAddItemDialog(false)
+}
+
+@Composable
+private fun HeaderRow(
+    date: String,
+    shop: String,
+    total: String,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 2.dp, vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(text = date, modifier = Modifier.weight(0.3f), style = MaterialTheme.typography.body1)
+        Text(text = shop, modifier = Modifier.weight(0.45f), style = MaterialTheme.typography.body1)
+        Text(text = total, modifier = Modifier.weight(0.25f), style = MaterialTheme.typography.body1, fontWeight = FontWeight.Bold)
+    }
+}
+
+@Composable
+private fun InvoiceItemCard(item: InvoiceItem) {
+    Card(modifier = Modifier.fillMaxWidth(), elevation = 4.dp) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = item.shopItem.name,
+                    modifier = Modifier.weight(0.65f),
+                    style = MaterialTheme.typography.subtitle1,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    text = "Suma: ${MoneyFormatter.df.format(item.totalPrice())}",
+                    modifier = Modifier.weight(0.35f),
+                    style = MaterialTheme.typography.body2
+                )
+            }
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    text = "Ilość: ${AmountFormatter.df.format(item.amount)}",
+                    modifier = Modifier.weight(0.3f),
+                    style = MaterialTheme.typography.body2
+                )
+                Text(
+                    text = "Cena: ${MoneyFormatter.df.format(item.price)}",
+                    modifier = Modifier.weight(0.35f),
+                    style = MaterialTheme.typography.body2
+                )
+                Text(
+                    text = "Rabat: ${MoneyFormatter.df.format(item.discount)}",
+                    modifier = Modifier.weight(0.35f),
+                    style = MaterialTheme.typography.body2
+                )
             }
         }
     }
