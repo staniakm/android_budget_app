@@ -18,6 +18,8 @@ To jest format "AI-ready": agent powinien byc w stanie wykonac zadanie bez dopre
 
 ## TASK-01: Uporzadkowanie zaleznosci i duplikatow Gradle (P1)
 
+**Status:** DONE
+
 ### Cel
 Ujednolicic zaleznosci i usunac duplikaty, aby zmniejszyc ryzyko konfliktow i ulatwic aktualizacje.
 
