@@ -50,6 +50,7 @@
   - If a task does not exist on Trello, define/create it before starting implementation.
   - Move the Trello card to `IN PROGRESS` when implementation starts.
   - Move the Trello card to `DONE` after implementation is completed and validated.
+  - For tasks of type `BUG-*`, always add an explicit Root Cause Analysis (RCA) section to the Trello task description.
 
 - Trello workflow alignment:
   - Board flow is `TODO -> IN PROGRESS -> TESTING -> DONE`.

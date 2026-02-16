@@ -7,10 +7,10 @@ import android.widget.DatePicker
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -47,13 +47,17 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.window.PopupProperties
 import com.example.internetapi.R
 import com.example.internetapi.config.AmountFormatter
 import com.example.internetapi.config.MoneyFormatter
@@ -389,10 +393,11 @@ private fun AccountOutcomeRegisterScreen(
         var selectedYear by rememberSaveable { mutableStateOf(LocalDate.now().year) }
         var selectedMonth by rememberSaveable { mutableStateOf(LocalDate.now().monthValue) }
         var selectedDay by rememberSaveable { mutableStateOf(LocalDate.now().dayOfMonth) }
-        var shopText by rememberSaveable { mutableStateOf("") }
+        var shopText by rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue("")) }
         var invoiceNumber by rememberSaveable { mutableStateOf("") }
         var selectedShop by remember { mutableStateOf<Shop?>(null) }
-        var expanded by rememberSaveable { mutableStateOf(false) }
+        var shopInputFocused by remember { mutableStateOf(false) }
+        val shopSuggestions = remember(shopText.text, shops) { filterShopsForAutocomplete(shopText.text, shops) }
 
         AlertDialog(
             onDismissRequest = {
@@ -431,20 +436,30 @@ private fun AccountOutcomeRegisterScreen(
                             value = shopText,
                             onValueChange = {
                                 shopText = it
-                                selectedShop = shops.firstOrNull { s -> s.name.equals(it, ignoreCase = true) }
+                                selectedShop = shops.firstOrNull { s -> s.name.equals(it.text, ignoreCase = true) }
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { expanded = true },
+                                .onFocusChanged { shopInputFocused = it.isFocused },
                             label = { Text(stringResource(id = R.string.shop)) },
                             singleLine = true
                         )
-                        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                            shops.forEach { shop ->
+                        DropdownMenu(
+                            expanded = shouldShowAutocompleteSuggestions(
+                                hasFocus = shopInputFocused,
+                                suggestionsCount = shopSuggestions.size
+                            ),
+                            onDismissRequest = { },
+                            properties = PopupProperties(focusable = false),
+                            modifier = Modifier.heightIn(max = 240.dp)
+                        ) {
+                            shopSuggestions.forEach { shop ->
                                 DropdownMenuItem(onClick = {
                                     selectedShop = shop
-                                    shopText = shop.name
-                                    expanded = false
+                                    shopText = TextFieldValue(
+                                        text = shop.name,
+                                        selection = TextRange(shop.name.length)
+                                    )
                                 }) {
                                     Text(text = shop.name)
                                 }
@@ -466,7 +481,7 @@ private fun AccountOutcomeRegisterScreen(
                     val newInvoice = Invoice(accountId)
                     newInvoice.date = LocalDate.of(selectedYear, selectedMonth, selectedDay)
                     newInvoice.shop = selectedShop
-                    newInvoice.setShop(shopText)
+                    newInvoice.setShop(shopText.text)
                     newInvoice.number = invoiceNumber
 
                     if (newInvoice.isBasicDataNotFilled()) {
@@ -516,12 +531,15 @@ private fun AccountOutcomeRegisterScreen(
 
     if (showAddItemDialog) {
         val invalidPriceOrAmountMessage = stringResource(id = R.string.error_invalid_price_or_amount)
-        var productText by rememberSaveable { mutableStateOf("") }
+        var productText by rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue("")) }
         var selectedItem by remember { mutableStateOf<ShopItem?>(null) }
+        val productSuggestions = remember(productText.text, shopItems) {
+            filterShopItemsForAutocomplete(productText.text, shopItems)
+        }
         var priceText by rememberSaveable { mutableStateOf("") }
         var amountText by rememberSaveable { mutableStateOf("") }
         var discountText by rememberSaveable { mutableStateOf("") }
-        var expanded by rememberSaveable { mutableStateOf(false) }
+        var productInputFocused by remember { mutableStateOf(false) }
 
         AlertDialog(
             onDismissRequest = { showAddItemDialog = false },
@@ -533,20 +551,30 @@ private fun AccountOutcomeRegisterScreen(
                             value = productText,
                             onValueChange = {
                                 productText = it
-                                selectedItem = shopItems.firstOrNull { s -> s.name.equals(it, ignoreCase = true) }
+                                selectedItem = shopItems.firstOrNull { s -> s.name.equals(it.text, ignoreCase = true) }
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { expanded = true },
+                                .onFocusChanged { productInputFocused = it.isFocused },
                             label = { Text(stringResource(id = R.string.product)) },
                             singleLine = true
                         )
-                        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                            shopItems.forEach { item ->
+                        DropdownMenu(
+                            expanded = shouldShowAutocompleteSuggestions(
+                                hasFocus = productInputFocused,
+                                suggestionsCount = productSuggestions.size
+                            ),
+                            onDismissRequest = { },
+                            properties = PopupProperties(focusable = false),
+                            modifier = Modifier.heightIn(max = 240.dp)
+                        ) {
+                            productSuggestions.forEach { item ->
                                 DropdownMenuItem(onClick = {
                                     selectedItem = item
-                                    productText = item.name
-                                    expanded = false
+                                    productText = TextFieldValue(
+                                        text = item.name,
+                                        selection = TextRange(item.name.length)
+                                    )
                                 }) {
                                     Text(text = item.name)
                                 }
@@ -601,7 +629,7 @@ private fun AccountOutcomeRegisterScreen(
                         return@TextButton
                     }
 
-                    val current = selectedItem ?: ShopItem(-1, productText)
+                    val current = selectedItem ?: ShopItem(-1, productText.text)
                     val item = InvoiceItem(current, price, amount, discount)
 
                     if (item.shopItem.itemId == -1) {
