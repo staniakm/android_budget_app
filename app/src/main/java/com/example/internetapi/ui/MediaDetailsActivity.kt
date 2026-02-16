@@ -48,8 +48,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import android.widget.DatePicker
 import com.example.internetapi.R
+import com.example.internetapi.functions.createDialogDatePicker
 import com.example.internetapi.models.MediaRegisterRequest
 import com.example.internetapi.models.MediaUsage
 import com.example.internetapi.models.Status
@@ -282,7 +282,7 @@ private fun MediaDetailsScreen(
                     AndroidView(
                         modifier = Modifier.fillMaxWidth(),
                         factory = { context ->
-                            DatePicker(context).apply {
+                            createDialogDatePicker(context).apply {
                                 init(selectedYear, selectedMonth - 1, selectedDay) { _, y, m, d ->
                                     selectedYear = y
                                     selectedMonth = m + 1

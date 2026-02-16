@@ -3,7 +3,6 @@ package com.example.internetapi.ui
 import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.util.Log
-import android.widget.DatePicker
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -61,6 +60,7 @@ import androidx.compose.ui.window.PopupProperties
 import com.example.internetapi.R
 import com.example.internetapi.config.AmountFormatter
 import com.example.internetapi.config.MoneyFormatter
+import com.example.internetapi.functions.createDialogDatePicker
 import com.example.internetapi.models.CreateInvoiceResponse
 import com.example.internetapi.models.Invoice
 import com.example.internetapi.models.InvoiceItem
@@ -416,7 +416,7 @@ private fun AccountOutcomeRegisterScreen(
                     AndroidView(
                         modifier = Modifier.fillMaxWidth(),
                         factory = { context ->
-                            DatePicker(context).apply {
+                            createDialogDatePicker(context).apply {
                                 init(selectedYear, selectedMonth - 1, selectedDay) { _, y, m, d ->
                                     selectedYear = y
                                     selectedMonth = m + 1

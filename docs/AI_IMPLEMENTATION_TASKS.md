@@ -335,6 +335,44 @@ Improve UX quality and prepare for internationalization.
 
 ---
 
+## BUG-02: DatePicker visibility in dark mode (P2)
+
+**Status:** DONE
+
+### Goal
+Ensure DatePicker content is readable when the app runs in dark mode.
+
+### Scope
+- `app/src/main/java/com/example/internetapi/functions/DatePicker.kt`
+- Compose dialogs embedding platform `DatePicker` in:
+  - `AccountDetailsActivity`
+  - `AccountOutcomeRegisterActivity`
+  - `MediaDetailsActivity`
+
+### Implementation steps
+1. Verify if target behavior is covered by tests.
+2. Add tests first for the dark-mode theme resolution decision.
+3. Introduce a shared DatePicker factory for dialog usage.
+4. Apply factory in all affected screens.
+5. Validate with unit tests and Kotlin compile.
+
+### Iterative progress
+- [x] Step 1: verified there was no dedicated test coverage for DatePicker dark-mode theming.
+- [x] Step 2: added `DatePickerThemeTest` to cover dark/day theme resolution behavior.
+- [x] Step 3: introduced `createDialogDatePicker(context)` and `resolveDatePickerThemeResId(uiMode)` helper in `functions/DatePicker.kt`.
+- [x] Step 4: migrated DatePicker creation in `AccountDetailsActivity`, `AccountOutcomeRegisterActivity`, and `MediaDetailsActivity` to the shared helper.
+- [x] Step 5: validated with `:app:testDebugUnitTest --tests com.example.internetapi.functions.DatePickerThemeTest` and `:app:compileDebugKotlin`.
+
+### Acceptance criteria
+- DatePicker remains readable in dark mode.
+- A single shared DatePicker creation path is used in affected dialogs.
+- Compile and tests pass after migration.
+
+### Risks and notes
+- This change forces a light DatePicker theme only when night mode is active to avoid low-contrast text.
+
+---
+
 ## Suggested Execution Order
 
 1. TASK-01
