@@ -45,6 +45,7 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import com.example.internetapi.config.AccountHolder
 import com.example.internetapi.config.DateFormatter
 import com.example.internetapi.config.MoneyFormatter
+import com.example.internetapi.functions.getSerializableCompat
 import com.example.internetapi.global.MonthSelector
 import com.example.internetapi.models.Account
 import com.example.internetapi.models.Status
@@ -111,12 +112,7 @@ private fun AccountScreen(
     var overrides by remember { mutableStateOf<Map<Int, UpdateAccountResponse>>(emptyMap()) }
 
     val accountsLiveData = remember(refreshKey) { viewModel.getAccounts() }
-    var accountsResource by remember { mutableStateOf<com.example.internetapi.api.Resource<List<Account>>?>(null) }
-    DisposableEffect(accountsLiveData, lifecycleOwner) {
-        val observer = androidx.lifecycle.Observer<com.example.internetapi.api.Resource<List<Account>>> { accountsResource = it }
-        accountsLiveData.observe(lifecycleOwner, observer)
-        onDispose { accountsLiveData.removeObserver(observer) }
-    }
+    val accountsResource = observeResource(accountsLiveData)
 
     fun showMessage(message: String) {
         scope.launch { scaffoldState.snackbarHostState.showSnackbar(message) }
@@ -126,7 +122,7 @@ private fun AccountScreen(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
-            val updated = result.data?.getSerializableExtra("result") as? UpdateAccountResponse
+            val updated = result.data?.extras?.getSerializableCompat("result", UpdateAccountResponse::class.java)
             if (updated != null) {
                 overrides = overrides + (updated.id.toInt() to updated)
             }
@@ -137,7 +133,7 @@ private fun AccountScreen(
         when (accountsResource?.status) {
             Status.ERROR -> showMessage("Something went wrong")
             Status.SUCCESS -> {
-                val list = accountsResource?.data
+                val list = accountsResource.data
                 if (list != null) {
                     AccountHolder.accounts = list.map { it.toSimpleAccount() }.toMutableList()
                 }

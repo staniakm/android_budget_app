@@ -42,7 +42,6 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -52,7 +51,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -136,7 +134,6 @@ private fun ChartScreen(
 ) {
     val scaffoldState = rememberScaffoldState()
     val scope = rememberCoroutineScope()
-    val lifecycleOwner = LocalLifecycleOwner.current
 
     fun showMessage(message: String) {
         scope.launch { scaffoldState.snackbarHostState.showSnackbar(message) }
@@ -144,12 +141,7 @@ private fun ChartScreen(
 
     var refreshKey by rememberSaveable { mutableStateOf(0) }
     val budgetsLiveData = remember(refreshKey) { viewModel.getBudgets() }
-    var budgetsResource by remember { mutableStateOf<com.example.internetapi.api.Resource<Budget>?>(null) }
-    DisposableEffect(budgetsLiveData, lifecycleOwner) {
-        val observer = androidx.lifecycle.Observer<com.example.internetapi.api.Resource<Budget>> { budgetsResource = it }
-        budgetsLiveData.observe(lifecycleOwner, observer)
-        onDispose { budgetsLiveData.removeObserver(observer) }
-    }
+    val budgetsResource = observeResource(budgetsLiveData)
 
     LaunchedEffect(budgetsResource?.status) {
         if (budgetsResource?.status == Status.ERROR) showMessage("failed fetched data")
