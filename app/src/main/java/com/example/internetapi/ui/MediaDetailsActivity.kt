@@ -32,7 +32,6 @@ import androidx.compose.material.TextButton
 import androidx.compose.material.rememberDismissState
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -43,7 +42,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.text.KeyboardOptions
@@ -121,7 +119,6 @@ private fun MediaDetailsScreen(
 ) {
     val scaffoldState = rememberScaffoldState()
     val scope = rememberCoroutineScope()
-    val lifecycleOwner = LocalLifecycleOwner.current
 
     fun showMessage(message: String) {
         scope.launch { scaffoldState.snackbarHostState.showSnackbar(message) }
@@ -131,18 +128,7 @@ private fun MediaDetailsScreen(
     val usageLiveData = remember(mediaTypeId, refreshKey) {
         if (mediaTypeId <= 0) null else viewModel.getMediaUsageByType(mediaTypeId)
     }
-    var usageResource by remember { mutableStateOf<com.example.internetapi.api.Resource<List<MediaUsage>>?>(null) }
-    DisposableEffect(usageLiveData, lifecycleOwner) {
-        val liveData = usageLiveData
-        if (liveData == null) {
-            usageResource = null
-            onDispose { }
-        } else {
-            val observer = androidx.lifecycle.Observer<com.example.internetapi.api.Resource<List<MediaUsage>>> { usageResource = it }
-            liveData.observe(lifecycleOwner, observer)
-            onDispose { liveData.removeObserver(observer) }
-        }
-    }
+    val usageResource = observeResource(usageLiveData)
 
     var items by remember { mutableStateOf<List<MediaUsage>>(emptyList()) }
     LaunchedEffect(usageResource?.data) {
@@ -166,23 +152,12 @@ private fun MediaDetailsScreen(
         val req = addRequest
         if (addKey == 0 || req == null) null else viewModel.addMediaUsageEntry(req)
     }
-    var addResource by remember { mutableStateOf<com.example.internetapi.api.Resource<List<MediaUsage>>?>(null) }
-    DisposableEffect(addLiveData, lifecycleOwner) {
-        val liveData = addLiveData
-        if (liveData == null) {
-            addResource = null
-            onDispose { }
-        } else {
-            val observer = androidx.lifecycle.Observer<com.example.internetapi.api.Resource<List<MediaUsage>>> { addResource = it }
-            liveData.observe(lifecycleOwner, observer)
-            onDispose { liveData.removeObserver(observer) }
-        }
-    }
+    val addResource = observeResource(addLiveData)
 
     LaunchedEffect(addResource?.status) {
         when (addResource?.status) {
             Status.SUCCESS -> {
-                addResource?.data?.let { items = it }
+                addResource.data?.let { items = it }
                 showMessage("Added")
                 addRequest = null
             }
@@ -201,18 +176,7 @@ private fun MediaDetailsScreen(
         val id = removeId
         if (removeKey == 0 || id == null) null else viewModel.removeMediaUsage(id)
     }
-    var removeResource by remember { mutableStateOf<com.example.internetapi.api.Resource<Void>?>(null) }
-    DisposableEffect(removeLiveData, lifecycleOwner) {
-        val liveData = removeLiveData
-        if (liveData == null) {
-            removeResource = null
-            onDispose { }
-        } else {
-            val observer = androidx.lifecycle.Observer<com.example.internetapi.api.Resource<Void>> { removeResource = it }
-            liveData.observe(lifecycleOwner, observer)
-            onDispose { liveData.removeObserver(observer) }
-        }
-    }
+    val removeResource = observeResource(removeLiveData)
 
     LaunchedEffect(removeResource?.status) {
         when (removeResource?.status) {

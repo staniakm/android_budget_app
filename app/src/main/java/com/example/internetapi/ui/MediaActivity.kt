@@ -38,14 +38,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.internetapi.R
-import com.example.internetapi.api.Resource
 import com.example.internetapi.models.MediaType
 import com.example.internetapi.models.MediaTypeRequest
 import com.example.internetapi.models.Status
 import com.example.internetapi.ui.viewModel.MediaViewModel
-import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.runtime.DisposableEffect
-import androidx.lifecycle.Observer
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -86,7 +82,6 @@ private fun MediaScreen(
 ) {
     val scaffoldState = rememberScaffoldState()
     val scope = rememberCoroutineScope()
-    val lifecycleOwner = LocalLifecycleOwner.current
     val context = LocalContext.current
     val failedLoadMediaTypesMessage = stringResource(id = R.string.error_failed_load_media_types_data)
     val failedAddNewMediaMessage = stringResource(id = R.string.error_failed_add_new_media)
@@ -95,12 +90,7 @@ private fun MediaScreen(
 
     var refreshKey by remember { mutableStateOf(0) }
     val mediaTypesLiveData = remember(refreshKey) { viewModel.getMediaTypes() }
-    var mediaTypesResource by remember { mutableStateOf<Resource<List<MediaType>>?>(null) }
-    DisposableEffect(mediaTypesLiveData, lifecycleOwner) {
-        val observer = Observer<Resource<List<MediaType>>> { mediaTypesResource = it }
-        mediaTypesLiveData.observe(lifecycleOwner, observer)
-        onDispose { mediaTypesLiveData.removeObserver(observer) }
-    }
+    val mediaTypesResource = observeResource(mediaTypesLiveData)
 
     var showAddDialog by remember { mutableStateOf(false) }
     var newMediaName by remember { mutableStateOf("") }
@@ -108,18 +98,7 @@ private fun MediaScreen(
     val addLiveData = remember(addRequestName) {
         addRequestName?.let { viewModel.addNewMediaType(MediaTypeRequest(it)) }
     }
-    var addResource by remember { mutableStateOf<Resource<MediaType>?>(null) }
-    DisposableEffect(addLiveData, lifecycleOwner) {
-        val liveData = addLiveData
-        if (liveData == null) {
-            addResource = null
-            onDispose { }
-        } else {
-            val observer = Observer<Resource<MediaType>> { addResource = it }
-            liveData.observe(lifecycleOwner, observer)
-            onDispose { liveData.removeObserver(observer) }
-        }
-    }
+    val addResource = observeResource(addLiveData)
 
     fun showMessage(message: String) {
         scope.launch { scaffoldState.snackbarHostState.showSnackbar(message) }
@@ -134,7 +113,7 @@ private fun MediaScreen(
     LaunchedEffect(addResource?.status) {
         when (addResource?.status) {
             Status.SUCCESS -> {
-                addResource?.data?.let { added ->
+                addResource.data?.let { added ->
                     showMessage("Dodano ${added.name}")
                 }
                 addRequestName = null
