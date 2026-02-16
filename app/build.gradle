@@ -5,6 +5,7 @@ apply plugin: 'dagger.hilt.android.plugin'
 
 android {
     compileSdkVersion 33
+    namespace "com.example.internetapi"
 
     composeOptions {
         kotlinCompilerExtensionVersion '1.3.0'

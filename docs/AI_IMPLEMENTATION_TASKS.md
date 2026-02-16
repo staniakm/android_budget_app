@@ -88,6 +88,8 @@ Remove build instability caused by running Gradle on unsupported JDK versions.
 
 ## TASK-03: Move namespace from manifest to Gradle (P3)
 
+**Status:** DONE
+
 ### Goal
 Remove AGP warning about `package` in AndroidManifest and align with modern configuration.
 
@@ -100,6 +102,12 @@ Remove AGP warning about `package` in AndroidManifest and align with modern conf
 2. Verify `applicationId` remains unchanged.
 3. Remove/adjust manifest `package` according to AGP requirements.
 4. Run: `./gradlew :app:processDebugMainManifest :app:compileDebugKotlin`.
+
+### Iterative progress
+- [x] Step 1 (iteration 1): added `namespace "com.example.internetapi"` in `app/build.gradle`.
+- [x] Step 2 (iteration 1): `applicationId` remains `com.example.internetapi`.
+- [x] Step 3 (iteration 1): removed `package` from `app/src/main/AndroidManifest.xml`.
+- [x] Step 4: validated with `:app:processDebugMainManifest :app:compileDebugKotlin` on JDK 17.
 
 ### Acceptance criteria
 - Namespace warning is removed or significantly reduced.
