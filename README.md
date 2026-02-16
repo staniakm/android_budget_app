@@ -29,6 +29,28 @@ Expected outcome:
 - `java -version` should report JDK 17.
 - `:app:compileDebugKotlin` should complete successfully.
 
+## Test Verification
+
+Run local unit tests:
+
+```bash
+./gradlew :app:testDebugUnitTest
+```
+
+Compile Android instrumentation tests:
+
+```bash
+./gradlew :app:compileDebugAndroidTestKotlin
+```
+
+Run instrumentation tests on a connected emulator/device:
+
+```bash
+./gradlew :app:connectedDebugAndroidTest
+```
+
+Note: `connectedDebugAndroidTest` requires at least one connected Android device or running emulator.
+
 ## Notes
 
 - The app uses Activity-based navigation and Intent extras contracts.

@@ -120,7 +120,7 @@ Remove AGP warning about `package` in AndroidManifest and align with modern conf
 
 ## TASK-04: Add a minimal regression test baseline (P1)
 
-**Status:** IN PROGRESS
+**Status:** DONE
 
 ### Goal
 Create a basic safety net against regressions after Compose migrations.
@@ -137,10 +137,13 @@ Create a basic safety net against regressions after Compose migrations.
 
 ### Iterative progress
 - [x] Iteration 1: added test dependencies for unit and instrumented tests (`core-testing`, `kotlinx-coroutines-test`, `androidx.test:core-ktx`).
-- [ ] Iteration 2: add unit tests for formatters and invoice/request mapping.
-- [ ] Iteration 3: add ViewModel tests (success/error cases).
-- [ ] Iteration 4: add at least one meaningful instrumented UI test.
-- [ ] Iteration 5: add test execution instructions to documentation.
+- [x] Iteration 2: added unit tests for formatters and invoice/request mapping (`FormatterTest`, `InvoiceModelTest`).
+- [x] Iteration 3: added ViewModel tests with success/error paths (`AccountOutcomeViewModelTest`).
+- [x] Iteration 4: added instrumented UI test baseline (`MainActivityLaunchTest`) and verified androidTest source compilation.
+- [x] Iteration 5: added test execution instructions to `README.md`.
+- [x] Validation: `:app:testDebugUnitTest` passes.
+- [x] Validation: `:app:compileDebugAndroidTestKotlin` passes.
+- [~] Validation: `:app:connectedDebugAndroidTest` executed but no tests were run in current environment (requires connected emulator/device).
 
 ### Acceptance criteria
 - Tests run locally.
