@@ -20,10 +20,12 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -33,7 +35,6 @@ import androidx.compose.ui.unit.dp
 import com.example.internetapi.R
 import com.example.internetapi.functions.getSerializableCompat
 import com.example.internetapi.models.Account
-import com.example.internetapi.models.Status
 import com.example.internetapi.models.UpdateAccountRequest
 import com.example.internetapi.ui.viewModel.AccountViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -65,30 +66,11 @@ class AccountUpdateActivity : AppCompatActivity() {
                     color = MaterialTheme.colors.background
                 ) {
                     AccountUpdateScreen(
+                        account = acc,
+                        viewModel = accountViewModel,
                         initialName = acc.name,
                         initialMoney = acc.moneyAmount.toString(),
-                        onSave = { name, moneyText, showMessage ->
-                            val money = parseMoneyOrNull(moneyText)
-                            if (money == null) {
-                                showMessage(getString(R.string.error_invalid_amount))
-                                return@AccountUpdateScreen
-                            }
-
-                            accountViewModel.updateAccount(
-                                accountId = acc.id,
-                                UpdateAccountRequest(
-                                    acc.id.toLong(),
-                                    name,
-                                    money
-                                )
-                            ).observe(this@AccountUpdateActivity) {
-                                when (it.status) {
-                                    Status.SUCCESS -> updateAdapter(it.data)
-                                    Status.ERROR -> showMessage(getString(R.string.error_failed_update_account_data))
-                                    Status.LOADING -> {}
-                                }
-                            }
-                        }
+                        onFinished = ::updateAdapter
                     )
                 }
             }
@@ -108,20 +90,40 @@ class AccountUpdateActivity : AppCompatActivity() {
 
 @Composable
 private fun AccountUpdateScreen(
+    account: Account,
+    viewModel: AccountViewModel,
     initialName: String,
     initialMoney: String,
-    onSave: (name: String, moneyText: String, showMessage: (String) -> Unit) -> Unit
+    onFinished: (UpdateAccountResponse?) -> Unit,
 ) {
     var name by remember(initialName) { mutableStateOf(initialName) }
     var moneyText by remember(initialMoney) { mutableStateOf(initialMoney) }
     val emptyAccountNameMessage = stringResource(id = R.string.error_empty_account_name)
+    val invalidAmountMessage = stringResource(id = R.string.error_invalid_amount)
+    val failedUpdateAccountMessage = stringResource(id = R.string.error_failed_update_account_data)
 
     val scaffoldState = rememberScaffoldState()
     val scope = rememberCoroutineScope()
 
+    var requestKey by rememberSaveable(account.id) { mutableStateOf(0) }
+    var updateRequest by remember { mutableStateOf<UpdateAccountRequest?>(null) }
+    val updateLiveData = remember(requestKey) {
+        val request = updateRequest
+        if (requestKey == 0 || request == null) null else viewModel.updateAccount(account.id, request)
+    }
+    val updateResource = observeResource(updateLiveData)
+
     fun show(message: String) {
         scope.launch {
             scaffoldState.snackbarHostState.showSnackbar(message)
+        }
+    }
+
+    LaunchedEffect(updateResource?.status) {
+        when (updateResource?.status) {
+            com.example.internetapi.models.Status.SUCCESS -> onFinished(updateResource.data)
+            com.example.internetapi.models.Status.ERROR -> show(failedUpdateAccountMessage)
+            else -> Unit
         }
     }
 
@@ -160,7 +162,19 @@ private fun AccountUpdateScreen(
                         show(emptyAccountNameMessage)
                         return@Button
                     }
-                    onSave(name, moneyText, ::show)
+
+                    val money = parseMoneyOrNull(moneyText)
+                    if (money == null) {
+                        show(invalidAmountMessage)
+                        return@Button
+                    }
+
+                    updateRequest = UpdateAccountRequest(
+                        id = account.id.toLong(),
+                        name = name,
+                        newMoneyAmount = money
+                    )
+                    requestKey += 1
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
