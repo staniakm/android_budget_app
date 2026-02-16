@@ -43,6 +43,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.internetapi.config.MoneyFormatter.df
+import com.example.internetapi.functions.getSerializableCompat
 import com.example.internetapi.models.InvoiceDetails
 import com.example.internetapi.models.*
 import com.example.internetapi.ui.viewModel.BudgetViewModel
@@ -58,7 +59,7 @@ class UpdateBudgetActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val budget = intent.extras?.getSerializable("budget") as? MonthBudget
+        val budget = intent.extras?.getSerializableCompat("budget", MonthBudget::class.java)
         if (budget == null) {
             Log.e(TAG, "Missing MonthBudget in extras under key 'budget'")
             setResult(RESULT_CANCELED)

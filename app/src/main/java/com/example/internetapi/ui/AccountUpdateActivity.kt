@@ -31,6 +31,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.internetapi.R
+import com.example.internetapi.functions.getSerializableCompat
 import com.example.internetapi.models.Account
 import com.example.internetapi.models.Status
 import com.example.internetapi.models.UpdateAccountRequest
@@ -52,7 +53,7 @@ class AccountUpdateActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val acc = intent.extras?.getSerializable("account") as? Account
+        val acc = intent.extras?.getSerializableCompat("account", Account::class.java)
         if (acc == null) {
             setResult(RESULT_CANCELED)
             finish()

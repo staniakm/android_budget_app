@@ -233,6 +233,8 @@ Provide predictable user feedback for add/update/delete operations.
 
 ## TASK-07: Migrate Intent contracts away from Serializable (P2)
 
+**Status:** DONE
+
 ### Goal
 Remove deprecated API usage and reduce runtime cast risks.
 
@@ -249,6 +251,13 @@ Remove deprecated API usage and reduce runtime cast risks.
    - other warning-producing paths.
 4. Add helper/extension functions for safe extras reading.
 5. Validate build and manually test navigation.
+
+### Iterative progress
+- [x] Iteration 1: located all current deprecated Serializable usages (`AccountUpdateActivity`, `UpdateBudgetActivity`).
+- [x] Iteration 2 (tests-first): added instrumentation tests for Serializable compatibility helper (`BundleCompatTest`).
+- [x] Iteration 3: added shared extension helper `Bundle.getSerializableCompat(...)`.
+- [x] Iteration 4: migrated critical flows (`AccountUpdateActivity`, `UpdateBudgetActivity`) to helper-based safe reads.
+- [x] Iteration 5: validated with `:app:testDebugUnitTest`, `:app:compileDebugAndroidTestKotlin`, and `:app:compileDebugKotlin` on JDK 17.
 
 ### Acceptance criteria
 - No deprecated `getSerializable*` in critical flows.
