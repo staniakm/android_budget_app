@@ -35,3 +35,30 @@
 - Prefer safe, minimal-scope edits and re-run compile checks after each iteration.
 - Keep existing architecture patterns unless the task explicitly asks for refactor.
 - Preserve intent extras contracts and existing ViewModel/API behavior during UI changes.
+
+## Implementation Guidelines (Future Work)
+
+- Build and verification:
+  - Prefer JDK 17 for local validation (`C:\Users\Mariusz\.jdks\corretto-17.0.11` in this environment).
+  - Standard verification command for code changes: `./gradlew :app:compileDebugKotlin`.
+  - For test tasks, additionally run `./gradlew :app:testDebugUnitTest` and compile android tests with `./gradlew :app:compileDebugAndroidTestKotlin`.
+
+- Task and Trello process:
+  - Every new implementation must be based on an existing Trello task/card.
+  - If a task does not exist on Trello, define/create it before starting implementation.
+  - Move the Trello card to `IN PROGRESS` when implementation starts.
+  - Move the Trello card to `DONE` after implementation is completed and validated.
+
+- Trello workflow alignment:
+  - Board flow is `TODO -> IN PROGRESS -> TESTING -> DONE`.
+  - Keep Trello card status synchronized with implementation progress.
+  - Add status comments in format: `STATUS: <...> | TASK: <...> | NEXT/RESULT: <...>`.
+
+- Compose state pattern:
+  - Use shared `observeResource(liveData)` helper for `LiveData<Resource<T>>?` observation in composables.
+  - Avoid repeating per-screen `DisposableEffect + Observer` boilerplate when helper behavior is sufficient.
+  - Keep side effects in `LaunchedEffect` and request creation in `remember` blocks.
+
+- Documentation and language:
+  - Keep all new documentation in English.
+  - When conventions change (workflow, build path, testing), update `AGENTS.md` and relevant docs in the same task.
