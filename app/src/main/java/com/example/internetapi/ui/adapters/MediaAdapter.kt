@@ -73,7 +73,7 @@ class MediaViewHolder(
 
     override fun onClick(v: View?) {
         when (v?.id) {
-            layout.id -> adapterPosition.let {
+            layout.id -> bindingAdapterPosition.let {
                 if (it != RecyclerView.NO_POSITION) {
                     listener.onClick(it, "layout")
                 }

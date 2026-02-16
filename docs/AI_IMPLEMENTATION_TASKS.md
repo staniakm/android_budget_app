@@ -261,6 +261,8 @@ Remove deprecated API usage and reduce runtime cast risks.
 
 ## TASK-08: Deprecated API and warning cleanup (P3)
 
+**Status:** DONE
+
 ### Goal
 Reduce compiler warnings and prepare for future upgrades.
 
@@ -271,6 +273,15 @@ Reduce compiler warnings and prepare for future upgrades.
 1. Replace `toUpperCase(Locale.ROOT)` with `uppercase(Locale.ROOT)`.
 2. Update deprecated UI APIs (`adapterPosition`, `setColorFilter`, others from warnings).
 3. Re-run compile and close low-risk warnings.
+
+### Iterative progress
+- [x] Iteration 1: verified test coverage for changed behavior scope (invoice uppercase logic already covered by `InvoiceModelTest`).
+- [x] Iteration 2: replaced deprecated `toUpperCase(Locale.ROOT)` with `uppercase(Locale.ROOT)` in `Invoice.kt`.
+- [x] Iteration 3: replaced deprecated adapter position access (`adapterPosition` -> `bindingAdapterPosition`) in category/media adapters.
+- [x] Iteration 4: replaced deprecated progress drawable coloring (`setColorFilter`) with `setTint` in `MonthBudgetAdapter`.
+- [x] Iteration 5: removed an additional compile warning in `UpdateBudgetActivity` (unnecessary safe call in success branch).
+- [x] Validation: `:app:testDebugUnitTest` and `:app:compileDebugKotlin` pass on JDK 17.
+- [~] Remaining deprecated path: `getSerializable(...)` is intentionally left for `TASK-07` (Intent contract migration).
 
 ### Acceptance criteria
 - Meaningful warning reduction.

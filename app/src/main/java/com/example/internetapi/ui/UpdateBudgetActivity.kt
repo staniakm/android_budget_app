@@ -132,7 +132,7 @@ private fun UpdateBudgetScreen(
     LaunchedEffect(updateResource?.status) {
         when (updateResource?.status) {
             Status.ERROR -> showMessage("Failed to update budget data")
-            Status.SUCCESS -> onFinished(updateResource?.data)
+            Status.SUCCESS -> onFinished(updateResource.data)
             else -> Unit
         }
     }

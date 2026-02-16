@@ -48,14 +48,10 @@ class MonthBudgetAdapter(private val listener: OnItemClickedListener) :
             progressBar.setProgress(item.percentage, false)
             if (item.spent > item.planned) {
                 this.spend.setTextColor(Color.RED)
-                progressBar.progressDrawable.setColorFilter(
-                    Color.RED, android.graphics.PorterDuff.Mode.SRC_IN
-                )
+                progressBar.progressDrawable.setTint(Color.RED)
             } else {
                 this.spend.setTextColor(Color.GREEN)
-                progressBar.progressDrawable.setColorFilter(
-                    Color.BLUE, android.graphics.PorterDuff.Mode.SRC_IN
-                )
+                progressBar.progressDrawable.setTint(Color.BLUE)
             }
 
         }
