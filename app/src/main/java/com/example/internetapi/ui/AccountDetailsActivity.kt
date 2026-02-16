@@ -59,10 +59,12 @@ import com.example.internetapi.config.DateFormatter.yyyymm
 import com.example.internetapi.config.MoneyFormatter
 import com.example.internetapi.global.MonthSelector
 import com.example.internetapi.models.AccountIncomeRequest
+import com.example.internetapi.models.AccountIncome
 import com.example.internetapi.models.AccountOperation
 import com.example.internetapi.models.IncomeType
 import com.example.internetapi.models.Status
 import com.example.internetapi.models.TransferMoneyRequest
+import com.example.internetapi.models.UpdateAccountResponse
 import com.example.internetapi.ui.viewModel.AccountViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -137,15 +139,25 @@ class AccountDetailsActivity : AppCompatActivity() {
         }
     }
 
-    private fun transferMoney(accountId: Int, value: BigDecimal, targetAccount: Int) {
+    private fun transferMoney(
+        accountId: Int,
+        value: BigDecimal,
+        targetAccount: Int,
+    ): androidx.lifecycle.LiveData<com.example.internetapi.api.Resource<UpdateAccountResponse>>? {
         if (value > BigDecimal.ZERO && accountId != targetAccount) {
-            accountViewModel.transferMoney(TransferMoneyRequest(accountId, value, targetAccount))
+            return accountViewModel.transferMoney(TransferMoneyRequest(accountId, value, targetAccount))
         }
+        return null
     }
 
-    private fun addIncome(accountId: Int, value: BigDecimal, date: LocalDate, description: String) {
+    private fun addIncome(
+        accountId: Int,
+        value: BigDecimal,
+        date: LocalDate,
+        description: String,
+    ): androidx.lifecycle.LiveData<com.example.internetapi.api.Resource<List<AccountIncome>>>? {
         if (value > BigDecimal.ZERO) {
-            accountViewModel.addIncome(
+            return accountViewModel.addIncome(
                 AccountIncomeRequest(
                     accountId,
                     value,
@@ -154,6 +166,7 @@ class AccountDetailsActivity : AppCompatActivity() {
                 )
             )
         }
+        return null
     }
 }
 
@@ -171,8 +184,8 @@ private fun AccountDetailsScreen(
     onOpenOutcomeRegister: () -> Unit,
     onOpenInvoiceDetails: (Long) -> Unit,
     logTag: String,
-    onTransferMoney: (BigDecimal, Int) -> Unit,
-    onAddIncome: (BigDecimal, LocalDate, String) -> Unit,
+    onTransferMoney: (BigDecimal, Int) -> androidx.lifecycle.LiveData<com.example.internetapi.api.Resource<UpdateAccountResponse>>?,
+    onAddIncome: (BigDecimal, LocalDate, String) -> androidx.lifecycle.LiveData<com.example.internetapi.api.Resource<List<AccountIncome>>>?,
 ) {
     val scaffoldState = rememberScaffoldState()
     val scope = rememberCoroutineScope()
@@ -205,6 +218,20 @@ private fun AccountDetailsScreen(
     }
     val incomeTypesResource = observeResource(incomeTypesLiveData)
 
+    var showTransferDialog by rememberSaveable(accountId) { mutableStateOf(false) }
+
+    var transferRequestKey by rememberSaveable(accountId) { mutableStateOf(0) }
+    var transferLiveData by remember {
+        mutableStateOf<androidx.lifecycle.LiveData<com.example.internetapi.api.Resource<UpdateAccountResponse>>?>(null)
+    }
+    val transferResource = observeResource(transferLiveData)
+
+    var addIncomeRequestKey by rememberSaveable(accountId) { mutableStateOf(0) }
+    var addIncomeLiveData by remember {
+        mutableStateOf<androidx.lifecycle.LiveData<com.example.internetapi.api.Resource<List<AccountIncome>>>?>(null)
+    }
+    val addIncomeResource = observeResource(addIncomeLiveData)
+
     LaunchedEffect(operationsResource?.status, accountId) {
         if (accountId <= 0) {
             showMessage("Missing accountId")
@@ -220,7 +247,36 @@ private fun AccountDetailsScreen(
         }
     }
 
-    var showTransferDialog by rememberSaveable(accountId) { mutableStateOf(false) }
+    LaunchedEffect(transferResource?.status, transferRequestKey) {
+        when (transferResource?.status) {
+            Status.SUCCESS -> {
+                showMessage("Money transfer completed")
+                refreshKey += 1
+                transferLiveData = null
+            }
+            Status.ERROR -> {
+                showMessage("Failed to transfer money")
+                transferLiveData = null
+            }
+            else -> Unit
+        }
+    }
+
+    LaunchedEffect(addIncomeResource?.status, addIncomeRequestKey) {
+        when (addIncomeResource?.status) {
+            Status.SUCCESS -> {
+                showMessage("Income added")
+                refreshKey += 1
+                addIncomeLiveData = null
+            }
+            Status.ERROR -> {
+                showMessage("Failed to add income")
+                addIncomeLiveData = null
+            }
+            else -> Unit
+        }
+    }
+
     val accountMonth = remember(accountName) {
         "$accountName - ${LocalDate.now().plusMonths(MonthSelector.month.toLong()).format(yyyymm)}"
     }
@@ -396,12 +452,12 @@ private fun AccountDetailsScreen(
                             return@TextButton
                         }
 
-                        onAddIncome(
+                        addIncomeLiveData = onAddIncome(
                             parsedValue,
                             LocalDate.of(selectedYear, selectedMonth, selectedDay),
                             selectedDescription
                         )
-                        refreshKey += 1
+                        addIncomeRequestKey += 1
                         showIncomeDialog = false
                     }
                 ) {
@@ -473,8 +529,8 @@ private fun AccountDetailsScreen(
                             showMessage("No target account selected")
                             return@TextButton
                         }
-                        onTransferMoney(parsedValue, target.id)
-                        refreshKey += 1
+                        transferLiveData = onTransferMoney(parsedValue, target.id)
+                        transferRequestKey += 1
                         showTransferDialog = false
                     }
                 ) {

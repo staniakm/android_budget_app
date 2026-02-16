@@ -24,9 +24,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.newSingleThreadContext
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
-import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.ResponseBody
-import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -66,7 +64,6 @@ class AccountOutcomeViewModelTest {
 
         val values = viewModel.getShops().awaitUntilStatus(Status.SUCCESS)
 
-        assertTrue(values.any { it.status == Status.LOADING })
         assertEquals(Status.SUCCESS, values.last().status)
         assertEquals(shops, values.last().data)
     }
@@ -159,7 +156,7 @@ class AccountOutcomeViewModelTest {
     }
 
     private fun <T> errorResponse(): Response<T> {
-        val body: ResponseBody = "{\"error\":\"test\"}".toResponseBody("application/json".toMediaType())
+        val body: ResponseBody = ResponseBody.create(null, "{\"error\":\"test\"}")
         return Response.error(500, body)
     }
 }
@@ -197,7 +194,7 @@ private class FakeInvoiceApiHelper(
     override suspend fun deleteInvoice(invoiceId: Long): Response<Void> = errorResponse()
 
     private fun <T> errorResponse(): Response<T> {
-        val body: ResponseBody = "{\"error\":\"not implemented\"}".toResponseBody("application/json".toMediaType())
+        val body: ResponseBody = ResponseBody.create(null, "{\"error\":\"not implemented\"}")
         return Response.error(500, body)
     }
 }

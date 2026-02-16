@@ -38,9 +38,8 @@ class AccountViewModel @Inject constructor(private val accountRepository: Accoun
         }
     }
 
-    fun addIncome(request: AccountIncomeRequest) {
-        executeLiveDataSingle { accountRepository.addAccountIncome(request) }
-
+    fun addIncome(request: AccountIncomeRequest): LiveData<Resource<List<AccountIncome>>> {
+        return executeLiveDataList { accountRepository.addAccountIncome(request) }
     }
 
     fun getIncomeTypes(): LiveData<Resource<List<IncomeType>>> {
