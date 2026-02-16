@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.internetapi.R
 import com.example.internetapi.config.MoneyFormatter.df
 import com.example.internetapi.models.AccountIncome
 import com.example.internetapi.models.Status
@@ -40,7 +41,7 @@ import kotlinx.coroutines.launch
 @AndroidEntryPoint
 class AccountIncomeDetails : AppCompatActivity() {
 
-    private val FAILED_TO_LOAD_ACCOUNT_INCOME = "Failed to load account income"
+    private val FAILED_TO_LOAD_ACCOUNT_INCOME by lazy { getString(R.string.error_failed_load_account_income) }
 
     private val accountViewModel: AccountViewModel by viewModels()
 
@@ -86,6 +87,7 @@ private fun AccountIncomeDetailsScreen(
 ) {
     val scaffoldState = rememberScaffoldState()
     val scope = rememberCoroutineScope()
+    val missingAccountIdMessage = stringResource(id = R.string.error_missing_account_id)
 
     fun showMessage(message: String) {
         scope.launch { scaffoldState.snackbarHostState.showSnackbar(message) }
@@ -97,7 +99,7 @@ private fun AccountIncomeDetailsScreen(
     val incomeResource = observeResource(incomeLiveData)
 
     LaunchedEffect(incomeResource?.status, accountId) {
-        if (accountId <= 0) showMessage("Missing accountId")
+        if (accountId <= 0) showMessage(missingAccountIdMessage)
         if (incomeResource?.status == Status.ERROR) showMessage(failedMessage)
     }
 

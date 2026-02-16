@@ -46,8 +46,6 @@ import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class AccountUpdateActivity : AppCompatActivity() {
-    private val FAILED_TO_UPDATE_ACCOUNT = "Failed to update account data"
-
     private val accountViewModel: AccountViewModel by viewModels()
 
 
@@ -72,7 +70,7 @@ class AccountUpdateActivity : AppCompatActivity() {
                         onSave = { name, moneyText, showMessage ->
                             val money = parseMoneyOrNull(moneyText)
                             if (money == null) {
-                                showMessage("Niepoprawna kwota")
+                                showMessage(getString(R.string.error_invalid_amount))
                                 return@AccountUpdateScreen
                             }
 
@@ -86,7 +84,7 @@ class AccountUpdateActivity : AppCompatActivity() {
                             ).observe(this@AccountUpdateActivity) {
                                 when (it.status) {
                                     Status.SUCCESS -> updateAdapter(it.data)
-                                    Status.ERROR -> showMessage(FAILED_TO_UPDATE_ACCOUNT)
+                                    Status.ERROR -> showMessage(getString(R.string.error_failed_update_account_data))
                                     Status.LOADING -> {}
                                 }
                             }
@@ -116,6 +114,7 @@ private fun AccountUpdateScreen(
 ) {
     var name by remember(initialName) { mutableStateOf(initialName) }
     var moneyText by remember(initialMoney) { mutableStateOf(initialMoney) }
+    val emptyAccountNameMessage = stringResource(id = R.string.error_empty_account_name)
 
     val scaffoldState = rememberScaffoldState()
     val scope = rememberCoroutineScope()
@@ -158,7 +157,7 @@ private fun AccountUpdateScreen(
             Button(
                 onClick = {
                     if (name.isBlank()) {
-                        show("Nazwa nie moze byc pusta")
+                        show(emptyAccountNameMessage)
                         return@Button
                     }
                     onSave(name, moneyText, ::show)

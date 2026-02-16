@@ -593,6 +593,7 @@ private fun AccountOutcomeRegisterScreen(
     }
 
     if (showAddItemDialog) {
+        val invalidPriceOrAmountMessage = stringResource(id = R.string.error_invalid_price_or_amount)
         var productText by rememberSaveable { mutableStateOf("") }
         var selectedItem by remember { mutableStateOf<ShopItem?>(null) }
         var priceText by rememberSaveable { mutableStateOf("") }
@@ -665,7 +666,7 @@ private fun AccountOutcomeRegisterScreen(
             confirmButton = {
                 TextButton(onClick = {
                     if (priceText.isBlank() || amountText.isBlank()) {
-                        showMessage("Invaliad value for price or amount")
+                        showMessage(invalidPriceOrAmountMessage)
                         return@TextButton
                     }
 
@@ -674,7 +675,7 @@ private fun AccountOutcomeRegisterScreen(
                     val discount = discountText.trim().ifBlank { "0.0" }.replace(',', '.').toBigDecimalOrNull()
 
                     if (price == null || amount == null || discount == null) {
-                        showMessage("Invaliad value for price or amount")
+                        showMessage(invalidPriceOrAmountMessage)
                         return@TextButton
                     }
 

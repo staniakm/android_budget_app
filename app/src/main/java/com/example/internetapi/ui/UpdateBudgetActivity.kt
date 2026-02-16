@@ -106,6 +106,7 @@ private fun UpdateBudgetScreen(
 ) {
     val scaffoldState = rememberScaffoldState()
     val scope = rememberCoroutineScope()
+    val failedUpdateBudgetMessage = stringResource(id = com.example.internetapi.R.string.error_failed_update_budget_data)
 
     fun showMessage(message: String) {
         scope.launch { scaffoldState.snackbarHostState.showSnackbar(message) }
@@ -132,7 +133,7 @@ private fun UpdateBudgetScreen(
 
     LaunchedEffect(updateResource?.status) {
         when (updateResource?.status) {
-            Status.ERROR -> showMessage("Failed to update budget data")
+            Status.ERROR -> showMessage(failedUpdateBudgetMessage)
             Status.SUCCESS -> onFinished(updateResource.data)
             else -> Unit
         }

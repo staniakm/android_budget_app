@@ -34,6 +34,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.internetapi.R
@@ -86,6 +87,11 @@ private fun MediaScreen(
     val scaffoldState = rememberScaffoldState()
     val scope = rememberCoroutineScope()
     val lifecycleOwner = LocalLifecycleOwner.current
+    val context = LocalContext.current
+    val failedLoadMediaTypesMessage = stringResource(id = R.string.error_failed_load_media_types_data)
+    val failedAddNewMediaMessage = stringResource(id = R.string.error_failed_add_new_media)
+    val emptyStateNoDataMessage = stringResource(id = R.string.empty_state_no_data)
+    val addNewMediaTypeTitle = stringResource(id = R.string.dialog_title_add_new_media_type)
 
     var refreshKey by remember { mutableStateOf(0) }
     val mediaTypesLiveData = remember(refreshKey) { viewModel.getMediaTypes() }
@@ -121,7 +127,7 @@ private fun MediaScreen(
 
     LaunchedEffect(mediaTypesResource?.status) {
         if (mediaTypesResource?.status == Status.ERROR) {
-            showMessage("Failed to load media types data")
+            showMessage(failedLoadMediaTypesMessage)
         }
     }
 
@@ -138,9 +144,9 @@ private fun MediaScreen(
             Status.ERROR -> {
                 val name = addRequestName
                 if (!name.isNullOrBlank()) {
-                    showMessage("Failed to add new media with name: $name")
+                    showMessage(context.getString(R.string.error_failed_add_new_media_with_name, name))
                 } else {
-                    showMessage("Failed to add new media")
+                    showMessage(failedAddNewMediaMessage)
                 }
                 addRequestName = null
             }
@@ -177,7 +183,7 @@ private fun MediaScreen(
                 if (items.isEmpty() && mediaTypesResource?.status == Status.SUCCESS) {
                     item {
                         Text(
-                            text = "No data available. Please add new data",
+                            text = emptyStateNoDataMessage,
                             style = MaterialTheme.typography.body1
                         )
                     }
@@ -193,7 +199,7 @@ private fun MediaScreen(
     if (showAddDialog) {
         AlertDialog(
             onDismissRequest = { showAddDialog = false },
-            title = { Text(text = "Add new media type") },
+            title = { Text(text = addNewMediaTypeTitle) },
             text = {
                 TextField(
                     value = newMediaName,

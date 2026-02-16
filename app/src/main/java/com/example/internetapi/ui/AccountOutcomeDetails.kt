@@ -46,6 +46,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
+import com.example.internetapi.R
 import com.example.internetapi.config.AccountHolder
 import com.example.internetapi.config.MoneyFormatter
 import com.example.internetapi.models.AccountInvoice
@@ -59,8 +60,8 @@ import kotlinx.coroutines.launch
 @AndroidEntryPoint
 class AccountOutcomeDetails : AppCompatActivity() {
     private val invoiceRemoved: String = "Selected invoice removed"
-    private val failedToRemoveInvoice: String = "Faile to revmoce selected invoice"
-    private val failedToLoadAccountInvoices = "Failed to load account invoices"
+    private val failedToRemoveInvoice: String by lazy { getString(R.string.error_failed_remove_invoice) }
+    private val failedToLoadAccountInvoices: String by lazy { getString(R.string.error_failed_load_account_invoices) }
 
     private val accountViewModel: AccountViewModel by viewModels()
     private val invoiceViewModel: InvoiceViewModel by viewModels()
@@ -111,6 +112,9 @@ private fun AccountOutcomeDetailsScreen(
 ) {
     val scaffoldState = rememberScaffoldState()
     val scope = rememberCoroutineScope()
+    val missingAccountIdMessage = stringResource(id = R.string.error_missing_account_id)
+    val successInvoiceUpdatedMessage = stringResource(id = R.string.success_invoice_account_updated)
+    val failedUpdateInvoiceAccountMessage = stringResource(id = R.string.error_failed_update_invoice_account)
 
     fun showMessage(message: String) {
         scope.launch { scaffoldState.snackbarHostState.showSnackbar(message) }
@@ -128,7 +132,7 @@ private fun AccountOutcomeDetailsScreen(
 
     LaunchedEffect(invoicesResource?.status, accountId) {
         if (accountId <= 0) {
-            showMessage("Missing accountId")
+            showMessage(missingAccountIdMessage)
         }
         if (invoicesResource?.status == Status.ERROR) {
             showMessage(failedToLoadAccountInvoices)
@@ -171,12 +175,12 @@ private fun AccountOutcomeDetailsScreen(
                 if (pending != null && pending.second != accountId) {
                     invoices = invoices.filter { it.listId != pending.first }
                 }
-                showMessage("Invoice account updated")
+                showMessage(successInvoiceUpdatedMessage)
                 pendingAccountChange = null
                 updateAccountLiveData = null
             }
             Status.ERROR -> {
-                showMessage("Failed to update invoice account")
+                showMessage(failedUpdateInvoiceAccountMessage)
                 pendingAccountChange = null
                 updateAccountLiveData = null
             }
@@ -253,8 +257,8 @@ private fun AccountOutcomeDetailsScreen(
         val invoice = pendingDelete
         AlertDialog(
             onDismissRequest = { pendingDelete = null },
-            title = { Text(text = "Invoice removal") },
-            text = { Text(text = "Do you want to remove selected invoice?") },
+            title = { Text(text = stringResource(id = R.string.dialog_title_invoice_removal)) },
+            text = { Text(text = stringResource(id = R.string.dialog_message_remove_selected_invoice)) },
             confirmButton = {
                 TextButton(onClick = {
                     if (invoice != null) {
@@ -281,7 +285,7 @@ private fun AccountOutcomeDetailsScreen(
 
         AlertDialog(
             onDismissRequest = { accountToChange = null },
-            title = { Text(text = "Change account for selected invoice") },
+            title = { Text(text = stringResource(id = R.string.dialog_title_change_account_invoice)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(text = item?.listId?.toString().orEmpty())

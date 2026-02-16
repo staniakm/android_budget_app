@@ -76,8 +76,8 @@ import java.time.format.DateTimeFormatter
 class AccountDetailsActivity : AppCompatActivity() {
 
     private val tag: String = "AccountDetailsActivity"
-    private val failedToGetIncomeType = "Failed to load income type"
-    private val failedToLoadOperations = "Failed to load account operations"
+    private val failedToGetIncomeType by lazy { getString(R.string.error_failed_load_income_type) }
+    private val failedToLoadOperations by lazy { getString(R.string.error_failed_load_account_operations) }
 
     private val accountViewModel: AccountViewModel by viewModels()
 
@@ -190,6 +190,12 @@ private fun AccountDetailsScreen(
     val scaffoldState = rememberScaffoldState()
     val scope = rememberCoroutineScope()
     val lifecycleOwner = LocalLifecycleOwner.current
+    val missingAccountIdMessage = stringResource(id = R.string.error_missing_account_id)
+    val transferSuccessMessage = stringResource(id = R.string.success_money_transfer_completed)
+    val transferErrorMessage = stringResource(id = R.string.error_failed_transfer_money)
+    val incomeSuccessMessage = stringResource(id = R.string.success_income_added)
+    val incomeErrorMessage = stringResource(id = R.string.error_failed_add_income)
+    val noTargetAccountMessage = stringResource(id = R.string.error_no_target_account_selected)
 
     fun showMessage(message: String) {
         scope.launch { scaffoldState.snackbarHostState.showSnackbar(message) }
@@ -234,7 +240,7 @@ private fun AccountDetailsScreen(
 
     LaunchedEffect(operationsResource?.status, accountId) {
         if (accountId <= 0) {
-            showMessage("Missing accountId")
+            showMessage(missingAccountIdMessage)
         }
         if (operationsResource?.status == Status.ERROR) {
             showMessage(failedOperationsMessage)
@@ -250,12 +256,12 @@ private fun AccountDetailsScreen(
     LaunchedEffect(transferResource?.status, transferRequestKey) {
         when (transferResource?.status) {
             Status.SUCCESS -> {
-                showMessage("Money transfer completed")
+                showMessage(transferSuccessMessage)
                 refreshKey += 1
                 transferLiveData = null
             }
             Status.ERROR -> {
-                showMessage("Failed to transfer money")
+                showMessage(transferErrorMessage)
                 transferLiveData = null
             }
             else -> Unit
@@ -265,12 +271,12 @@ private fun AccountDetailsScreen(
     LaunchedEffect(addIncomeResource?.status, addIncomeRequestKey) {
         when (addIncomeResource?.status) {
             Status.SUCCESS -> {
-                showMessage("Income added")
+                showMessage(incomeSuccessMessage)
                 refreshKey += 1
                 addIncomeLiveData = null
             }
             Status.ERROR -> {
-                showMessage("Failed to add income")
+                showMessage(incomeErrorMessage)
                 addIncomeLiveData = null
             }
             else -> Unit
@@ -386,7 +392,7 @@ private fun AccountDetailsScreen(
 
         AlertDialog(
             onDismissRequest = { showIncomeDialog = false },
-            title = { Text(text = "Add account income") },
+            title = { Text(text = stringResource(id = R.string.dialog_title_add_account_income)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(text = accountName, style = MaterialTheme.typography.body1)
@@ -479,7 +485,7 @@ private fun AccountDetailsScreen(
 
         AlertDialog(
             onDismissRequest = { showTransferDialog = false },
-            title = { Text(text = "Transfer money") },
+            title = { Text(text = stringResource(id = R.string.dialog_title_transfer_money)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(text = accountName, style = MaterialTheme.typography.body1)
@@ -526,7 +532,7 @@ private fun AccountDetailsScreen(
                             return@TextButton
                         }
                         if (target == null) {
-                            showMessage("No target account selected")
+                            showMessage(noTargetAccountMessage)
                             return@TextButton
                         }
                         transferLiveData = onTransferMoney(parsedValue, target.id)

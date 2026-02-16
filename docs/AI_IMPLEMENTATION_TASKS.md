@@ -303,6 +303,8 @@ Reduce compiler warnings and prepare for future upgrades.
 
 ## TASK-09: Message consistency and typo cleanup (P3)
 
+**Status:** DONE
+
 ### Goal
 Improve UX quality and prepare for internationalization.
 
@@ -315,6 +317,14 @@ Improve UX quality and prepare for internationalization.
 2. Move them to `strings.xml`.
 3. Fix typos and mixed language inconsistencies.
 4. Verify new string resources are used instead of literals.
+
+### Iterative progress
+- [x] Iteration 1: scanned UI code and identified hardcoded messages and typos (`Faile`, `Invaliad`, mixed PL/EN strings).
+- [x] Iteration 2 (tests-first): added androidTest coverage for string quality and typo regression checks (`UiStringsQualityTest`).
+- [x] Iteration 3: added dedicated string resources for error/success/empty-state/dialog messages used in account, invoice, budget, and media flows.
+- [x] Iteration 4: replaced selected hardcoded strings in `AccountUpdateActivity`, `UpdateBudgetActivity`, `AccountDetailsActivity`, `AccountIncomeDetails`, `AccountOutcomeDetails`, `AccountOutcomeRegisterActivity`, and `MediaActivity`.
+- [x] Iteration 5: fixed typo-prone messages and normalized wording using shared resources.
+- [x] Validation: `:app:testDebugUnitTest`, `:app:compileDebugAndroidTestKotlin`, and `:app:compileDebugKotlin` pass on JDK 17.
 
 ### Acceptance criteria
 - No new hardcoded strings in modified screens.
