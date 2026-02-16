@@ -10,7 +10,6 @@ import androidx.activity.viewModels
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import com.example.internetapi.api.Resource
-import com.example.internetapi.config.DateFormatter
 import com.example.internetapi.global.MonthSelector
 import com.example.internetapi.models.Budget
 import com.example.internetapi.models.Status
@@ -147,9 +146,7 @@ private fun ChartScreen(
         if (budgetsResource?.status == Status.ERROR) showMessage("failed fetched data")
     }
 
-    val date = remember(MonthSelector.month) { LocalDate.now().withDayOfMonth(1).plusMonths(MonthSelector.month.toLong()) }
-    val previousDate = remember(MonthSelector.month) { LocalDate.now().withDayOfMonth(1).plusMonths(MonthSelector.month.toLong() - 1) }
-    val nextDate = remember(MonthSelector.month) { LocalDate.now().withDayOfMonth(1).plusMonths(MonthSelector.month.toLong() + 1) }
+    val labels = remember(MonthSelector.month) { monthSwitcherLabels(monthOffset = MonthSelector.month) }
 
     var infoText by rememberSaveable { mutableStateOf("") }
     var chartData by remember { mutableStateOf<PieData?>(null) }
@@ -168,10 +165,8 @@ private fun ChartScreen(
                 .padding(innerPadding)
                 .padding(horizontal = ChartDefaults.ScreenPadding.dp)
         ) {
-            ChartMonthManipulator(
-                previous = previousDate.format(DateFormatter.yyyymm),
-                current = date.format(DateFormatter.yyyymm),
-                next = nextDate.format(DateFormatter.yyyymm),
+            UnifiedMonthSwitcher(
+                labels = labels,
                 onPrevious = {
                     MonthSelector.previous()
                     refreshKey += 1
@@ -267,30 +262,6 @@ private fun ChartScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 4.dp)
             )
-        }
-    }
-}
-
-@Composable
-private fun ChartMonthManipulator(
-    previous: String,
-    current: String,
-    next: String,
-    onPrevious: () -> Unit,
-    onCurrent: () -> Unit,
-    onNext: () -> Unit,
-) {
-    Card(modifier = Modifier.fillMaxWidth(), elevation = 4.dp) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            TextButton(onClick = onPrevious) { Text(text = previous) }
-            TextButton(onClick = onCurrent) { Text(text = current, fontWeight = FontWeight.Bold) }
-            TextButton(onClick = onNext) { Text(text = next) }
         }
     }
 }

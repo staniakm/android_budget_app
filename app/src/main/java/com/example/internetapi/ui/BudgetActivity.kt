@@ -39,7 +39,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.activity.result.contract.ActivityResultContracts
 import com.example.internetapi.config.MoneyFormatter.df
@@ -51,7 +50,6 @@ import com.example.internetapi.models.UpdateBudgetResponse
 import com.example.internetapi.ui.viewModel.BudgetViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 
 @AndroidEntryPoint
 class BudgetActivity : AppCompatActivity() {
@@ -153,8 +151,8 @@ private fun BudgetScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            BudgetMonthManipulator(
-                monthOffset = MonthSelector.month,
+            UnifiedMonthSwitcher(
+                labels = monthSwitcherLabels(monthOffset = MonthSelector.month),
                 onPrevious = {
                     MonthSelector.previous()
                     overrides = emptyMap()
@@ -217,42 +215,6 @@ private fun BudgetScreen(
                     )
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun BudgetMonthManipulator(
-    monthOffset: Int,
-    onPrevious: () -> Unit,
-    onCurrent: () -> Unit,
-    onNext: () -> Unit
-) {
-    val date = remember(monthOffset) { LocalDate.now().withDayOfMonth(1).plusMonths(monthOffset.toLong()) }
-    val prevText = remember(monthOffset) { date.minusMonths(1).format(com.example.internetapi.config.DateFormatter.yyyymm) }
-    val currentText = remember(monthOffset) { date.format(com.example.internetapi.config.DateFormatter.yyyymm) }
-    val nextText = remember(monthOffset) { date.plusMonths(1).format(com.example.internetapi.config.DateFormatter.yyyymm) }
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Button(onClick = onPrevious, modifier = Modifier.weight(0.3f)) {
-            Text(text = prevText)
-        }
-        Text(
-            text = currentText,
-            modifier = Modifier
-                .weight(0.4f)
-                .padding(horizontal = 12.dp)
-                .clickable(onClick = onCurrent),
-            textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.h6
-        )
-        Button(onClick = onNext, modifier = Modifier.weight(0.3f)) {
-            Text(text = nextText)
         }
     }
 }

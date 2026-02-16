@@ -39,11 +39,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import com.example.internetapi.config.AccountHolder
-import com.example.internetapi.config.DateFormatter
 import com.example.internetapi.config.MoneyFormatter
 import com.example.internetapi.functions.getSerializableCompat
 import com.example.internetapi.global.MonthSelector
@@ -53,7 +51,6 @@ import com.example.internetapi.models.UpdateAccountResponse
 import com.example.internetapi.ui.viewModel.AccountViewModel
 import kotlinx.coroutines.launch
 import dagger.hilt.android.AndroidEntryPoint
-import java.time.LocalDate
 
 
 @AndroidEntryPoint
@@ -159,8 +156,8 @@ private fun AccountScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            AccountMonthManipulator(
-                monthOffset = MonthSelector.month,
+            UnifiedMonthSwitcher(
+                labels = monthSwitcherLabels(monthOffset = MonthSelector.month),
                 onPrevious = {
                     MonthSelector.previous()
                     refreshKey += 1
@@ -234,44 +231,6 @@ private fun BoxedBody(
             ) {
                 CircularProgressIndicator()
             }
-        }
-    }
-}
-
-@Composable
-private fun AccountMonthManipulator(
-    monthOffset: Int,
-    onPrevious: () -> Unit,
-    onCurrent: () -> Unit,
-    onNext: () -> Unit
-) {
-    val dateText = remember(monthOffset) {
-        LocalDate.now()
-            .withDayOfMonth(1)
-            .plusMonths(monthOffset.toLong())
-            .format(DateFormatter.yyyymm)
-    }
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Button(onClick = onPrevious, modifier = Modifier.weight(0.3f)) {
-            Text(text = stringResource(id = com.example.internetapi.R.string.previous_month))
-        }
-        Text(
-            text = dateText,
-            modifier = Modifier
-                .weight(0.4f)
-                .padding(horizontal = 12.dp)
-                .clickable(onClick = onCurrent),
-            textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.h6
-        )
-        Button(onClick = onNext, modifier = Modifier.weight(0.3f)) {
-            Text(text = stringResource(id = com.example.internetapi.R.string.next_month))
         }
     }
 }

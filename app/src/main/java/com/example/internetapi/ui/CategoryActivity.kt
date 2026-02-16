@@ -34,9 +34,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.example.internetapi.config.DateFormatter
 import com.example.internetapi.config.MoneyFormatter.df
 import com.example.internetapi.global.MonthSelector
 import com.example.internetapi.models.Category
@@ -44,7 +42,6 @@ import com.example.internetapi.models.Status
 import com.example.internetapi.ui.viewModel.CategoryViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 
 private object CategoryDefaults {
     const val ScreenPadding = 16
@@ -117,8 +114,8 @@ private fun CategoryScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            MonthManipulator(
-                monthOffset = MonthSelector.month,
+            UnifiedMonthSwitcher(
+                labels = monthSwitcherLabels(monthOffset = MonthSelector.month),
                 onPrevious = {
                     MonthSelector.previous()
                     refreshKey += 1
@@ -153,44 +150,6 @@ private fun CategoryScreen(
                     CategoryCard(category = category, onClick = { onOpenDetails(category) })
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun MonthManipulator(
-    monthOffset: Int,
-    onPrevious: () -> Unit,
-    onCurrent: () -> Unit,
-    onNext: () -> Unit
-) {
-    val dateText = remember(monthOffset) {
-        LocalDate.now()
-            .withDayOfMonth(1)
-            .plusMonths(monthOffset.toLong())
-            .format(DateFormatter.yyyymm)
-    }
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Button(onClick = onPrevious, modifier = Modifier.weight(0.3f)) {
-            Text(text = stringResource(id = com.example.internetapi.R.string.previous_month))
-        }
-        Text(
-            text = dateText,
-            modifier = Modifier
-                .weight(0.4f)
-                .padding(horizontal = 12.dp)
-                .clickable(onClick = onCurrent),
-            textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.h6
-        )
-        Button(onClick = onNext, modifier = Modifier.weight(0.3f)) {
-            Text(text = stringResource(id = com.example.internetapi.R.string.next_month))
         }
     }
 }
