@@ -27,14 +27,13 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -42,7 +41,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.activity.result.contract.ActivityResultContracts
 import com.example.internetapi.config.MoneyFormatter.df
 import com.example.internetapi.global.MonthSelector
@@ -95,36 +93,19 @@ private fun BudgetScreen(
 ) {
     val scaffoldState = rememberScaffoldState()
     val scope = rememberCoroutineScope()
-    val lifecycleOwner = LocalLifecycleOwner.current
 
     var refreshKey by rememberSaveable { mutableStateOf(0) }
     var overrides by remember { mutableStateOf<Map<Int, UpdateBudgetResponse>>(emptyMap()) }
     var totalPlannedOverride by remember { mutableStateOf<java.math.BigDecimal?>(null) }
 
     val budgetsLiveData = remember(refreshKey) { viewModel.getBudgets() }
-    var budgetsResource by remember { mutableStateOf<com.example.internetapi.api.Resource<Budget>?>(null) }
-    DisposableEffect(budgetsLiveData, lifecycleOwner) {
-        val observer = androidx.lifecycle.Observer<com.example.internetapi.api.Resource<Budget>> { budgetsResource = it }
-        budgetsLiveData.observe(lifecycleOwner, observer)
-        onDispose { budgetsLiveData.removeObserver(observer) }
-    }
+    val budgetsResource = observeResource(budgetsLiveData)
 
     var recalculateKey by rememberSaveable { mutableStateOf(0) }
     val recalcLiveData = remember(recalculateKey) {
         if (recalculateKey == 0) null else viewModel.recalculateBudgets()
     }
-    var recalcResource by remember { mutableStateOf<com.example.internetapi.api.Resource<Budget>?>(null) }
-    DisposableEffect(recalcLiveData, lifecycleOwner) {
-        val liveData = recalcLiveData
-        if (liveData == null) {
-            recalcResource = null
-            onDispose { }
-        } else {
-            val observer = androidx.lifecycle.Observer<com.example.internetapi.api.Resource<Budget>> { recalcResource = it }
-            liveData.observe(lifecycleOwner, observer)
-            onDispose { liveData.removeObserver(observer) }
-        }
-    }
+    val recalcResource = observeResource(recalcLiveData)
 
     fun showMessage(message: String) {
         scope.launch { scaffoldState.snackbarHostState.showSnackbar(message) }
