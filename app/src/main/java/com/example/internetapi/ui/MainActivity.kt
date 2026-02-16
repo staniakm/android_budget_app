@@ -36,6 +36,9 @@ import androidx.compose.ui.unit.dp
 import com.example.internetapi.constant.Constant
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
+import com.example.internetapi.api.Resource
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -62,6 +65,25 @@ class MainActivity : ComponentActivity() {
             it.isNotBlank()
         } ?: false
     }
+}
+
+@Composable
+fun <T> observeResource(liveData: LiveData<Resource<T>>?): Resource<T>? {
+    val lifecycleOwner = LocalLifecycleOwner.current
+    var resource by remember(liveData) { mutableStateOf<Resource<T>?>(null) }
+
+    DisposableEffect(liveData, lifecycleOwner) {
+        if (liveData == null) {
+            resource = null
+            onDispose { }
+        } else {
+            val observer = Observer<Resource<T>> { resource = it }
+            liveData.observe(lifecycleOwner, observer)
+            onDispose { liveData.removeObserver(observer) }
+        }
+    }
+
+    return resource
 }
 
 @Composable

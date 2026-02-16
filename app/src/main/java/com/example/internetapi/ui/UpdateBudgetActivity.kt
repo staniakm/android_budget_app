@@ -28,7 +28,6 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,7 +37,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.text.KeyboardOptions
@@ -107,21 +105,13 @@ private fun UpdateBudgetScreen(
 ) {
     val scaffoldState = rememberScaffoldState()
     val scope = rememberCoroutineScope()
-    val lifecycleOwner = LocalLifecycleOwner.current
 
     fun showMessage(message: String) {
         scope.launch { scaffoldState.snackbarHostState.showSnackbar(message) }
     }
 
     val itemsLiveData = remember(budget.budgetId) { viewModel.getBudgetItems(budget.budgetId) }
-    var itemsResource by remember { mutableStateOf<com.example.internetapi.api.Resource<List<InvoiceDetails>>?>(null) }
-    DisposableEffect(itemsLiveData, lifecycleOwner) {
-        val observer = androidx.lifecycle.Observer<com.example.internetapi.api.Resource<List<InvoiceDetails>>> {
-            itemsResource = it
-        }
-        itemsLiveData.observe(lifecycleOwner, observer)
-        onDispose { itemsLiveData.removeObserver(observer) }
-    }
+    val itemsResource = observeResource(itemsLiveData)
 
     var plannedDialogOpen by rememberSaveable(budget.budgetId) { mutableStateOf(false) }
     var plannedText by rememberSaveable(budget.budgetId) { mutableStateOf(df.format(budget.planned)) }
@@ -133,20 +123,7 @@ private fun UpdateBudgetScreen(
         if (updateKey == 0 || planned == null) null
         else viewModel.updateBudget(UpdateBudgetRequest(budget.budgetId, planned))
     }
-    var updateResource by remember { mutableStateOf<com.example.internetapi.api.Resource<UpdateBudgetResponse>?>(null) }
-    DisposableEffect(updateLiveData, lifecycleOwner) {
-        val liveData = updateLiveData
-        if (liveData == null) {
-            updateResource = null
-            onDispose { }
-        } else {
-            val observer = androidx.lifecycle.Observer<com.example.internetapi.api.Resource<UpdateBudgetResponse>> {
-                updateResource = it
-            }
-            liveData.observe(lifecycleOwner, observer)
-            onDispose { liveData.removeObserver(observer) }
-        }
-    }
+    val updateResource = observeResource(updateLiveData)
 
     LaunchedEffect(itemsResource?.status) {
         if (itemsResource?.status == Status.ERROR) showMessage("Unable to load budget items")

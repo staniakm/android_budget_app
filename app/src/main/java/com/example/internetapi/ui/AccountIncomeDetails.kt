@@ -22,17 +22,11 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -92,7 +86,6 @@ private fun AccountIncomeDetailsScreen(
 ) {
     val scaffoldState = rememberScaffoldState()
     val scope = rememberCoroutineScope()
-    val lifecycleOwner = LocalLifecycleOwner.current
 
     fun showMessage(message: String) {
         scope.launch { scaffoldState.snackbarHostState.showSnackbar(message) }
@@ -101,22 +94,7 @@ private fun AccountIncomeDetailsScreen(
     val incomeLiveData = remember(accountId) {
         if (accountId <= 0) null else viewModel.getAccountIncome(accountId)
     }
-    var incomeResource by remember {
-        mutableStateOf<com.example.internetapi.api.Resource<List<AccountIncome>>?>(null)
-    }
-    DisposableEffect(incomeLiveData, lifecycleOwner) {
-        val liveData = incomeLiveData
-        if (liveData == null) {
-            incomeResource = null
-            onDispose { }
-        } else {
-            val observer = androidx.lifecycle.Observer<com.example.internetapi.api.Resource<List<AccountIncome>>> {
-                incomeResource = it
-            }
-            liveData.observe(lifecycleOwner, observer)
-            onDispose { liveData.removeObserver(observer) }
-        }
-    }
+    val incomeResource = observeResource(incomeLiveData)
 
     LaunchedEffect(incomeResource?.status, accountId) {
         if (accountId <= 0) showMessage("Missing accountId")

@@ -156,6 +156,8 @@ Create a basic safety net against regressions after Compose migrations.
 
 ## TASK-05: Standardize Compose UI state pattern (P2)
 
+**Status:** DONE
+
 ### Goal
 Reduce boilerplate and inconsistent side-effect handling across Compose screens using LiveData.
 
@@ -169,6 +171,20 @@ Reduce boilerplate and inconsistent side-effect handling across Compose screens 
 3. Ensure loading/error/success handling is uniform.
 4. Extend to 2-3 additional similar screens.
 5. Add a short convention guide in `docs/`.
+
+### Iterative progress
+- [x] Iteration 1: introduced shared Compose helper `observeResource(...)` in `MainActivity.kt` to unify LiveData-to-Resource observation.
+- [x] Iteration 2: applied helper on `AccountIncomeDetails` (removed ad-hoc observer boilerplate).
+- [x] Iteration 3: applied helper on `UpdateBudgetActivity` (for both list and update requests).
+- [x] Iteration 4: applied helper on `AccountDetailsActivity` (operations and income type requests).
+- [x] Iteration 5: compile validated and pattern usage summary documented below.
+
+### Compose state convention (short guide)
+- Use `observeResource(liveData)` for UI observation of `LiveData<Resource<T>>?` in composables.
+- Keep request triggering in `remember(...)` blocks and side effects in `LaunchedEffect(...)`.
+- Keep UI messaging (`snackbar`) driven by `resource.status` checks.
+- For optional requests, pass `null` LiveData and let `observeResource` return `null` safely.
+- Avoid repeating per-screen `DisposableEffect + Observer` boilerplate when no custom behavior is needed.
 
 ### Acceptance criteria
 - At least 3 screens no longer use ad-hoc side-effect patterns.

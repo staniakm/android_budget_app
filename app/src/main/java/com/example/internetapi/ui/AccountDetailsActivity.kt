@@ -196,44 +196,14 @@ private fun AccountDetailsScreen(
     val operationsLiveData = remember(accountId, refreshKey) {
         if (accountId <= 0) null else viewModel.getOperations(accountId)
     }
-    var operationsResource by remember {
-        mutableStateOf<com.example.internetapi.api.Resource<List<AccountOperation>>?>(null)
-    }
-    DisposableEffect(operationsLiveData, lifecycleOwner) {
-        val liveData = operationsLiveData
-        if (liveData == null) {
-            operationsResource = null
-            onDispose { }
-        } else {
-            val observer = androidx.lifecycle.Observer<com.example.internetapi.api.Resource<List<AccountOperation>>> {
-                operationsResource = it
-            }
-            liveData.observe(lifecycleOwner, observer)
-            onDispose { liveData.removeObserver(observer) }
-        }
-    }
+    val operationsResource = observeResource(operationsLiveData)
 
     var showIncomeDialog by rememberSaveable(accountId) { mutableStateOf(false) }
     var incomeTypesKey by rememberSaveable(accountId) { mutableStateOf(0) }
     val incomeTypesLiveData = remember(incomeTypesKey) {
         if (incomeTypesKey == 0) null else viewModel.getIncomeTypes()
     }
-    var incomeTypesResource by remember {
-        mutableStateOf<com.example.internetapi.api.Resource<List<IncomeType>>?>(null)
-    }
-    DisposableEffect(incomeTypesLiveData, lifecycleOwner) {
-        val liveData = incomeTypesLiveData
-        if (liveData == null) {
-            incomeTypesResource = null
-            onDispose { }
-        } else {
-            val observer = androidx.lifecycle.Observer<com.example.internetapi.api.Resource<List<IncomeType>>> {
-                incomeTypesResource = it
-            }
-            liveData.observe(lifecycleOwner, observer)
-            onDispose { liveData.removeObserver(observer) }
-        }
-    }
+    val incomeTypesResource = observeResource(incomeTypesLiveData)
 
     LaunchedEffect(operationsResource?.status, accountId) {
         if (accountId <= 0) {
