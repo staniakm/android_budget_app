@@ -24,20 +24,13 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.Observer
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import com.example.internetapi.R
-import com.example.internetapi.api.Resource
 import com.example.internetapi.models.InvoiceDetails
 import com.example.internetapi.models.Status
 import com.example.internetapi.ui.viewModel.InvoiceViewModel
@@ -75,15 +68,9 @@ private fun InvoiceDetailsScreen(
     errorMessage: String,
 ) {
     val scaffoldState = rememberScaffoldState()
-    val lifecycleOwner = LocalLifecycleOwner.current
 
     val liveData = remember(invoiceId) { viewModel.invoiceDetails(invoiceId) }
-    var resource by remember { mutableStateOf<Resource<List<InvoiceDetails>>?>(null) }
-    DisposableEffect(liveData, lifecycleOwner) {
-        val observer = Observer<Resource<List<InvoiceDetails>>> { resource = it }
-        liveData.observe(lifecycleOwner, observer)
-        onDispose { liveData.removeObserver(observer) }
-    }
+    val resource = observeResource(liveData)
 
     LaunchedEffect(resource?.status) {
         if (resource?.status == Status.ERROR) {
@@ -92,7 +79,8 @@ private fun InvoiceDetailsScreen(
     }
 
     val items = resource?.data.orEmpty()
-    val isLoading = resource?.status == null || resource?.status == Status.LOADING
+    val status = resource?.status
+    val isLoading = status == null || status == Status.LOADING
 
     Scaffold(scaffoldState = scaffoldState) { innerPadding ->
         Box(
