@@ -27,7 +27,6 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -39,7 +38,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import com.example.internetapi.models.CategoryDetails
 import com.example.internetapi.models.Status
 import com.example.internetapi.ui.viewModel.CategoryViewModel
@@ -93,7 +91,6 @@ private fun CategoryDetailsScreen(
 ) {
     val scaffoldState = rememberScaffoldState()
     val scope = rememberCoroutineScope()
-    val lifecycleOwner = LocalLifecycleOwner.current
 
     fun showMessage(message: String) {
         scope.launch { scaffoldState.snackbarHostState.showSnackbar(message) }
@@ -101,30 +98,14 @@ private fun CategoryDetailsScreen(
 
     var refreshKey by rememberSaveable(categoryId) { mutableStateOf(0) }
     val detailsLiveData = remember(categoryId, refreshKey) { viewModel.getCategoryDetails(categoryId) }
-    var detailsResource by remember { mutableStateOf<com.example.internetapi.api.Resource<List<CategoryDetails>>?>(null) }
-    DisposableEffect(detailsLiveData, lifecycleOwner) {
-        val observer = androidx.lifecycle.Observer<com.example.internetapi.api.Resource<List<CategoryDetails>>> { detailsResource = it }
-        detailsLiveData.observe(lifecycleOwner, observer)
-        onDispose { detailsLiveData.removeObserver(observer) }
-    }
+    val detailsResource = observeResource(detailsLiveData)
 
     var changeCategoryFor by remember { mutableStateOf<CategoryDetails?>(null) }
     var categoriesKey by rememberSaveable { mutableStateOf(0) }
     val categoriesLiveData = remember(categoriesKey) {
         if (categoriesKey == 0) null else viewModel.getCategories()
     }
-    var categoriesResource by remember { mutableStateOf<com.example.internetapi.api.Resource<List<Category>>?>(null) }
-    DisposableEffect(categoriesLiveData, lifecycleOwner) {
-        val liveData = categoriesLiveData
-        if (liveData == null) {
-            categoriesResource = null
-            onDispose { }
-        } else {
-            val observer = androidx.lifecycle.Observer<com.example.internetapi.api.Resource<List<Category>>> { categoriesResource = it }
-            liveData.observe(lifecycleOwner, observer)
-            onDispose { liveData.removeObserver(observer) }
-        }
-    }
+    val categoriesResource = observeResource(categoriesLiveData)
 
     LaunchedEffect(detailsResource?.status) {
         when (detailsResource?.status) {

@@ -31,7 +31,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -94,7 +93,7 @@ private fun CategoryScreen(
 
     var refreshKey by remember { mutableStateOf(0) }
     val categoriesLiveData = remember(refreshKey) { viewModel.getCategories() }
-    val categoriesResource by categoriesLiveData.observeAsState()
+    val categoriesResource = observeResource(categoriesLiveData)
 
     fun showMessage(message: String) {
         scope.launch { scaffoldState.snackbarHostState.showSnackbar(message) }
@@ -104,7 +103,7 @@ private fun CategoryScreen(
         when (categoriesResource?.status) {
             Status.ERROR -> showMessage("Failed to load categories data")
             Status.SUCCESS -> {
-                if (categoriesResource?.data?.isEmpty() == true) {
+                if (categoriesResource.data?.isEmpty() == true) {
                     showMessage("No data available. Please add new data")
                 }
             }
