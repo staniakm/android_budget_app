@@ -39,7 +39,6 @@ import androidx.compose.material.TextButton
 import androidx.compose.material.rememberDismissState
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -50,7 +49,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -115,7 +113,6 @@ private fun AccountOutcomeRegisterScreen(
 ) {
     val scaffoldState = rememberScaffoldState()
     val scope = rememberCoroutineScope()
-    val lifecycleOwner = LocalLifecycleOwner.current
 
     fun showMessage(message: String) {
         scope.launch { scaffoldState.snackbarHostState.showSnackbar(message) }
@@ -132,22 +129,7 @@ private fun AccountOutcomeRegisterScreen(
     val shopsLiveData = remember(shopsKey) {
         if (shopsKey == 0) null else viewModel.getShops()
     }
-    var shopsResource by remember {
-        mutableStateOf<com.example.internetapi.api.Resource<List<Shop>>?>(null)
-    }
-    DisposableEffect(shopsLiveData, lifecycleOwner) {
-        val liveData = shopsLiveData
-        if (liveData == null) {
-            shopsResource = null
-            onDispose { }
-        } else {
-            val observer = androidx.lifecycle.Observer<com.example.internetapi.api.Resource<List<Shop>>> {
-                shopsResource = it
-            }
-            liveData.observe(lifecycleOwner, observer)
-            onDispose { liveData.removeObserver(observer) }
-        }
-    }
+    val shopsResource = observeResource(shopsLiveData)
 
     var createShopKey by rememberSaveable { mutableStateOf(0) }
     var createShopName by remember { mutableStateOf<String?>(null) }
@@ -155,22 +137,7 @@ private fun AccountOutcomeRegisterScreen(
         val name = createShopName
         if (createShopKey == 0 || name.isNullOrBlank()) null else viewModel.createShop(name)
     }
-    var createShopResource by remember {
-        mutableStateOf<com.example.internetapi.api.Resource<Shop>?>(null)
-    }
-    DisposableEffect(createShopLiveData, lifecycleOwner) {
-        val liveData = createShopLiveData
-        if (liveData == null) {
-            createShopResource = null
-            onDispose { }
-        } else {
-            val observer = androidx.lifecycle.Observer<com.example.internetapi.api.Resource<Shop>> {
-                createShopResource = it
-            }
-            liveData.observe(lifecycleOwner, observer)
-            onDispose { liveData.removeObserver(observer) }
-        }
-    }
+    val createShopResource = observeResource(createShopLiveData)
 
     var shopItemsKey by rememberSaveable { mutableStateOf(0) }
     var selectedShopIdForItems by remember { mutableStateOf<Int?>(null) }
@@ -178,22 +145,7 @@ private fun AccountOutcomeRegisterScreen(
         val shopId = selectedShopIdForItems
         if (shopItemsKey == 0 || shopId == null) null else viewModel.getShopItems(shopId)
     }
-    var shopItemsResource by remember {
-        mutableStateOf<com.example.internetapi.api.Resource<List<ShopItem>>?>(null)
-    }
-    DisposableEffect(shopItemsLiveData, lifecycleOwner) {
-        val liveData = shopItemsLiveData
-        if (liveData == null) {
-            shopItemsResource = null
-            onDispose { }
-        } else {
-            val observer = androidx.lifecycle.Observer<com.example.internetapi.api.Resource<List<ShopItem>>> {
-                shopItemsResource = it
-            }
-            liveData.observe(lifecycleOwner, observer)
-            onDispose { liveData.removeObserver(observer) }
-        }
-    }
+    val shopItemsResource = observeResource(shopItemsLiveData)
 
     var createShopItemKey by rememberSaveable { mutableStateOf(0) }
     var createShopItemName by remember { mutableStateOf<String?>(null) }
@@ -207,22 +159,7 @@ private fun AccountOutcomeRegisterScreen(
             viewModel.createNewShopItem(shopId, name)
         }
     }
-    var createShopItemResource by remember {
-        mutableStateOf<com.example.internetapi.api.Resource<ShopItem>?>(null)
-    }
-    DisposableEffect(createShopItemLiveData, lifecycleOwner) {
-        val liveData = createShopItemLiveData
-        if (liveData == null) {
-            createShopItemResource = null
-            onDispose { }
-        } else {
-            val observer = androidx.lifecycle.Observer<com.example.internetapi.api.Resource<ShopItem>> {
-                createShopItemResource = it
-            }
-            liveData.observe(lifecycleOwner, observer)
-            onDispose { liveData.removeObserver(observer) }
-        }
-    }
+    val createShopItemResource = observeResource(createShopItemLiveData)
 
     var createInvoiceKey by rememberSaveable { mutableStateOf(0) }
     var invoiceRequest by remember { mutableStateOf<NewInvoiceRequest?>(null) }
@@ -230,22 +167,7 @@ private fun AccountOutcomeRegisterScreen(
         val request = invoiceRequest
         if (createInvoiceKey == 0 || request == null) null else viewModel.createNewInvoice(request)
     }
-    var createInvoiceResource by remember {
-        mutableStateOf<com.example.internetapi.api.Resource<CreateInvoiceResponse>?>(null)
-    }
-    DisposableEffect(createInvoiceLiveData, lifecycleOwner) {
-        val liveData = createInvoiceLiveData
-        if (liveData == null) {
-            createInvoiceResource = null
-            onDispose { }
-        } else {
-            val observer = androidx.lifecycle.Observer<com.example.internetapi.api.Resource<CreateInvoiceResponse>> {
-                createInvoiceResource = it
-            }
-            liveData.observe(lifecycleOwner, observer)
-            onDispose { liveData.removeObserver(observer) }
-        }
-    }
+    val createInvoiceResource = observeResource(createInvoiceLiveData)
 
     LaunchedEffect(Unit) {
         showCreateInvoiceDialog = true
@@ -260,7 +182,7 @@ private fun AccountOutcomeRegisterScreen(
 
     LaunchedEffect(shopItemsResource?.status, shopItemsResource?.data) {
         when (shopItemsResource?.status) {
-            Status.SUCCESS -> shopItems = shopItemsResource?.data ?: emptyList()
+            Status.SUCCESS -> shopItems = shopItemsResource.data ?: emptyList()
             Status.ERROR -> showMessage(failedToLoadShops)
             else -> Unit
         }
@@ -269,7 +191,7 @@ private fun AccountOutcomeRegisterScreen(
     LaunchedEffect(createShopResource?.status, createShopResource?.data) {
         when (createShopResource?.status) {
             Status.SUCCESS -> {
-                val shop = createShopResource?.data
+                val shop = createShopResource.data
                 if (shop != null) {
                     invoice?.shop = shop
                 }
@@ -286,7 +208,7 @@ private fun AccountOutcomeRegisterScreen(
     LaunchedEffect(createShopItemResource?.status, createShopItemResource?.data) {
         when (createShopItemResource?.status) {
             Status.SUCCESS -> {
-                val created = createShopItemResource?.data
+                val created = createShopItemResource.data
                 val pending = pendingInvoiceItem
                 if (created != null && pending != null) {
                     invoiceItems = invoiceItems + pending.copy(shopItem = created)
@@ -309,7 +231,7 @@ private fun AccountOutcomeRegisterScreen(
     LaunchedEffect(createInvoiceResource?.status, createInvoiceResource?.data) {
         when (createInvoiceResource?.status) {
             Status.SUCCESS -> {
-                val data = createInvoiceResource?.data
+                val data = createInvoiceResource.data
                 if (data != null) {
                     hideElements(
                         onUpdateInvoice = { invoice = it },
