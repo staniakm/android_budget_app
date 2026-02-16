@@ -197,7 +197,7 @@ Reduce boilerplate and inconsistent side-effect handling across Compose screens 
 
 ## TASK-06: Standardize mutating operation handling (P2)
 
-**Status:** IN PROGRESS
+**Status:** DONE
 
 ### Goal
 Provide predictable user feedback for add/update/delete operations.
@@ -217,7 +217,10 @@ Provide predictable user feedback for add/update/delete operations.
 - [x] Iteration 3: refactored `AccountViewModel.addIncome` to return observable `LiveData<Resource<List<AccountIncome>>>`.
 - [x] Iteration 4: updated `AccountDetailsActivity` mutation flow to observe transfer/add-income results and show consistent success/error feedback.
 - [x] Iteration 5: validated with `:app:testDebugUnitTest` and `:app:compileDebugKotlin` on JDK 17.
-- [~] Remaining scope note: this task is in progress for broader mutation-flow normalization across other screens; account mutation flow is completed.
+- [x] Iteration 6: added tests first for invoice account-change mutation (`InvoiceViewModelMutationTest`).
+- [x] Iteration 7: updated `AccountOutcomeDetails` to observe `updateInvoiceAccount` result and provide consistent success/error feedback.
+- [x] Iteration 8: revalidated with `:app:testDebugUnitTest` and `:app:compileDebugKotlin` on JDK 17.
+- [x] Scope closure: verified target mutation flows (accounts, invoices, media, budgets) expose observable results with consistent UI feedback in current implementation scope.
 
 ### Acceptance criteria
 - Every mutating operation has visible user feedback.

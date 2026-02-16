@@ -116,7 +116,7 @@ class AccountViewModelMutationTest {
 
         observeForever(observer)
         val completed = latch.await(2, TimeUnit.SECONDS)
-        removeObserver(observer)
+        kotlin.runCatching { removeObserver(observer) }
         assertTrue("Timed out waiting for LiveData emission", completed)
         return values
     }

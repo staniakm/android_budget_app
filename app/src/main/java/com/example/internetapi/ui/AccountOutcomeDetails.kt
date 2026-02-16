@@ -34,9 +34,8 @@ import androidx.compose.material.rememberScaffoldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -46,7 +45,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import com.example.internetapi.config.AccountHolder
 import com.example.internetapi.config.MoneyFormatter
@@ -113,7 +111,6 @@ private fun AccountOutcomeDetailsScreen(
 ) {
     val scaffoldState = rememberScaffoldState()
     val scope = rememberCoroutineScope()
-    val lifecycleOwner = LocalLifecycleOwner.current
 
     fun showMessage(message: String) {
         scope.launch { scaffoldState.snackbarHostState.showSnackbar(message) }
@@ -122,22 +119,7 @@ private fun AccountOutcomeDetailsScreen(
     val invoicesLiveData = remember(accountId) {
         if (accountId <= 0) null else accountViewModel.accountInvoices(accountId)
     }
-    var invoicesResource by remember {
-        mutableStateOf<com.example.internetapi.api.Resource<List<AccountInvoice>>?>(null)
-    }
-    DisposableEffect(invoicesLiveData, lifecycleOwner) {
-        val liveData = invoicesLiveData
-        if (liveData == null) {
-            invoicesResource = null
-            onDispose { }
-        } else {
-            val observer = androidx.lifecycle.Observer<com.example.internetapi.api.Resource<List<AccountInvoice>>> {
-                invoicesResource = it
-            }
-            liveData.observe(lifecycleOwner, observer)
-            onDispose { liveData.removeObserver(observer) }
-        }
-    }
+    val invoicesResource = observeResource(invoicesLiveData)
 
     var invoices by remember { mutableStateOf<List<AccountInvoice>>(emptyList()) }
     LaunchedEffect(invoicesResource?.data) {
@@ -155,20 +137,13 @@ private fun AccountOutcomeDetailsScreen(
 
     var pendingDelete by remember { mutableStateOf<AccountInvoice?>(null) }
     var deleteLiveData by remember { mutableStateOf<androidx.lifecycle.LiveData<com.example.internetapi.api.Resource<Void>>?>(null) }
-    var deleteResource by remember { mutableStateOf<com.example.internetapi.api.Resource<Void>?>(null) }
-    DisposableEffect(deleteLiveData, lifecycleOwner) {
-        val liveData = deleteLiveData
-        if (liveData == null) {
-            deleteResource = null
-            onDispose { }
-        } else {
-            val observer = androidx.lifecycle.Observer<com.example.internetapi.api.Resource<Void>> {
-                deleteResource = it
-            }
-            liveData.observe(lifecycleOwner, observer)
-            onDispose { liveData.removeObserver(observer) }
-        }
+    val deleteResource = observeResource(deleteLiveData)
+
+    var updateAccountLiveData by remember {
+        mutableStateOf<androidx.lifecycle.LiveData<com.example.internetapi.api.Resource<AccountInvoice>>?>(null)
     }
+    val updateAccountResource = observeResource(updateAccountLiveData)
+    var pendingAccountChange by remember { mutableStateOf<Pair<Long, Int>?>(null) }
 
     LaunchedEffect(deleteResource?.status) {
         when (deleteResource?.status) {
@@ -189,8 +164,30 @@ private fun AccountOutcomeDetailsScreen(
         }
     }
 
+    LaunchedEffect(updateAccountResource?.status) {
+        when (updateAccountResource?.status) {
+            Status.SUCCESS -> {
+                val pending = pendingAccountChange
+                if (pending != null && pending.second != accountId) {
+                    invoices = invoices.filter { it.listId != pending.first }
+                }
+                showMessage("Invoice account updated")
+                pendingAccountChange = null
+                updateAccountLiveData = null
+            }
+            Status.ERROR -> {
+                showMessage("Failed to update invoice account")
+                pendingAccountChange = null
+                updateAccountLiveData = null
+            }
+            else -> Unit
+        }
+    }
+
     var accountToChange by remember { mutableStateOf<AccountInvoice?>(null) }
-    val isLoading = invoicesResource?.status == Status.LOADING || deleteResource?.status == Status.LOADING
+    val isLoading = invoicesResource?.status == Status.LOADING ||
+        deleteResource?.status == Status.LOADING ||
+        updateAccountResource?.status == Status.LOADING
 
     Scaffold(scaffoldState = scaffoldState) { innerPadding ->
         Box(
@@ -319,12 +316,10 @@ private fun AccountOutcomeDetailsScreen(
                     val invoice = item
                     val selectedAccount = selected
                     if (invoice != null && selectedAccount != null) {
-                        invoiceViewModel.updateInvoiceAccount(
+                        pendingAccountChange = invoice.listId to selectedAccount.id
+                        updateAccountLiveData = invoiceViewModel.updateInvoiceAccount(
                             UpdateInvoiceAccountRequest(invoice.listId, accountId, selectedAccount.id)
                         )
-                        if (accountId != selectedAccount.id) {
-                            invoices = invoices.filter { it.listId != invoice.listId }
-                        }
                     }
                     accountToChange = null
                 }) {
