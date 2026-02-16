@@ -42,6 +42,8 @@
   - Prefer JDK 17 for local validation (`C:\Users\Mariusz\.jdks\corretto-17.0.11` in this environment).
   - Standard verification command for code changes: `./gradlew :app:compileDebugKotlin`.
   - For test tasks, additionally run `./gradlew :app:testDebugUnitTest` and compile android tests with `./gradlew :app:compileDebugAndroidTestKotlin`.
+  - Before starting any production change, verify whether the target behavior is covered by tests.
+  - If coverage is missing for the changed behavior, add or update tests first (test-first approach) before implementing production code changes.
 
 - Task and Trello process:
   - Every new implementation must be based on an existing Trello task/card.
