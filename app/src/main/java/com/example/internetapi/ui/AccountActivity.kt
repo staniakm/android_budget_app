@@ -43,7 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import com.example.internetapi.config.AccountHolder
 import com.example.internetapi.config.MoneyFormatter
-import com.example.internetapi.functions.getSerializableCompat
+import com.example.internetapi.functions.getSerializableExtraCompat
 import com.example.internetapi.global.MonthSelector
 import com.example.internetapi.models.Account
 import com.example.internetapi.models.Status
@@ -119,7 +119,7 @@ private fun AccountScreen(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
-            val updated = result.data?.extras?.getSerializableCompat("result", UpdateAccountResponse::class.java)
+            val updated = result.data?.getSerializableExtraCompat("result", UpdateAccountResponse::class.java)
             if (updated != null) {
                 overrides = overrides + (updated.id.toInt() to updated)
             }

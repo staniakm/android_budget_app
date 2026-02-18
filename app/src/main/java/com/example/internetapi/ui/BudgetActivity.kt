@@ -42,6 +42,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.activity.result.contract.ActivityResultContracts
 import com.example.internetapi.config.MoneyFormatter.df
+import com.example.internetapi.functions.getSerializableExtraCompat
 import com.example.internetapi.global.MonthSelector
 import com.example.internetapi.models.Budget
 import com.example.internetapi.models.MonthBudget
@@ -113,7 +114,7 @@ private fun BudgetScreen(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
-            val updated = result.data?.getSerializableExtra("result") as? UpdateBudgetResponse
+            val updated = result.data?.getSerializableExtraCompat("result", UpdateBudgetResponse::class.java)
             if (updated != null) {
                 overrides = overrides + (updated.budgetId to updated)
                 totalPlannedOverride = updated.monthPlanned
