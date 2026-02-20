@@ -142,6 +142,54 @@ class BudgetViewModelMutationTest {
         assertEquals(expected, values.last().data)
     }
 
+    @Test
+    fun getBudgets_emitsSuccessWithReturnedBudget() {
+        val expected = Budget(
+            totalSpend = BigDecimal("250.00"),
+            totalPlanned = BigDecimal("500.00"),
+            totalEarned = BigDecimal("700.00"),
+            budgets = listOf(
+                MonthBudget(
+                    budgetId = 3,
+                    category = "Home",
+                    spent = BigDecimal("250.00"),
+                    planned = BigDecimal("500.00"),
+                    percentage = 50
+                )
+            )
+        )
+        val viewModel = createViewModel(
+            helper = FakeBudgetApiHelper(getBudgetsResponse = Response.success(expected))
+        )
+
+        val values = viewModel.getBudgets().awaitUntilStatus(Status.SUCCESS)
+
+        assertEquals(Status.SUCCESS, values.last().status)
+        assertEquals(expected, values.last().data)
+    }
+
+    @Test
+    fun getBudgets_emitsErrorWhenApiFails() {
+        val viewModel = createViewModel(
+            helper = FakeBudgetApiHelper(getBudgetsResponse = errorResponse())
+        )
+
+        val values = viewModel.getBudgets().awaitUntilStatus(Status.ERROR)
+
+        assertEquals(Status.ERROR, values.last().status)
+    }
+
+    @Test
+    fun getBudgetItems_emitsErrorWhenApiFails() {
+        val viewModel = createViewModel(
+            helper = FakeBudgetApiHelper(getBudgetItemsResponse = errorResponse())
+        )
+
+        val values = viewModel.getBudgetItems(10).awaitUntilStatus(Status.ERROR)
+
+        assertEquals(Status.ERROR, values.last().status)
+    }
+
     private fun createViewModel(helper: BudgetApiHelper): BudgetViewModel {
         return BudgetViewModel(BudgetRepository(helper))
     }
@@ -174,6 +222,22 @@ class BudgetViewModelMutationTest {
 }
 
 private class FakeBudgetApiHelper(
+    private val getBudgetsResponse: Response<Budget> = Response.success(
+        Budget(
+            totalSpend = BigDecimal.ZERO,
+            totalPlanned = BigDecimal.ZERO,
+            totalEarned = BigDecimal.ZERO,
+            budgets = listOf(
+                MonthBudget(
+                    budgetId = 1,
+                    category = "General",
+                    spent = BigDecimal.ZERO,
+                    planned = BigDecimal.ZERO,
+                    percentage = 0
+                )
+            )
+        )
+    ),
     private val updateResponse: Response<UpdateBudgetResponse> = Response.success(
         UpdateBudgetResponse(
             budgetId = 1,
@@ -203,7 +267,7 @@ private class FakeBudgetApiHelper(
     private val getBudgetItemsResponse: Response<List<InvoiceDetails>> = Response.success(emptyList())
 ) : BudgetApiHelper {
 
-    override suspend fun getBudgets(): Response<Budget> = recalculateResponse
+    override suspend fun getBudgets(): Response<Budget> = getBudgetsResponse
 
     override suspend fun updateBudget(updateBudgetRequest: UpdateBudgetRequest): Response<UpdateBudgetResponse> = updateResponse
 

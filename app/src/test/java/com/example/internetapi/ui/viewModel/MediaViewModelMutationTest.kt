@@ -76,6 +76,60 @@ class MediaViewModelMutationTest {
     }
 
     @Test
+    fun getMediaTypes_emitsSuccessWithReturnedTypes() {
+        val expected = listOf(
+            MediaType(id = 1, name = "Water"),
+            MediaType(id = 2, name = "Gas")
+        )
+        val viewModel = createViewModel(
+            helper = FakeMediaApiHelper(getTypesResponse = Response.success(expected))
+        )
+
+        val values = viewModel.getMediaTypes().awaitUntilStatus(Status.SUCCESS)
+
+        assertEquals(Status.SUCCESS, values.last().status)
+        assertEquals(expected, values.last().data)
+    }
+
+    @Test
+    fun getMediaTypes_emitsErrorWhenApiFails() {
+        val viewModel = createViewModel(
+            helper = FakeMediaApiHelper(getTypesResponse = errorResponse())
+        )
+
+        val values = viewModel.getMediaTypes().awaitUntilStatus(Status.ERROR)
+
+        assertEquals(Status.ERROR, values.last().status)
+    }
+
+    @Test
+    fun getMediaUsageByType_emitsSuccessWithReturnedUsageList() {
+        val expected = listOf(
+            MediaUsage(id = 1, year = 2026, month = 1, meterRead = BigDecimal("300.0")),
+            MediaUsage(id = 2, year = 2026, month = 2, meterRead = BigDecimal("320.0"))
+        )
+        val viewModel = createViewModel(
+            helper = FakeMediaApiHelper(getUsageResponse = Response.success(expected))
+        )
+
+        val values = viewModel.getMediaUsageByType(1).awaitUntilStatus(Status.SUCCESS)
+
+        assertEquals(Status.SUCCESS, values.last().status)
+        assertEquals(expected, values.last().data)
+    }
+
+    @Test
+    fun getMediaUsageByType_emitsErrorWhenApiFails() {
+        val viewModel = createViewModel(
+            helper = FakeMediaApiHelper(getUsageResponse = errorResponse())
+        )
+
+        val values = viewModel.getMediaUsageByType(1).awaitUntilStatus(Status.ERROR)
+
+        assertEquals(Status.ERROR, values.last().status)
+    }
+
+    @Test
     fun addNewMediaType_emitsErrorWhenApiFails() {
         val viewModel = createViewModel(
             helper = FakeMediaApiHelper(addTypeResponse = errorResponse())
@@ -159,16 +213,18 @@ class MediaViewModelMutationTest {
 }
 
 private class FakeMediaApiHelper(
+    private val getTypesResponse: Response<List<MediaType>> = Response.success(emptyList()),
     private val addTypeResponse: Response<MediaType> = Response.success(MediaType(1, "Water")),
+    private val getUsageResponse: Response<List<MediaUsage>> = Response.success(emptyList()),
     private val addUsageResponse: Response<List<MediaUsage>> = Response.success(emptyList()),
     private val removeUsageResponse: Response<Void> = Response.success(null)
 ) : MediaApiHelper {
 
-    override suspend fun getMediaTypes(): Response<List<MediaType>> = Response.success(emptyList())
+    override suspend fun getMediaTypes(): Response<List<MediaType>> = getTypesResponse
 
     override suspend fun addNewMediaType(mediaTypeRequest: MediaTypeRequest): Response<MediaType> = addTypeResponse
 
-    override suspend fun getMediaUsageByType(mediaTypeId: Int): Response<List<MediaUsage>> = Response.success(emptyList())
+    override suspend fun getMediaUsageByType(mediaTypeId: Int): Response<List<MediaUsage>> = getUsageResponse
 
     override suspend fun addMediaUsageEntry(mediaUsageRequest: MediaRegisterRequest): Response<List<MediaUsage>> = addUsageResponse
 

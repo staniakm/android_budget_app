@@ -28,6 +28,17 @@ class InvoiceModelTest {
     }
 
     @Test
+    fun setShop_doesNotOverrideExistingShop() {
+        val invoice = Invoice(accountId = 10)
+        invoice.shop = Shop(7, "Existing")
+
+        invoice.setShop("new shop")
+
+        assertEquals(7, invoice.shop?.shopId)
+        assertEquals("Existing", invoice.shop?.name)
+    }
+
+    @Test
     fun isBasicDataNotFilled_returnsFalseWhenShopPresent() {
         val invoice = Invoice(accountId = 10)
         invoice.shop = Shop(1, "Shop")
@@ -82,5 +93,17 @@ class InvoiceModelTest {
         )
 
         assertEquals(0, request.sum.compareTo(BigDecimal.ZERO))
+    }
+
+    @Test
+    fun newInvoiceItemRequest_totalPrice_usesPriceTimesAmountMinusDiscount() {
+        val request = NewInvoiceItemRequest(
+            shopItem = ShopItem(1, "Cheese"),
+            unitPrice = BigDecimal("8.50"),
+            amount = BigDecimal("2.000"),
+            discount = BigDecimal("1.00")
+        )
+
+        assertEquals(0, request.totalPrice.compareTo(BigDecimal("16.00")))
     }
 }

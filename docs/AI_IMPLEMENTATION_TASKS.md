@@ -402,6 +402,14 @@ Increase automated regression coverage across unit, ViewModel mutation, and inst
 - [x] Additional expansion: extended AccountOutcome and Invoice ViewModel mutation tests (shop/item creation, invoice details, invoice creation error, delete flows) and added missing-extra instrumentation guard in `AccountUpdateActivityLaunchTest`.
 - [x] Additional expansion: extended mutation instrumentation checks in `MutationFlowsInstrumentationTest` to assert critical add-income/transfer dialog inputs are present and stable, and validated `AccountUpdateActivity` missing-extra finish behavior.
 - [x] Additional unit expansion: extended utility/mapping coverage in `AutocompleteFilterTest`, `MonthSwitcherTest`, `DatePickerThemeTest`, and `FormatterTest` with edge cases (trimmed queries, year boundaries, UI mode flags, negative/whole-number formatting).
+- [x] Additional unit expansion: added model/config edge tests in `InvoiceModelTest`, `CategoryModelTest`, and `DateFormatterTest` (existing shop preservation, invoice item total formula, category display mapping, explicit `yyyy-MM` formatter assertion).
+- [x] Additional unit expansion: completed coverage pass for remaining `models` package contracts via `RemainingModelsContractTest` (Budget defaults, Serializable contract checks, request/data field integrity, enum contract).
+- [x] Additional ViewModel expansion: significantly extended `AccountViewModelMutationTest` to cover remaining low-coverage paths (`getAccounts`, `accountInvoices` error, `getAccountIncome`, `updateAccount` success/error, `getIncomeTypes`, `getOperations` error).
+- [x] Additional ViewModel expansion: added `CategoryViewModelTest` with full success/error coverage for both exposed methods (`getCategories`, `getCategoryDetails`).
+- [x] Additional ViewModel expansion: extended `MediaViewModelMutationTest` with read-path coverage (`getMediaTypes`, `getMediaUsageByType`) for both success and error scenarios.
+- [x] Additional ViewModel expansion: extended `BudgetViewModelMutationTest` with read-path coverage (`getBudgets`, `getBudgetItems`) in both success and error variants.
+- [x] Adapter test expansion: added `AdapterListBehaviorTest` (androidTest) covering list mutation behaviors in `MediaAdapter`, `CategoryAdapter`, `AccountAdapter`, and `MonthBudgetAdapter`.
+- [x] Adapter test expansion: added `AdapterDetailsBehaviorTest` (androidTest) covering `InvoiceDetailsAdapter` list submission and `MediaDetailsAdapter` remove/list-shift behavior.
 
 ### Acceptance criteria
 - Expanded unit + ViewModel + instrumentation coverage for critical flows.

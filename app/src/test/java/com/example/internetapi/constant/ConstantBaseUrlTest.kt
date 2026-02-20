@@ -26,4 +26,11 @@ class ConstantBaseUrlTest {
 
         assertEquals("https://example.com/api/", result)
     }
+
+    @Test
+    fun normalizeBaseUrl_keepsHttpValueWithTrailingSlash() {
+        val result = Constant.normalizeBaseUrl("http://example.com/api/")
+
+        assertEquals("http://example.com/api/", result)
+    }
 }
