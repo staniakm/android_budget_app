@@ -8,6 +8,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.util.regex.Pattern
 
 @RunWith(AndroidJUnit4::class)
 class UiStringsQualityTest {
@@ -27,8 +28,8 @@ class UiStringsQualityTest {
         ids.forEach { id ->
             val value = context.getString(id)
             assertTrue(value.isNotBlank())
-            assertFalse(value.contains("Faile", ignoreCase = true))
-            assertFalse(value.contains("Invaliad", ignoreCase = true))
+            assertFalse(containsTypoWord(value, "Faile"))
+            assertFalse(containsTypoWord(value, "Invaliad"))
         }
     }
 
@@ -37,5 +38,10 @@ class UiStringsQualityTest {
         val value = context.getString(R.string.error_failed_add_new_media_with_name, "Water")
 
         assertTrue(value.contains("Water"))
+    }
+
+    private fun containsTypoWord(value: String, typo: String): Boolean {
+        val pattern = Pattern.compile("\\b${Pattern.quote(typo)}\\b", Pattern.CASE_INSENSITIVE)
+        return pattern.matcher(value).find()
     }
 }

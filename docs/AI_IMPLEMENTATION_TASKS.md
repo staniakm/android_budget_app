@@ -373,6 +373,79 @@ Ensure DatePicker content is readable when the app runs in dark mode.
 
 ---
 
+## TASK-17: Add instrumentation tests for mutation flows (P2)
+
+**Status:** TESTING
+
+### Goal
+Add UI-level regression protection for critical mutation flows.
+
+### Scope
+- Android instrumentation tests for key mutation scenarios:
+  - add income flow,
+  - transfer money flow,
+  - invoice mutation screen launch (update/delete context).
+
+### Implementation steps
+1. Add test scenario for add income flow.
+2. Add test scenario for transfer money flow.
+3. Add test scenario for update invoice account and/or delete invoice flow.
+4. Validate with `compileDebugAndroidTestKotlin` and `connectedDebugAndroidTest` on emulator/device.
+5. Document execution notes for stable local/CI runs.
+
+### Iterative progress
+- [x] Step 1: added Compose instrumentation test that opens Add Income dialog from `AccountDetailsActivity`.
+- [x] Step 2: added Compose instrumentation test that opens Transfer Money dialog from `AccountDetailsActivity`.
+- [x] Step 3: added instrumentation launch test for `AccountOutcomeDetails` mutation screen context.
+- [x] Step 4: validated androidTest source compilation with `:app:compileDebugAndroidTestKotlin`.
+- [~] Step 4 (device run): `:app:connectedDebugAndroidTest` requires connected emulator/device in local environment.
+- [x] Step 5: added task implementation notes in this document.
+
+### Acceptance criteria
+- At least 2-3 meaningful mutation instrumentation tests added.
+- Tests compile and are ready to run on connected emulator/device.
+- Critical mutation UI paths gain instrumentation regression coverage.
+
+### Risks and notes
+- Mutation tests relying on live API data can be flaky; current scenarios focus on stable dialog/open-entry interactions.
+
+---
+
+## TASK-18: Migrate ActivityResult Serializable extras to compat helper (P2)
+
+**Status:** TESTING
+
+### Goal
+Remove remaining deprecated `getSerializableExtra` usage in ActivityResult result handling.
+
+### Scope
+- `app/src/main/java/com/example/internetapi/ui/AccountActivity.kt`
+- `app/src/main/java/com/example/internetapi/ui/BudgetActivity.kt`
+- `app/src/main/java/com/example/internetapi/functions/BundleCompat.kt`
+- androidTest coverage for compat helper behavior
+
+### Implementation steps
+1. Verify existing coverage for Serializable compat result reads.
+2. Add shared Intent compat helper for serializable extras.
+3. Replace result handling reads in Account and Budget flows.
+4. Validate compile and androidTest source compilation.
+
+### Iterative progress
+- [x] Step 1: verified existing `BundleCompatTest` coverage; identified missing direct Intent helper coverage.
+- [x] Step 2: added `Intent.getSerializableExtraCompat(...)` in `BundleCompat.kt`.
+- [x] Step 3: migrated ActivityResult handling in `AccountActivity` and `BudgetActivity` to `getSerializableExtraCompat`.
+- [x] Step 4: added `IntentCompatTest` and validated with `:app:compileDebugKotlin` and `:app:compileDebugAndroidTestKotlin`.
+
+### Acceptance criteria
+- No deprecated `getSerializableExtra` usage remains in Account/Budget result flows.
+- Account/Budget update result handling keeps previous behavior.
+- Compile checks pass.
+
+### Risks and notes
+- This task focuses on ActivityResult result reads only and keeps existing Serializable contract unchanged.
+
+---
+
 ## Suggested Execution Order
 
 1. TASK-01
