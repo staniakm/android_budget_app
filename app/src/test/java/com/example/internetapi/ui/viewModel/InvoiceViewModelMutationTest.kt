@@ -80,6 +80,28 @@ class InvoiceViewModelMutationTest {
         assertEquals(Status.ERROR, values.last().status)
     }
 
+    @Test
+    fun deleteInvoice_emitsSuccessWhenApiReturnsOk() {
+        val viewModel = createViewModel(
+            helper = FakeInvoiceMutationApiHelper(deleteResponse = Response.success(null))
+        )
+
+        val values = viewModel.deleteInvoice(50).awaitUntilStatus(Status.SUCCESS)
+
+        assertEquals(Status.SUCCESS, values.last().status)
+    }
+
+    @Test
+    fun deleteInvoice_emitsErrorOnApiFailure() {
+        val viewModel = createViewModel(
+            helper = FakeInvoiceMutationApiHelper(deleteResponse = errorResponse())
+        )
+
+        val values = viewModel.deleteInvoice(50).awaitUntilStatus(Status.ERROR)
+
+        assertEquals(Status.ERROR, values.last().status)
+    }
+
     private fun createViewModel(helper: InvoiceApiHelper): InvoiceViewModel {
         return InvoiceViewModel(InvoiceRepository(helper))
     }
@@ -114,7 +136,8 @@ class InvoiceViewModelMutationTest {
 private class FakeInvoiceMutationApiHelper(
     private val updateResponse: Response<AccountInvoice> = Response.success(
         AccountInvoice(1, "Shop", "2026-01-01", BigDecimal.ZERO, "Main")
-    )
+    ),
+    private val deleteResponse: Response<Void> = Response.success(null)
 ) : InvoiceApiHelper {
     override suspend fun getInvoiceDetails(invoiceId: Long): Response<List<InvoiceDetails>> {
         return Response.success(emptyList())
@@ -129,6 +152,6 @@ private class FakeInvoiceMutationApiHelper(
     }
 
     override suspend fun deleteInvoice(invoiceId: Long): Response<Void> {
-        return Response.error(500, ResponseBody.create(null, "{}"))
+        return deleteResponse
     }
 }

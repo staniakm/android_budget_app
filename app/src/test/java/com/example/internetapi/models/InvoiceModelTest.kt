@@ -19,6 +19,15 @@ class InvoiceModelTest {
     }
 
     @Test
+    fun setShop_doesNotCreateShopForBlankValue() {
+        val invoice = Invoice(accountId = 10)
+
+        invoice.setShop("   ")
+
+        assertEquals(null, invoice.shop)
+    }
+
+    @Test
     fun isBasicDataNotFilled_returnsFalseWhenShopPresent() {
         val invoice = Invoice(accountId = 10)
         invoice.shop = Shop(1, "Shop")
@@ -61,5 +70,17 @@ class InvoiceModelTest {
         )
 
         assertTrue(newItem.isNewShopItem())
+    }
+
+    @Test
+    fun newInvoiceRequest_sumIsZeroForEmptyItems() {
+        val request = NewInvoiceRequest(
+            accountId = 3,
+            shopId = 7,
+            date = "2026-02-16",
+            items = emptyList()
+        )
+
+        assertEquals(0, request.sum.compareTo(BigDecimal.ZERO))
     }
 }

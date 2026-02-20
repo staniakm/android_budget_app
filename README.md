@@ -51,6 +51,24 @@ Run instrumentation tests on a connected emulator/device:
 
 Note: `connectedDebugAndroidTest` requires at least one connected Android device or running emulator.
 
+For reproducible local/CI mutation-regression checks, run targeted classes:
+
+```bash
+./gradlew :app:connectedDebugAndroidTest \
+  -Pandroid.testInstrumentationRunnerArguments.class=com.example.internetapi.ui.MutationFlowsInstrumentationTest
+```
+
+Recommended emulator profile for stable runs:
+- Android API 35
+- Medium Phone AVD
+- Clean snapshot or cold boot before CI-like execution
+
+If you hit a Unified Test Platform/protobuf crash in connected tests on AGP 7.x, use:
+
+```properties
+android.experimental.androidTest.useUnifiedTestPlatform=false
+```
+
 ## Notes
 
 - The app uses Activity-based navigation and Intent extras contracts.

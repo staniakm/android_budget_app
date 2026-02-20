@@ -373,6 +373,43 @@ Ensure DatePicker content is readable when the app runs in dark mode.
 
 ---
 
+## TASK-10: Increase regression test coverage for critical flows (P2)
+
+**Status:** TESTING
+
+### Goal
+Increase automated regression coverage across unit, ViewModel mutation, and instrumentation layers.
+
+### Scope
+- Unit edge tests for invoice mapping/calculation behavior.
+- ViewModel mutation tests for Budget and Media flows.
+- Additional instrumentation launch coverage for budget mutation entry.
+- Test execution notes in README for local/CI reproducibility.
+
+### Implementation steps
+1. Add unit tests for financial/mapping boundary cases.
+2. Extend ViewModel mutation tests in uncovered critical modules.
+3. Add meaningful instrumentation coverage for mutation journey entry points.
+4. Validate compile and connected instrumentation test execution.
+5. Document execution guidance in README/CI notes.
+
+### Iterative progress
+- [x] Step 1: added edge tests in `InvoiceModelTest` (blank shop and empty-item invoice sum).
+- [x] Step 2: added `BudgetViewModelMutationTest` and `MediaViewModelMutationTest` for success/error mutation scenarios, then extended with extra mutation cases (`getBudgetItems`, `removeMediaUsage`, additional error paths).
+- [x] Step 3: added `UpdateBudgetActivityLaunchTest` to cover update-budget mutation screen entry with required extras and missing-extra finish behavior.
+- [x] Step 4: validated with `:app:testDebugUnitTest`, `:app:compileDebugAndroidTestKotlin`, and targeted connected mutation instrumentation run.
+- [x] Step 5: updated `README.md` with reproducible connected test command and emulator profile notes.
+
+### Acceptance criteria
+- Expanded unit + ViewModel + instrumentation coverage for critical flows.
+- Stable local/CI execution instructions documented.
+- Regression risk reduced in create/update core mutation paths.
+
+### Risks and notes
+- Full connected suite may still include unrelated legacy failures; targeted mutation classes are documented for stable regression checks.
+
+---
+
 ## TASK-16: Mutation UX consistency sweep (P3)
 
 **Status:** TESTING

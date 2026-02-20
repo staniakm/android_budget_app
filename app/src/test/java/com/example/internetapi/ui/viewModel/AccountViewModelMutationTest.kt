@@ -95,6 +95,41 @@ class AccountViewModelMutationTest {
         assertEquals(Status.ERROR, values.last().status)
     }
 
+    @Test
+    fun transferMoney_emitsSuccessWithUpdatedAccount() {
+        val request = TransferMoneyRequest(
+            accountId = 1,
+            value = BigDecimal("50.00"),
+            targetAccount = 2
+        )
+        val expected = UpdateAccountResponse(1, "Main", BigDecimal("150.00"))
+        val viewModel = createViewModel(
+            helper = FakeAccountApiHelper(transferResponse = Response.success(expected))
+        )
+
+        val values = viewModel.transferMoney(request).awaitUntilStatus(Status.SUCCESS)
+
+        assertEquals(Status.SUCCESS, values.last().status)
+        assertEquals(expected, values.last().data)
+    }
+
+    @Test
+    fun addIncome_emitsErrorWhenApiFails() {
+        val request = AccountIncomeRequest(
+            accountId = 1,
+            value = BigDecimal("100.00"),
+            date = "2026-02-16",
+            incomeDescription = "Salary"
+        )
+        val viewModel = createViewModel(
+            helper = FakeAccountApiHelper(addIncomeResponse = errorResponse())
+        )
+
+        val values = viewModel.addIncome(request).awaitUntilStatus(Status.ERROR)
+
+        assertEquals(Status.ERROR, values.last().status)
+    }
+
     private fun createViewModel(helper: AccountApiHelper): AccountViewModel {
         return AccountViewModel(AccountRepository(helper))
     }
