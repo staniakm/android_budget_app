@@ -59,7 +59,7 @@ import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class AccountOutcomeDetails : AppCompatActivity() {
-    private val invoiceRemoved: String = "Selected invoice removed"
+    private val invoiceRemoved: String by lazy { getString(R.string.success_invoice_removed) }
     private val failedToRemoveInvoice: String by lazy { getString(R.string.error_failed_remove_invoice) }
     private val failedToLoadAccountInvoices: String by lazy { getString(R.string.error_failed_load_account_invoices) }
 
@@ -222,7 +222,7 @@ private fun AccountOutcomeDetailsScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "WYDATKI:",
+                                text = stringResource(id = R.string.outcome),
                                 modifier = Modifier.weight(0.35f),
                                 style = MaterialTheme.typography.h6
                             )
@@ -265,12 +265,12 @@ private fun AccountOutcomeDetailsScreen(
                         deleteLiveData = invoiceViewModel.deleteInvoice(invoice.listId)
                     }
                 }) {
-                    Text(text = "OK")
+                    Text(text = stringResource(id = R.string.ok))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { pendingDelete = null }) {
-                    Text(text = "Cancel")
+                    Text(text = stringResource(id = R.string.cancel))
                 }
             }
         )
@@ -327,12 +327,12 @@ private fun AccountOutcomeDetailsScreen(
                     }
                     accountToChange = null
                 }) {
-                    Text(text = "OK")
+                    Text(text = stringResource(id = R.string.ok))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { accountToChange = null }) {
-                    Text(text = "Cancel")
+                    Text(text = stringResource(id = R.string.cancel))
                 }
             }
         )
@@ -364,7 +364,10 @@ private fun AccountInvoiceCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(onClick = onDelete) {
-                    Icon(imageVector = Icons.Default.Delete, contentDescription = "delete")
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = stringResource(id = R.string.content_desc_delete_invoice)
+                    )
                 }
                 Text(
                     text = invoice.name,

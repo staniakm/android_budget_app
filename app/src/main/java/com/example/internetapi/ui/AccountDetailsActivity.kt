@@ -196,6 +196,7 @@ private fun AccountDetailsScreen(
     val incomeSuccessMessage = stringResource(id = R.string.success_income_added)
     val incomeErrorMessage = stringResource(id = R.string.error_failed_add_income)
     val noTargetAccountMessage = stringResource(id = R.string.error_no_target_account_selected)
+    val invalidPriceOrAmountMessage = stringResource(id = R.string.error_invalid_price_or_amount)
 
     fun showMessage(message: String) {
         scope.launch { scaffoldState.snackbarHostState.showSnackbar(message) }
@@ -287,7 +288,10 @@ private fun AccountDetailsScreen(
         "$accountName - ${LocalDate.now().plusMonths(MonthSelector.month.toLong()).format(yyyymm)}"
     }
     val operations = operationsResource?.data ?: emptyList()
-    val isLoading = operationsResource?.status == Status.LOADING || incomeTypesResource?.status == Status.LOADING
+    val isLoading = operationsResource?.status == Status.LOADING ||
+        incomeTypesResource?.status == Status.LOADING ||
+        transferResource?.status == Status.LOADING ||
+        addIncomeResource?.status == Status.LOADING
 
     Scaffold(scaffoldState = scaffoldState) { innerPadding ->
         Box(
@@ -421,7 +425,7 @@ private fun AccountDetailsScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable { expanded = true },
-                            label = { Text("Description") },
+                            label = { Text(stringResource(id = R.string.label_description)) },
                             readOnly = true,
                             singleLine = true
                         )
@@ -441,7 +445,7 @@ private fun AccountDetailsScreen(
                         value = valueText,
                         onValueChange = { valueText = it },
                         modifier = Modifier.fillMaxWidth(),
-                        label = { Text("Value") },
+                        label = { Text(stringResource(id = R.string.label_value)) },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
                     )
@@ -454,7 +458,7 @@ private fun AccountDetailsScreen(
                         val parsedValue = raw.replace(',', '.').toBigDecimalOrNull()
                         if (parsedValue == null) {
                             Log.w(logTag, "Income value is not parsable to BigDecimal")
-                            showMessage("Provided value: $raw - is not parsable to number")
+                            showMessage(invalidPriceOrAmountMessage)
                             return@TextButton
                         }
 
@@ -493,7 +497,7 @@ private fun AccountDetailsScreen(
                         value = valueText,
                         onValueChange = { valueText = it },
                         modifier = Modifier.fillMaxWidth(),
-                        label = { Text("Value") },
+                        label = { Text(stringResource(id = R.string.label_value)) },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
                     )
@@ -504,7 +508,7 @@ private fun AccountDetailsScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable { expanded = true },
-                            label = { Text("Target account") },
+                            label = { Text(stringResource(id = R.string.label_target_account)) },
                             readOnly = true,
                             singleLine = true
                         )
@@ -528,7 +532,7 @@ private fun AccountDetailsScreen(
                         val target = selectedTarget
                         val parsedValue = raw.replace(',', '.').toBigDecimalOrNull()
                         if (parsedValue == null) {
-                            showMessage("Provided value: $raw - is not parsable to number")
+                            showMessage(invalidPriceOrAmountMessage)
                             return@TextButton
                         }
                         if (target == null) {

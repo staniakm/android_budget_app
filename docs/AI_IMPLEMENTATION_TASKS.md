@@ -373,6 +373,41 @@ Ensure DatePicker content is readable when the app runs in dark mode.
 
 ---
 
+## TASK-16: Mutation UX consistency sweep (P3)
+
+**Status:** TESTING
+
+### Goal
+Unify success/error/loading feedback across key mutation screens.
+
+### Scope
+- `app/src/main/java/com/example/internetapi/ui/AccountDetailsActivity.kt`
+- `app/src/main/java/com/example/internetapi/ui/AccountOutcomeDetails.kt`
+- `app/src/main/res/values/strings.xml`
+- mutation message quality check in `UiStringsQualityTest`
+
+### Implementation steps
+1. Inventory mutation feedback patterns and hardcoded messages.
+2. Standardize mutation success/error wording with string resources.
+3. Align loading behavior in mutation flows.
+4. Validate compile and mutation instrumentation smoke tests.
+
+### Iterative progress
+- [x] Step 1: identified hardcoded mutation-related messages and mixed loading behavior in AccountDetails/AccountOutcomeDetails.
+- [x] Step 2: replaced hardcoded mutation feedback with resources (`success_invoice_removed`, invalid value feedback, dialog actions).
+- [x] Step 3: aligned `AccountDetails` loading indicator to include mutation requests (`transfer` and `add income`) for consistent UX.
+- [x] Step 4: validated with `:app:compileDebugKotlin`, `:app:compileDebugAndroidTestKotlin`, and targeted mutation instrumentation run `:app:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.example.internetapi.ui.MutationFlowsInstrumentationTest`.
+
+### Acceptance criteria
+- Targeted mutation screens show consistent feedback pattern for success/error/loading.
+- Mutation-related hardcoded messages are reduced and moved to resources.
+- Compile checks and mutation smoke tests pass.
+
+### Risks and notes
+- Full `connectedDebugAndroidTest` may still include unrelated legacy failures; mutation-focused verification is covered by targeted instrumentation class.
+
+---
+
 ## TASK-17: Add instrumentation tests for mutation flows (P2)
 
 **Status:** TESTING

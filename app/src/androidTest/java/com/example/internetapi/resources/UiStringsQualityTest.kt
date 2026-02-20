@@ -21,6 +21,7 @@ class UiStringsQualityTest {
             R.string.error_failed_remove_invoice,
             R.string.error_invalid_price_or_amount,
             R.string.error_failed_update_invoice_account,
+            R.string.success_invoice_removed,
             R.string.success_income_added,
             R.string.success_money_transfer_completed
         )
