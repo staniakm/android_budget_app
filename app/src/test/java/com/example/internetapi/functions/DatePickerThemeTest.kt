@@ -20,4 +20,22 @@ class DatePickerThemeTest {
 
         assertNull(result)
     }
+
+    @Test
+    fun resolveDatePickerThemeResId_returnsLightThemeWhenNightBitIsPresentWithOtherFlags() {
+        val uiMode = Configuration.UI_MODE_TYPE_NORMAL or Configuration.UI_MODE_NIGHT_YES
+
+        val result = resolveDatePickerThemeResId(uiMode)
+
+        assertEquals(android.R.style.Theme_DeviceDefault_Light, result)
+    }
+
+    @Test
+    fun resolveDatePickerThemeResId_returnsNullWhenNightModeIsUndefined() {
+        val uiMode = Configuration.UI_MODE_NIGHT_UNDEFINED
+
+        val result = resolveDatePickerThemeResId(uiMode)
+
+        assertNull(result)
+    }
 }

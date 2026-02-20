@@ -19,4 +19,18 @@ class FormatterTest {
 
         assertTrue(formatted.matches(Regex("7[.,]200")))
     }
+
+    @Test
+    fun moneyFormatter_formatsNegativeValues() {
+        val formatted = MoneyFormatter.df.format(BigDecimal("-12.5"))
+
+        assertTrue(formatted.matches(Regex("-12[.,]50")))
+    }
+
+    @Test
+    fun amountFormatter_formatsWholeNumbersWithTrailingZeros() {
+        val formatted = AmountFormatter.df.format(BigDecimal("3"))
+
+        assertTrue(formatted.matches(Regex("3[.,]000")))
+    }
 }
