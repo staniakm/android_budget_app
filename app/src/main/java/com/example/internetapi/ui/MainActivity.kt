@@ -60,10 +60,13 @@ class MainActivity : ComponentActivity() {
 
     private fun shouldLoadMenu(): Boolean {
         val preferences = getSharedPreferences("accountSharedPreferences", MODE_PRIVATE)
-        return preferences.getString("hostAddress", "")?.let {
-            Constant.BASE_URL = it
-            it.isNotBlank()
-        } ?: false
+        val normalized = Constant.normalizeBaseUrl(preferences.getString("hostAddress", ""))
+        return if (normalized != null) {
+            Constant.BASE_URL = normalized
+            true
+        } else {
+            false
+        }
     }
 }
 
