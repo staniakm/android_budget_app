@@ -82,6 +82,17 @@ class AccountOutcomeViewModelTest {
     }
 
     @Test
+    fun createShop_emitsErrorWhenRepositoryFails() {
+        val viewModel = createViewModel(
+            shopHelper = FakeShopApiHelper(createShopResponse = errorResponse())
+        )
+
+        val values = viewModel.createShop("broken").awaitUntilStatus(Status.ERROR)
+
+        assertEquals(Status.ERROR, values.last().status)
+    }
+
+    @Test
     fun getShopItems_emitsErrorWhenRepositoryFails() {
         val viewModel = createViewModel(
             shopHelper = FakeShopApiHelper(getShopItemsResponse = errorResponse())
@@ -121,6 +132,47 @@ class AccountOutcomeViewModelTest {
         assertEquals(0, request.sum.compareTo(BigDecimal("24.00")))
         assertEquals(Status.SUCCESS, values.last().status)
         assertEquals(response, values.last().data)
+    }
+
+    @Test
+    fun createNewInvoice_emitsErrorWhenRepositoryFails() {
+        val request = NewInvoiceRequest(
+            accountId = 1,
+            shopId = 2,
+            date = "2026-02-16",
+            items = emptyList()
+        )
+        val viewModel = createViewModel(
+            invoiceHelper = FakeInvoiceApiHelper(createInvoiceResponse = errorResponse())
+        )
+
+        val values = viewModel.createNewInvoice(request).awaitUntilStatus(Status.ERROR)
+
+        assertEquals(Status.ERROR, values.last().status)
+    }
+
+    @Test
+    fun createNewShopItem_emitsSuccessWithCreatedItem() {
+        val expected = ShopItem(55, "BREAD")
+        val viewModel = createViewModel(
+            shopHelper = FakeShopApiHelper(createShopItemResponse = Response.success(expected))
+        )
+
+        val values = viewModel.createNewShopItem(1, "bread").awaitUntilStatus(Status.SUCCESS)
+
+        assertEquals(Status.SUCCESS, values.last().status)
+        assertEquals(expected, values.last().data)
+    }
+
+    @Test
+    fun createNewShopItem_emitsErrorWhenRepositoryFails() {
+        val viewModel = createViewModel(
+            shopHelper = FakeShopApiHelper(createShopItemResponse = errorResponse())
+        )
+
+        val values = viewModel.createNewShopItem(1, "bread").awaitUntilStatus(Status.ERROR)
+
+        assertEquals(Status.ERROR, values.last().status)
     }
 
     private fun createViewModel(

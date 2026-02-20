@@ -99,6 +99,34 @@ class MediaViewModelMutationTest {
         assertEquals(Status.SUCCESS, values.last().status)
     }
 
+    @Test
+    fun addMediaUsageEntry_emitsSuccessWithUsageList() {
+        val expected = listOf(
+            MediaUsage(id = 1, year = 2026, month = 2, meterRead = BigDecimal("322.0"))
+        )
+        val viewModel = createViewModel(
+            helper = FakeMediaApiHelper(addUsageResponse = Response.success(expected))
+        )
+
+        val values = viewModel.addMediaUsageEntry(
+            MediaRegisterRequest(mediaType = 2, meterRead = BigDecimal("322.0"), year = 2026, month = 2)
+        ).awaitUntilStatus(Status.SUCCESS)
+
+        assertEquals(Status.SUCCESS, values.last().status)
+        assertEquals(expected, values.last().data)
+    }
+
+    @Test
+    fun removeMediaUsage_emitsErrorWhenApiFails() {
+        val viewModel = createViewModel(
+            helper = FakeMediaApiHelper(removeUsageResponse = errorResponse())
+        )
+
+        val values = viewModel.removeMediaUsage(9).awaitUntilStatus(Status.ERROR)
+
+        assertEquals(Status.ERROR, values.last().status)
+    }
+
     private fun createViewModel(helper: MediaApiHelper): MediaViewModel {
         return MediaViewModel(MediaRepository(helper))
     }

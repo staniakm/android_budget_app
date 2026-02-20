@@ -4,8 +4,10 @@ import android.content.Intent
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import com.example.internetapi.models.Account
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.math.BigDecimal
@@ -33,6 +35,14 @@ class AccountUpdateActivityLaunchTest {
             scenario.onActivity { activity ->
                 assertFalse(activity.isFinishing)
             }
+        }
+    }
+
+    @Test
+    fun accountUpdateActivity_withoutAccountExtra_finishesImmediately() {
+        ActivityScenario.launch(AccountUpdateActivity::class.java).use { scenario ->
+            InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+            assertTrue(scenario.state == androidx.lifecycle.Lifecycle.State.DESTROYED)
         }
     }
 }

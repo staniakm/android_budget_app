@@ -41,6 +41,32 @@ class MutationFlowsInstrumentationTest {
     }
 
     @Test
+    fun addIncomeMutationFlow_showsExpectedMutationInputs() {
+        val addIncomeLabel = composeRule.activity.getString(R.string.add_income)
+        val addIncomeDialogTitle = composeRule.activity.getString(R.string.dialog_title_add_account_income)
+        val valueLabel = composeRule.activity.getString(R.string.label_value)
+        val descriptionLabel = composeRule.activity.getString(R.string.label_description)
+
+        composeRule.onNodeWithText(addIncomeLabel).performClick()
+        composeRule.onNodeWithText(addIncomeDialogTitle).assertIsDisplayed()
+        composeRule.onNodeWithText(valueLabel).assertIsDisplayed()
+        composeRule.onNodeWithText(descriptionLabel).assertIsDisplayed()
+    }
+
+    @Test
+    fun transferMutationFlow_showsExpectedMutationInputs() {
+        val transferMoneyLabel = composeRule.activity.getString(R.string.transfer_money)
+        val transferMoneyDialogTitle = composeRule.activity.getString(R.string.dialog_title_transfer_money)
+        val valueLabel = composeRule.activity.getString(R.string.label_value)
+        val targetAccountLabel = composeRule.activity.getString(R.string.label_target_account)
+
+        composeRule.onNodeWithText(transferMoneyLabel).performClick()
+        composeRule.onNodeWithText(transferMoneyDialogTitle).assertIsDisplayed()
+        composeRule.onNodeWithText(valueLabel).assertIsDisplayed()
+        composeRule.onNodeWithText(targetAccountLabel).assertIsDisplayed()
+    }
+
+    @Test
     fun accountOutcomeDetailsMutationScreen_launchesWithRequiredExtras() {
         val context = ApplicationProvider.getApplicationContext<android.content.Context>()
         val intent = Intent(context, AccountOutcomeDetails::class.java).apply {

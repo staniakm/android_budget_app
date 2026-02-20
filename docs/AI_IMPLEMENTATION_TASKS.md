@@ -399,6 +399,8 @@ Increase automated regression coverage across unit, ViewModel mutation, and inst
 - [x] Step 3: added `UpdateBudgetActivityLaunchTest` to cover update-budget mutation screen entry with required extras and missing-extra finish behavior.
 - [x] Step 4: validated with `:app:testDebugUnitTest`, `:app:compileDebugAndroidTestKotlin`, and targeted connected mutation instrumentation run.
 - [x] Step 5: updated `README.md` with reproducible connected test command and emulator profile notes.
+- [x] Additional expansion: extended AccountOutcome and Invoice ViewModel mutation tests (shop/item creation, invoice details, invoice creation error, delete flows) and added missing-extra instrumentation guard in `AccountUpdateActivityLaunchTest`.
+- [x] Additional expansion: extended mutation instrumentation checks in `MutationFlowsInstrumentationTest` to assert critical add-income/transfer dialog inputs are present and stable, and validated `AccountUpdateActivity` missing-extra finish behavior.
 
 ### Acceptance criteria
 - Expanded unit + ViewModel + instrumentation coverage for critical flows.

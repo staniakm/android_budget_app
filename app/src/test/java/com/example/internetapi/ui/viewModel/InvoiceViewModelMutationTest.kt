@@ -102,6 +102,39 @@ class InvoiceViewModelMutationTest {
         assertEquals(Status.ERROR, values.last().status)
     }
 
+    @Test
+    fun invoiceDetails_emitsSuccessWithReturnedItems() {
+        val expected = listOf(
+            InvoiceDetails(
+                invoiceItemId = 11,
+                productName = "Milk",
+                quantity = BigDecimal("2.000"),
+                price = BigDecimal("10.00"),
+                discount = BigDecimal.ZERO,
+                totalPrice = BigDecimal("20.00")
+            )
+        )
+        val viewModel = createViewModel(
+            helper = FakeInvoiceMutationApiHelper(detailsResponse = Response.success(expected))
+        )
+
+        val values = viewModel.invoiceDetails(99).awaitUntilStatus(Status.SUCCESS)
+
+        assertEquals(Status.SUCCESS, values.last().status)
+        assertEquals(expected, values.last().data)
+    }
+
+    @Test
+    fun invoiceDetails_emitsErrorWhenApiFails() {
+        val viewModel = createViewModel(
+            helper = FakeInvoiceMutationApiHelper(detailsResponse = errorResponse())
+        )
+
+        val values = viewModel.invoiceDetails(99).awaitUntilStatus(Status.ERROR)
+
+        assertEquals(Status.ERROR, values.last().status)
+    }
+
     private fun createViewModel(helper: InvoiceApiHelper): InvoiceViewModel {
         return InvoiceViewModel(InvoiceRepository(helper))
     }
@@ -137,10 +170,11 @@ private class FakeInvoiceMutationApiHelper(
     private val updateResponse: Response<AccountInvoice> = Response.success(
         AccountInvoice(1, "Shop", "2026-01-01", BigDecimal.ZERO, "Main")
     ),
-    private val deleteResponse: Response<Void> = Response.success(null)
+    private val deleteResponse: Response<Void> = Response.success(null),
+    private val detailsResponse: Response<List<InvoiceDetails>> = Response.success(emptyList())
 ) : InvoiceApiHelper {
     override suspend fun getInvoiceDetails(invoiceId: Long): Response<List<InvoiceDetails>> {
-        return Response.success(emptyList())
+        return detailsResponse
     }
 
     override suspend fun updateInvoiceAccount(updateInvoiceAccountRequest: UpdateInvoiceAccountRequest): Response<AccountInvoice> {

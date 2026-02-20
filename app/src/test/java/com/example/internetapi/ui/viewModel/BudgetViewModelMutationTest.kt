@@ -82,6 +82,45 @@ class BudgetViewModelMutationTest {
     }
 
     @Test
+    fun recalculateBudgets_emitsSuccessWithBudgetData() {
+        val expected = Budget(
+            totalSpend = BigDecimal("100.00"),
+            totalPlanned = BigDecimal("300.00"),
+            totalEarned = BigDecimal("500.00"),
+            budgets = listOf(
+                MonthBudget(
+                    budgetId = 10,
+                    category = "Food",
+                    spent = BigDecimal("100.00"),
+                    planned = BigDecimal("300.00"),
+                    percentage = 33
+                )
+            )
+        )
+        val viewModel = createViewModel(
+            helper = FakeBudgetApiHelper(recalculateResponse = Response.success(expected))
+        )
+
+        val values = viewModel.recalculateBudgets().awaitUntilStatus(Status.SUCCESS)
+
+        assertEquals(Status.SUCCESS, values.last().status)
+        assertEquals(expected, values.last().data)
+    }
+
+    @Test
+    fun updateBudget_emitsErrorWhenApiFails() {
+        val viewModel = createViewModel(
+            helper = FakeBudgetApiHelper(updateResponse = errorResponse())
+        )
+
+        val values = viewModel.updateBudget(
+            UpdateBudgetRequest(budgetId = 10, planned = BigDecimal("300.00"))
+        ).awaitUntilStatus(Status.ERROR)
+
+        assertEquals(Status.ERROR, values.last().status)
+    }
+
+    @Test
     fun getBudgetItems_emitsSuccessWithReturnedItems() {
         val expected = listOf(
             InvoiceDetails(
