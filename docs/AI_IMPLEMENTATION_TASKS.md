@@ -408,8 +408,10 @@ Increase automated regression coverage across unit, ViewModel mutation, and inst
 - [x] Additional ViewModel expansion: added `CategoryViewModelTest` with full success/error coverage for both exposed methods (`getCategories`, `getCategoryDetails`).
 - [x] Additional ViewModel expansion: extended `MediaViewModelMutationTest` with read-path coverage (`getMediaTypes`, `getMediaUsageByType`) for both success and error scenarios.
 - [x] Additional ViewModel expansion: extended `BudgetViewModelMutationTest` with read-path coverage (`getBudgets`, `getBudgetItems`) in both success and error variants.
+- [x] Contract tests: added `ViewModelDataFunctionTest` for `executeLiveDataList`/`executeLiveDataSingle` emission contract (`LOADING -> SUCCESS/ERROR`) and exception-to-error mapping.
 - [x] Adapter test expansion: added `AdapterListBehaviorTest` (androidTest) covering list mutation behaviors in `MediaAdapter`, `CategoryAdapter`, `AccountAdapter`, and `MonthBudgetAdapter`.
 - [x] Adapter test expansion: added `AdapterDetailsBehaviorTest` (androidTest) covering `InvoiceDetailsAdapter` list submission and `MediaDetailsAdapter` remove/list-shift behavior.
+- [x] Adapter test expansion: extended `AdapterDetailsBehaviorTest` with `CategoryDetailsAdapter` smoke coverage (submit/bind paths) using `CategoryDetailsActivity` scenario and fake ViewModel API helper.
 
 ### Acceptance criteria
 - Expanded unit + ViewModel + instrumentation coverage for critical flows.

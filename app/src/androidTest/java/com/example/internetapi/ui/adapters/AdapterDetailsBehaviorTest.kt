@@ -1,13 +1,24 @@
 package com.example.internetapi.ui.adapters
 
+import android.content.Intent
+import android.widget.FrameLayout
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.core.app.ActivityScenario
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
+import com.example.internetapi.api.CategoryApiHelper
+import com.example.internetapi.models.Category
+import com.example.internetapi.models.CategoryDetails
 import com.example.internetapi.models.InvoiceDetails
 import com.example.internetapi.models.MediaUsage
+import com.example.internetapi.repository.CategoryRepository
+import com.example.internetapi.ui.CategoryDetailsActivity
+import com.example.internetapi.ui.viewModel.CategoryViewModel
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
+import retrofit2.Response
 import java.math.BigDecimal
 
 @RunWith(AndroidJUnit4::class)
@@ -65,6 +76,56 @@ class AdapterDetailsBehaviorTest {
         assertEquals(8, nextRemoved?.id)
     }
 
+    @Test
+    fun categoryDetailsAdapter_submitList_updatesCount() {
+        val context = ApplicationProvider.getApplicationContext<android.content.Context>()
+        val intent = Intent(context, CategoryDetailsActivity::class.java).apply {
+            putExtra("categoryId", 1)
+            putExtra("name", "Food")
+        }
+
+        ActivityScenario.launch<CategoryDetailsActivity>(intent).use { scenario ->
+            scenario.onActivity { activity ->
+                val viewModel = CategoryViewModel(CategoryRepository(FakeCategoryApiHelper()))
+                val adapter = CategoryDetailsAdapter(viewModel, activity)
+                adapter.submitList(
+                    listOf(
+                        CategoryDetails(1, "Milk", BigDecimal("8.50")),
+                        CategoryDetails(2, "Bread", BigDecimal("4.20"))
+                    )
+                )
+
+                await { adapter.itemCount == 2 }
+                assertEquals(2, adapter.itemCount)
+            }
+        }
+    }
+
+    @Test
+    fun categoryDetailsAdapter_onBind_setsBasicFields() {
+        val context = ApplicationProvider.getApplicationContext<android.content.Context>()
+        val intent = Intent(context, CategoryDetailsActivity::class.java).apply {
+            putExtra("categoryId", 1)
+            putExtra("name", "Food")
+        }
+
+        ActivityScenario.launch<CategoryDetailsActivity>(intent).use { scenario ->
+            scenario.onActivity { activity ->
+                val viewModel = CategoryViewModel(CategoryRepository(FakeCategoryApiHelper()))
+                val adapter = CategoryDetailsAdapter(viewModel, activity)
+                adapter.submitList(listOf(CategoryDetails(7, "Coffee", BigDecimal("15.90"))))
+                await { adapter.itemCount == 1 }
+
+                val parent = FrameLayout(activity)
+                val holder = adapter.onCreateViewHolder(parent, 0)
+                adapter.onBindViewHolder(holder, 0)
+
+                assertEquals("Coffee", holder.binding.assortmentName.text.toString())
+                assertEquals("15.90", holder.binding.month.text.toString())
+            }
+        }
+    }
+
     private fun await(timeoutMs: Long = 2_000, condition: () -> Boolean) {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         val end = System.currentTimeMillis() + timeoutMs
@@ -75,4 +136,10 @@ class AdapterDetailsBehaviorTest {
         }
         assertTrue("Condition not met within timeout", condition())
     }
+}
+
+private class FakeCategoryApiHelper : CategoryApiHelper {
+    override suspend fun getCategories(): Response<List<Category>> = Response.success(emptyList())
+
+    override suspend fun getCategoryDetails(categoryId: Int): Response<List<CategoryDetails>> = Response.success(emptyList())
 }

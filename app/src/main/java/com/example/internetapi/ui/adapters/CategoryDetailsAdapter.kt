@@ -61,7 +61,7 @@ class CategoryDetailsAdapter(
     override fun onBindViewHolder(holder: CategoryDetailsViewHolder, position: Int) {
         val item = differ.currentList[position]
         holder.binding.apply {
-            assortmentName.text = "${item.name}"
+            assortmentName.text = item.name
             month.text = "${item.price}"
 
             textViewOptions.setOnClickListener {

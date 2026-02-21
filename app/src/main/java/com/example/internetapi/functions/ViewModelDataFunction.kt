@@ -13,14 +13,17 @@ abstract class ViewModelDataFunction : ViewModel() {
         val data = MutableLiveData<Resource<List<T>>>()
         viewModelScope.launch {
             data.postValue(Resource.loading(null))
-            repoFun.invoke()
-                .let {
+            try {
+                repoFun.invoke().let {
                     if (it.isSuccessful) {
                         data.postValue(Resource.success(it.body()))
                     } else {
-                        data.postValue(Resource.error(it.errorBody().toString(), null))
+                        data.postValue(Resource.error(it.errorBody()?.toString() ?: "Unknown error", null))
                     }
                 }
+            } catch (e: Exception) {
+                data.postValue(Resource.error(e.message ?: "Unknown error", null))
+            }
         }
         return data
     }
@@ -28,14 +31,18 @@ abstract class ViewModelDataFunction : ViewModel() {
     fun <T> executeLiveDataSingle(function: suspend () -> Response<T>): LiveData<Resource<T>> {
         val data = MutableLiveData<Resource<T>>()
         viewModelScope.launch {
-            function.invoke()
-                .let {
+            data.postValue(Resource.loading(null))
+            try {
+                function.invoke().let {
                     if (it.isSuccessful) {
                         data.postValue(Resource.success(it.body()))
                     } else {
-                        data.postValue(Resource.error(it.errorBody().toString(), null))
+                        data.postValue(Resource.error(it.errorBody()?.toString() ?: "Unknown error", null))
                     }
                 }
+            } catch (e: Exception) {
+                data.postValue(Resource.error(e.message ?: "Unknown error", null))
+            }
         }
         return data
     }
